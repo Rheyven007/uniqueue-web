@@ -8,7 +8,11 @@ redirect_if_authenticated();
 
 $error   = '';
 $role    = get_param('role', 'student'); // 'student' or 'admin'
-$success = get_param('msg') === 'logged_out' ? 'You have been logged out.' : '';
+$successMessages = [
+    'logged_out'      => 'You have been logged out.',
+    'account_created' => 'Account created successfully. You can now log in.',
+];
+$success = $successMessages[get_param('msg')] ?? '';
 
 if (is_post()) {
 
@@ -195,7 +199,7 @@ $csrf = generate_csrf_token();
 
                 <?php if ($role === 'student'): ?>
                     <p class="auth-card__help">
-                        Don't have an account? Contact the Registrar's Office.
+                        Don't have an account? <a href="/auth/signup.php">Sign up</a>
                     </p>
                 <?php endif; ?>
             </div>
