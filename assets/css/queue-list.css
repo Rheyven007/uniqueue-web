@@ -1,0 +1,109 @@
+/* assets/css/queue-list.css — Queue List page (queue-list.php) */
+
+.ql-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0 1.2rem;
+  border-bottom: 1.5px solid var(--smoke);
+}
+
+.ql-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1.1rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-mid);
+  text-decoration: none;
+  border-bottom: 2.5px solid transparent;
+  transition: color var(--transition), border-color var(--transition);
+}
+
+.ql-tab:hover { color: var(--ink); }
+
+.ql-tab.is-active {
+  color: var(--red);
+  border-bottom-color: var(--red);
+}
+
+.count-badge.violet { background: rgba(124,58,237,0.09); color: #7c3aed; border: 1px solid rgba(124,58,237,0.22); }
+
+.ql-table-wrap {
+  overflow-x: auto;
+}
+
+.ql-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+}
+
+.ql-table th {
+  text-align: left;
+  padding: 0.7rem 1.1rem;
+  background: var(--mist);
+  color: var(--ink-mid);
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1.5px solid var(--smoke);
+  white-space: nowrap;
+}
+
+.ql-table td {
+  padding: 0.7rem 1.1rem;
+  border-bottom: 1px solid var(--smoke);
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.ql-table tbody tr:hover { background: var(--off-white); }
+.ql-table tbody tr.is-priority { background: var(--warning-bg); }
+
+.ql-num {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+}
+
+.badge-status-waiting   { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.badge-status-called    { background: rgba(13,148,136,0.09); color: #0d9488; border: 1px solid rgba(13,148,136,0.22); }
+.badge-status-done      { background: var(--green-soft); color: var(--green); border: 1px solid var(--green-border); }
+.badge-status-cancelled { background: var(--red-soft);   color: var(--red);   border: 1px solid var(--red-border); }
+
+@media (max-width: 768px) {
+  .ql-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+  .ql-tab {
+    white-space: nowrap;
+  }
+}
+
+/* ── Counter filter ────────────────────────────────────────── */
+.ql-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.2rem;
+}
+
+.ql-filter__label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-mid);
+}
+
+.ql-filter select {
+  max-width: 220px;
+}
+
+/* ── Per-counter sections ──────────────────────────────────── */
+.ql-counter-section {
+  margin-bottom: 1.2rem;
+}

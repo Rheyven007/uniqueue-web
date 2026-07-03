@@ -1,0 +1,683 @@
+/* ============================================================
+   Uniqueue — registrar-queue.css
+   Registrar Queue Wizard styles
+   Extends dashboard.css variables and base styles.
+   ============================================================ */
+
+/* ── Page title row ─────────────────────────────────────────── */
+.page-title-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  animation: fadeUp 0.4s cubic-bezier(0.4,0,0.2,1) both;
+}
+
+.page-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.3px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-light);
+  padding: 0.35rem 0.7rem;
+  border-radius: var(--radius-xs);
+  transition: background var(--transition), color var(--transition);
+}
+.back-link:hover {
+  background: var(--mist);
+  color: var(--ink-mid);
+}
+
+/* ── Alert ──────────────────────────────────────────────────── */
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.9rem 1.2rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 500;
+  animation: fadeUp 0.3s ease both;
+}
+
+.alert--error {
+  background: #fff5f5;
+  border: 1.5px solid #fca5a5;
+  color: #b91c1c;
+}
+
+/* ── Wizard card ────────────────────────────────────────────── */
+.ticket-status-card {
+  background: var(--white);
+  border: 1.5px solid var(--smoke);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 1.6rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  animation: fadeUp 0.5s 0.05s cubic-bezier(0.4,0,0.2,1) both;
+}
+
+.ticket-status-card__num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: var(--red);
+  flex-shrink: 0;
+}
+
+.ticket-status-card__msg {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.ticket-status-card__msg strong {
+  color: var(--red);
+}
+
+.wizard-card {
+  background: var(--white);
+  border: 1.5px solid var(--smoke);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  animation: fadeUp 0.5s 0.05s cubic-bezier(0.4,0,0.2,1) both;
+}
+
+/* ── Step progress ──────────────────────────────────────────── */
+.wizard-progress {
+  display: flex;
+  align-items: center;
+  padding: 1.4rem 2rem;
+  background: var(--mist);
+  border-bottom: 1.5px solid var(--smoke);
+  overflow-x: auto;
+  gap: 0;
+}
+
+.wizard-step {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-shrink: 0;
+  opacity: 0.45;
+  transition: opacity var(--transition);
+}
+
+.wizard-step.active,
+.wizard-step.completed {
+  opacity: 1;
+}
+
+.wizard-step__num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--smoke);
+  color: var(--ink-mid);
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background var(--transition), color var(--transition), box-shadow var(--transition);
+  border: 2px solid transparent;
+}
+
+.wizard-step.active .wizard-step__num {
+  background: var(--red);
+  color: var(--white);
+  border-color: var(--red-deep);
+  box-shadow: 0 0 0 4px var(--red-glow);
+}
+
+.wizard-step.completed .wizard-step__num {
+  background: var(--success);
+  color: var(--white);
+}
+
+.wizard-step__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-mid);
+  white-space: nowrap;
+}
+
+.wizard-step.active .wizard-step__label { color: var(--red); }
+.wizard-step.completed .wizard-step__label { color: var(--success); }
+
+.wizard-step-connector {
+  flex: 1;
+  min-width: 20px;
+  height: 2px;
+  background: var(--smoke);
+  margin: 0 0.5rem;
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+
+/* ── Wizard form / steps ────────────────────────────────────── */
+.wizard-form { padding: 2rem; }
+
+.step { display: none; }
+.step.active { display: block; animation: fadeUp 0.35s cubic-bezier(0.4,0,0.2,1) both; }
+
+.step-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.2px;
+  margin-bottom: 0.3rem;
+}
+
+.step-subtitle {
+  font-size: 0.88rem;
+  color: var(--ink-light);
+  margin-bottom: 1.6rem;
+}
+
+/* ── Type selection cards ───────────────────────────────────── */
+.type-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.8rem;
+}
+
+.type-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.3rem 1.2rem;
+  border: 2px solid var(--smoke);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+  background: var(--off-white);
+  overflow: hidden;
+}
+
+.type-card input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.type-card:hover {
+  border-color: var(--red-border);
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+}
+
+.type-card:has(input:checked) {
+  border-color: var(--red);
+  background: var(--white);
+  box-shadow: 0 0 0 3px var(--red-glow), var(--shadow-sm);
+}
+
+.type-card__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-sm);
+  background: var(--mist);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--ink-mid);
+  transition: background var(--transition), color var(--transition);
+}
+
+.type-card:has(input:checked) .type-card__icon {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.type-card__body { flex: 1; }
+
+.type-card__title {
+  font-size: 0.97rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 0.2rem;
+}
+
+.type-card__desc {
+  font-size: 0.8rem;
+  color: var(--ink-light);
+  line-height: 1.4;
+}
+
+.type-card__check {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--smoke);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  flex-shrink: 0;
+  transition: all var(--transition);
+}
+
+.type-card:has(input:checked) .type-card__check {
+  background: var(--red);
+  border-color: var(--red);
+  color: var(--white);
+}
+
+/* ── Form controls ──────────────────────────────────────────── */
+.form-group {
+  margin-bottom: 1.2rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-mid);
+  margin-bottom: 0.45rem;
+  letter-spacing: 0.1px;
+}
+
+.form-control {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 400;
+  color: var(--ink);
+  background: var(--white);
+  border: 1.5px solid var(--smoke);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.9rem;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  outline: none;
+  appearance: none;
+}
+
+.form-control:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px var(--red-glow);
+}
+
+.form-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238a7070' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+  padding-right: 2.2rem;
+}
+
+/* ── Priority toggle ────────────────────────────────────────── */
+.priority-toggle {
+  margin-bottom: 1.2rem;
+  background: var(--off-white);
+  border: 1.5px solid var(--smoke);
+  border-radius: var(--radius-sm);
+  padding: 0.9rem 1rem;
+  transition: border-color var(--transition), background var(--transition);
+}
+
+.priority-toggle:has(input:checked) {
+  border-color: var(--warning-border);
+  background: var(--warning-bg);
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+}
+
+.toggle-label__text { flex: 1; }
+
+.toggle-label__title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.toggle-label__sub {
+  font-size: 0.78rem;
+  color: var(--ink-light);
+  margin-top: 0.15rem;
+}
+
+/* Toggle switch */
+.toggle-switch {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.toggle-switch input { position: absolute; opacity: 0; pointer-events: none; }
+
+.toggle-switch__track {
+  display: block;
+  width: 44px;
+  height: 24px;
+  background: var(--smoke);
+  border-radius: 100px;
+  position: relative;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.toggle-switch__track::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 18px; height: 18px;
+  background: var(--white);
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition);
+}
+
+.toggle-switch input:checked + .toggle-switch__track {
+  background: var(--warning);
+}
+
+.toggle-switch input:checked + .toggle-switch__track::after {
+  transform: translateX(20px);
+}
+
+/* ── Requirements list ──────────────────────────────────────── */
+.requirements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1.6rem;
+  min-height: 80px;
+}
+
+.requirements-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--ink-light);
+  font-size: 0.88rem;
+  padding: 1rem 0;
+}
+
+.loading-spinner {
+  width: 18px; height: 18px;
+  border: 2px solid var(--smoke);
+  border-top-color: var(--red);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Requirement items injected by JS */
+.requirement-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: var(--off-white);
+  border: 1.5px solid var(--smoke);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition);
+}
+
+.requirement-item:has(input:checked) {
+  border-color: var(--success-border);
+  background: var(--success-bg);
+}
+
+.requirement-item input[type="checkbox"] {
+  width: 18px; height: 18px;
+  accent-color: var(--success);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.requirement-item__text {
+  font-size: 0.9rem;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+/* ── Quantity control ───────────────────────────────────────── */
+.qty-control {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.8rem;
+}
+
+.qty-btn {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  background: var(--mist);
+  border: 1.5px solid var(--smoke);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--ink-mid);
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+  flex-shrink: 0;
+}
+.qty-btn:hover {
+  background: var(--red-soft);
+  border-color: var(--red-border);
+  color: var(--red);
+}
+
+.qty-input {
+  width: 80px;
+  text-align: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--ink);
+  border: none;
+  background: transparent;
+  outline: none;
+  -moz-appearance: textfield;
+}
+.qty-input::-webkit-inner-spin-button,
+.qty-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+/* ── Confirm card ───────────────────────────────────────────── */
+.confirm-card {
+  background: var(--off-white);
+  border: 1.5px solid var(--smoke);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 1.8rem;
+}
+
+.confirm-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.2rem;
+  border-bottom: 1px solid var(--smoke);
+  gap: 1rem;
+}
+
+.confirm-row:last-child { border-bottom: none; }
+
+.confirm-row__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-light);
+  flex-shrink: 0;
+}
+
+.confirm-row__value {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ink);
+  text-align: right;
+}
+
+/* ── Step actions ───────────────────────────────────────────── */
+.step-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--smoke);
+}
+
+.step-actions--end { justify-content: flex-end; }
+
+.step-actions .btn--primary { margin-left: auto; }
+
+.btn--confirm { min-width: 200px; }
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .wizard-form { padding: 1.4rem 1.2rem; }
+  .wizard-progress { padding: 1rem 1.2rem; }
+  .wizard-step__label { display: none; }
+  .type-cards { grid-template-columns: 1fr; }
+  .type-card__icon { display: none; }
+  .btn--confirm { min-width: 0; flex: 1; }
+}
+
+@media (max-width: 420px) {
+  .wizard-progress { gap: 0.15rem; }
+  .wizard-step-connector { min-width: 10px; }
+}
+
+/* ── Appointment calendar ──────────────────────────────────────
+   Moved from an inline <style> block in registrar-queue.php.
+   ============================================================ */
+.appt-calendar {
+  border: 1px solid #e2e5ea;
+  border-radius: 12px;
+  padding: 1rem;
+  max-width: 340px;
+  background: #fff;
+}
+.appt-calendar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: .75rem;
+}
+.appt-calendar__title {
+  font-weight: 600;
+  font-size: .95rem;
+}
+.appt-calendar__nav {
+  border: 1px solid #e2e5ea;
+  background: #f7f8fa;
+  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: inherit;
+}
+.appt-calendar__nav:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+.appt-calendar__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: .72rem;
+  color: #8a8f98;
+  margin-bottom: .25rem;
+}
+.appt-calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.appt-calendar__day {
+  aspect-ratio: 1 / 1;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  font-size: .85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c3c7cf;
+  cursor: not-allowed;
+}
+.appt-calendar__day--empty {
+  border: none;
+  background: transparent;
+}
+.appt-calendar__day--available {
+  color: #1f2937;
+  border-color: #d7dbe1;
+  cursor: pointer;
+}
+.appt-calendar__day--available:hover {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+.appt-calendar__day--today {
+  font-weight: 700;
+  border-color: #94a3b8;
+}
+.appt-calendar__day--selected {
+  background: #4f46e5;
+  border-color: #4f46e5;
+  color: #fff !important;
+}
+.appt-calendar__legend {
+  display: flex;
+  gap: .9rem;
+  flex-wrap: wrap;
+  margin-top: .75rem;
+  font-size: .72rem;
+  color: #6b7280;
+}
+.appt-calendar__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+}
+.appt-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.appt-dot--available { background: #ffffff; border: 1px solid #94a3b8; }
+.appt-dot--today { background: #ffffff; border: 2px solid #94a3b8; }
+.appt-dot--selected { background: #4f46e5; }
+.appt-calendar__selected-summary {
+  margin-top: .6rem;
+  font-size: .85rem;
+  color: #374151;
+}
+.appt-calendar__selected-summary--ok {
+  color: #15803d;
+  font-weight: 600;
+}

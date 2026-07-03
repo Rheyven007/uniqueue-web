@@ -1,0 +1,320 @@
+/* ============================================================
+   Uniqueue — appointment.css
+   Book Appointment page styles
+   Extends student.css — same #C21010 / white design system
+   ============================================================ */
+
+/* ── Page layout ───────────────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.container--narrow {
+  max-width: 560px;
+}
+
+/* ── Form card ─────────────────────────────────────────────── */
+.form-card {
+  background: var(--white);
+  border: 1.5px solid var(--red-border);
+  border-radius: var(--radius);
+  padding: 2.2rem 2.4rem 2.6rem;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+  animation: cardEntry 0.5s cubic-bezier(0.34,1.1,0.64,1) both;
+}
+
+/* top red accent bar */
+.form-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--red);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+@keyframes cardEntry {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.form-card__title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.3px;
+  margin-bottom: 1.6rem;
+  padding-top: 0.25rem;
+}
+
+/* ── Form groups ───────────────────────────────────────────── */
+.form-group {
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.42rem;
+}
+
+.form-group label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink-mid);
+  letter-spacing: 0.25px;
+  text-transform: uppercase;
+}
+
+/* ── Form controls ─────────────────────────────────────────── */
+.form-control {
+  width: 100%;
+  height: 48px;
+  padding: 0 1rem;
+  background: var(--off-white);
+  border: 1.5px solid var(--red-border);
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--ink);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.form-control::placeholder { color: var(--ink-faint); }
+
+.form-control:hover {
+  border-color: rgba(194,16,16,0.35);
+  background: var(--white);
+}
+
+.form-control:focus {
+  border-color: var(--red);
+  background: var(--white);
+  box-shadow: 0 0 0 3.5px var(--red-glow);
+}
+
+/* Select arrow */
+select.form-control {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238a7070' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.9rem center;
+  padding-right: 2.5rem;
+}
+
+select.form-control:focus {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23C21010' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+}
+
+/* Date input — remove default icon tint on webkit */
+input[type="date"].form-control::-webkit-calendar-picker-indicator {
+  opacity: 0.5;
+  cursor: pointer;
+  filter: invert(20%) sepia(80%) saturate(600%) hue-rotate(330deg);
+}
+
+input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* ── Document section ──────────────────────────────────────── */
+#document-section {
+  background: var(--mist);
+  border: 1.5px solid var(--smoke);
+  border-radius: var(--radius-sm);
+  padding: 1.1rem 1.2rem;
+  transition: opacity var(--transition), transform var(--transition);
+}
+
+#document-section.hidden {
+  display: none;
+}
+
+#document-section label:first-child {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink-mid);
+  letter-spacing: 0.25px;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+/* Checkbox group */
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--ink);
+  cursor: pointer;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-xs);
+  border: 1.5px solid transparent;
+  transition: background var(--transition), border-color var(--transition);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.checkbox-group label:hover {
+  background: var(--white);
+  border-color: var(--red-border);
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  accent-color: var(--red);
+  cursor: pointer;
+}
+
+.checkbox-group label:has(input:checked) {
+  background: var(--red-soft);
+  border-color: var(--red-border);
+}
+
+/* ── Alerts ────────────────────────────────────────────────── */
+.alert {
+  border-radius: var(--radius-sm);
+  padding: 0.8rem 1rem;
+  font-size: 0.875rem;
+  margin-bottom: 1.2rem;
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+}
+
+.alert--danger {
+  background: #fff5f5;
+  color: var(--red-deep);
+  border: 1.5px solid rgba(194,16,16,0.25);
+}
+
+.alert--danger::before {
+  content: '⚠';
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+
+.alert--success {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1.5px solid var(--success-border);
+}
+
+.alert--success::before {
+  content: '✓';
+  flex-shrink: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* ── Form actions ──────────────────────────────────────────── */
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 1.6rem;
+}
+
+/* Block button modifier */
+.btn--block {
+  width: 100%;
+  height: 50px;
+  font-size: 0.95rem;
+  justify-content: center;
+}
+
+/* Ghost variant (Back button) */
+.btn--ghost {
+  background: transparent;
+  color: var(--ink-mid);
+  border: 1.5px solid var(--smoke);
+  font-weight: 500;
+}
+
+.btn--ghost:hover {
+  background: var(--mist);
+  border-color: var(--ink-faint);
+  color: var(--ink);
+}
+
+/* ── Capacity indicator (optional JS-rendered element) ─────── */
+.capacity-bar {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.capacity-bar__track {
+  height: 6px;
+  background: var(--smoke);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.capacity-bar__fill {
+  height: 100%;
+  border-radius: 100px;
+  background: var(--red);
+  transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+
+.capacity-bar__fill--warn  { background: #f59e0b; }
+.capacity-bar__fill--full  { background: var(--red-deep); }
+
+.capacity-bar__label {
+  font-size: 0.78rem;
+  color: var(--ink-light);
+  font-weight: 500;
+}
+
+/* ── Loading state on submit button ───────────────────────── */
+.btn--loading {
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.btn__spinner {
+  display: none;
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255,255,255,0.35);
+  border-top-color: var(--white);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.btn--loading .btn__text    { opacity: 0.6; }
+.btn--loading .btn__spinner { display: block; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .container { padding: 1.2rem 0.85rem 3rem; }
+  .form-card { padding: 1.6rem 1.2rem 2rem; }
+  .form-card__title { font-size: 1.3rem; }
+  .form-control { height: 44px; font-size: 0.9rem; }
+  .btn--block { height: 46px; }
+}

@@ -1,0 +1,359 @@
+/* ============================================================
+   Uniqueue — counter-add.css
+   Service Windows / Counters · Add Form
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
+
+/* ── Variables (mirror suite palette) ────────────────────── */
+:root {
+  --red:           #C21010;
+  --red-deep:      #9a0c0c;
+  --red-soft:      rgba(194,16,16,0.07);
+  --red-border:    rgba(194,16,16,0.15);
+
+  --white:         #ffffff;
+  --off-white:     #faf8f8;
+  --mist:          #f3eeee;
+  --smoke:         #ede8e8;
+
+  --ink:           #1a0a0a;
+  --ink-mid:       #4a3333;
+  --ink-light:     #8a7070;
+  --ink-faint:     #c4b4b4;
+
+  --green:         #1a8c4e;
+  --green-soft:    rgba(26,140,78,0.08);
+  --green-border:  rgba(26,140,78,0.22);
+
+  --warning:       #b45309;
+  --warning-bg:    #fffbeb;
+  --warning-border:#fcd34d;
+
+  --shadow-xs: 0 1px 4px  rgba(26,10,10,0.06);
+  --shadow-sm: 0 2px 10px rgba(26,10,10,0.08);
+  --shadow-md: 0 6px 24px rgba(26,10,10,0.10);
+  --shadow-red:0 4px 20px rgba(194,16,16,0.30);
+
+  --radius:    14px;
+  --radius-sm: 9px;
+  --radius-xs: 6px;
+
+  --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ── Reset ────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  background: var(--off-white);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+a      { color: inherit; text-decoration: none; }
+button { font-family: inherit; }
+
+/* ── Page wrapper ─────────────────────────────────────────── */
+.page-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.2rem 1.8rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  animation: fadeUp 0.4s cubic-bezier(0.4,0,0.2,1) both;
+}
+
+/* ── Form card ────────────────────────────────────────────── */
+.form-container {
+  background: var(--white);
+  border: 1.5px solid var(--smoke);
+  border-radius: var(--radius);
+  padding: 1.8rem 2rem;
+  box-shadow: var(--shadow-sm);
+  max-width: 700px;
+  /* Stand-alone use: centre on page */
+  margin: 2.2rem auto 4rem;
+  animation: fadeUp 0.4s cubic-bezier(0.4,0,0.2,1) both;
+}
+
+.form-container h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.3px;
+  line-height: 1.1;
+  margin-bottom: 1.6rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1.5px solid var(--smoke);
+}
+
+/* ── Alert ────────────────────────────────────────────────── */
+.alert {
+  border-radius: var(--radius-sm);
+  padding: 0.9rem 1.2rem;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  margin-bottom: 1.35rem;
+}
+
+.alert p + p { margin-top: 0.35rem; }
+
+.alert-error {
+  background: var(--red-soft);
+  border: 1.5px solid var(--red-border);
+  color: var(--red-deep);
+}
+
+.alert-success {
+  background: var(--green-soft);
+  border: 1.5px solid var(--green-border);
+  color: var(--green);
+}
+
+/* ── Form groups ──────────────────────────────────────────── */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 1.35rem;
+}
+
+.form-group:last-of-type { margin-bottom: 0; }
+
+/* ── Labels ───────────────────────────────────────────────── */
+label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+/* ── Text / select / number inputs ───────────────────────── */
+.form-control {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.92rem;
+  color: var(--ink);
+  background: var(--white);
+  border: 1.5px solid var(--smoke);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition), box-shadow var(--transition);
+  outline: none;
+}
+
+.form-control:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px var(--red-soft);
+}
+
+.form-control:disabled {
+  background: var(--mist);
+  color: var(--ink-light);
+  cursor: not-allowed;
+}
+
+select.form-control { cursor: pointer; }
+
+/* ── Helper / hint text ───────────────────────────────────── */
+.field-hint,
+.form-group small {
+  font-size: 0.8rem;
+  color: var(--ink-light);
+  line-height: 1.5;
+  margin-top: 0.1rem;
+}
+
+/* ── Document checkbox list ───────────────────────────────── */
+/*
+   Replaces the inline style="max-height:200px;overflow-y:auto;
+   border:1px solid #ddd;padding:10px" on the .checkbox-list div.
+*/
+.checkbox-list {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1.5px solid var(--smoke);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0;
+  background: var(--off-white);
+  /* Subtle inner shadow to hint at scroll */
+  box-shadow: inset 0 -10px 12px -10px rgba(26,10,10,0.05);
+  scrollbar-width: thin;
+  scrollbar-color: var(--smoke) transparent;
+}
+
+.checkbox-list::-webkit-scrollbar        { width: 5px; }
+.checkbox-list::-webkit-scrollbar-track  { background: transparent; }
+.checkbox-list::-webkit-scrollbar-thumb  { background: var(--smoke); border-radius: 10px; }
+
+/* Each checkbox row */
+.checkbox-list label {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.88rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink-mid);
+  cursor: pointer;
+  transition: background var(--transition);
+  border-radius: 0;
+}
+
+.checkbox-list label:hover {
+  background: var(--mist);
+}
+
+/* Office name prefix — muted */
+.checkbox-list .doc-office-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--ink-faint);
+  flex-shrink: 0;
+}
+
+/* Custom checkbox */
+.checkbox-list input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  border: 1.5px solid var(--smoke);
+  border-radius: var(--radius-xs);
+  background: var(--white);
+  cursor: pointer;
+  position: relative;
+  transition: border-color var(--transition), background var(--transition),
+              box-shadow var(--transition);
+}
+
+.checkbox-list input[type="checkbox"]:checked {
+  background: var(--red);
+  border-color: var(--red);
+}
+
+.checkbox-list input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: 4px;
+  height: 8px;
+  border: 2px solid var(--white);
+  border-top: none;
+  border-left: none;
+  transform: rotate(42deg);
+}
+
+.checkbox-list input[type="checkbox"]:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--red-soft);
+  border-color: var(--red);
+}
+
+/* ── Form actions ─────────────────────────────────────────── */
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 1.8rem;
+  padding-top: 1.4rem;
+  border-top: 1.5px solid var(--smoke);
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  padding: 0.5rem 1.1rem;
+  height: 38px;
+  position: relative;
+  overflow: hidden;
+  transition: background var(--transition), color var(--transition),
+              border-color var(--transition), box-shadow var(--transition),
+              transform var(--transition);
+}
+.btn:active { transform: translateY(0) !important; }
+
+.btn-primary {
+  background: var(--red);
+  color: var(--white);
+  border-color: var(--red);
+  box-shadow: var(--shadow-red);
+}
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.14) 0%, transparent 55%);
+  pointer-events: none;
+}
+.btn-primary:hover {
+  background: var(--red-deep);
+  border-color: var(--red-deep);
+  box-shadow: 0 6px 24px rgba(194,16,16,0.40);
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  background: var(--white);
+  color: var(--ink-mid);
+  border-color: var(--smoke);
+}
+.btn-ghost:hover {
+  background: var(--mist);
+  border-color: var(--ink-faint);
+  transform: translateY(-1px);
+}
+
+.btn-sm {
+  font-size: 0.8rem;
+  padding: 0.35rem 0.8rem;
+  height: 32px;
+}
+
+/* ── Animation ────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .form-container  { margin: 1.2rem 1rem 3rem; padding: 1.3rem 1.1rem; }
+  .form-actions    { flex-direction: column; align-items: stretch; }
+  .form-actions .btn { justify-content: center; }
+}
+
+/* ── Back button ──────────────────────────────────────────── */
+.back-btn {
+  display: inline-flex;
+  max-width: 700px;
+  width: fit-content;
+  margin: 2.2rem auto 0.75rem;
+}
+
+@media (max-width: 700px) {
+  .back-btn { margin-left: 1rem; margin-right: 1rem; }
+}

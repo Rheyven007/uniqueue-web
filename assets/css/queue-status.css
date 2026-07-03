@@ -1,0 +1,279 @@
+/* ============================================================
+   Uniqueue — queue-status.css
+   Real-Time Queue Status page styles
+   Extends student.css — same #C21010 / white design system
+   ============================================================ */
+
+/* ── Page layout ───────────────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.container--narrow {
+  max-width: 520px;
+}
+
+/* ── Status card ───────────────────────────────────────────── */
+.status-card {
+  background: var(--white);
+  border: 1.5px solid var(--red-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  animation: cardEntry 0.5s cubic-bezier(0.34,1.1,0.64,1) both;
+}
+
+@keyframes cardEntry {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+
+/* ── Card header ───────────────────────────────────────────── */
+.status-card__header {
+  background: var(--red);
+  padding: 1.4rem 1.8rem 1.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.status-card__header::after {
+  content: '';
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  border: 42px solid rgba(255,255,255,0.07);
+  right: -55px;
+  top: -55px;
+  pointer-events: none;
+}
+
+.status-card__header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -0.2px;
+  line-height: 1.2;
+  position: relative;
+  z-index: 1;
+}
+
+/* Override status badge colours inside red header */
+.status-card__header .ticket-status-badge {
+  position: relative;
+  z-index: 1;
+  background: rgba(255,255,255,0.18);
+  color: var(--white);
+  border-color: rgba(255,255,255,0.35);
+  font-size: 0.78rem;
+}
+
+/* ── Card main ─────────────────────────────────────────────── */
+.status-card__main {
+  padding: 1.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Queue number display ──────────────────────────────────── */
+.queue-number-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 1.5rem 1rem;
+  background: var(--red-soft);
+  border: 1.5px solid var(--red-border);
+  border-radius: var(--radius);
+  text-align: center;
+}
+
+.queue-number-display small {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.queue-number-display strong {
+  font-family: 'Playfair Display', serif;
+  font-size: 3.8rem;
+  font-weight: 700;
+  color: var(--red);
+  letter-spacing: -2px;
+  line-height: 1;
+  animation: numberPop 0.4s cubic-bezier(0.34,1.4,0.64,1) both;
+}
+
+@keyframes numberPop {
+  from { transform: scale(0.85); opacity: 0.4; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+/* ── Waiting info grid ─────────────────────────────────────── */
+.waiting-info { transition: opacity var(--transition); }
+.waiting-info.hidden { display: none; }
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.info-item {
+  background: var(--off-white);
+  border: 1.5px solid var(--smoke);
+  border-radius: var(--radius-sm);
+  padding: 1.1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  text-align: center;
+  transition: border-color var(--transition);
+}
+
+.info-item:hover { border-color: var(--red-border); }
+
+.info-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink-light);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.info-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+/* ── Called alert ──────────────────────────────────────────── */
+.called-info { transition: opacity var(--transition); }
+.called-info.hidden { display: none; }
+
+.called-alert {
+  background: var(--red);
+  border-radius: var(--radius);
+  padding: 2rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  position: relative;
+  overflow: hidden;
+  animation: calledPulse 0.5s cubic-bezier(0.34,1.2,0.64,1) both;
+}
+
+.called-alert::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,255,255,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+@keyframes calledPulse {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.called-alert__icon {
+  font-size: 2.4rem;
+  animation: bellRing 0.8s cubic-bezier(0.4,0,0.2,1) 0.3s both;
+}
+
+@keyframes bellRing {
+  0%   { transform: rotate(0deg); }
+  20%  { transform: rotate(-15deg); }
+  40%  { transform: rotate(12deg); }
+  60%  { transform: rotate(-8deg); }
+  80%  { transform: rotate(5deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.called-alert h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--white);
+  position: relative;
+  z-index: 1;
+}
+
+.called-alert p {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.82);
+  position: relative;
+  z-index: 1;
+}
+
+.window-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--white);
+  background: rgba(255,255,255,0.15);
+  border: 1.5px solid rgba(255,255,255,0.3);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 1.4rem;
+  position: relative;
+  z-index: 1;
+  margin-top: 0.2rem;
+  letter-spacing: -0.3px;
+}
+
+/* ── Card footer ───────────────────────────────────────────── */
+.status-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1.8rem;
+  border-top: 1px solid var(--smoke);
+  background: var(--mist);
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.text-muted {
+  font-size: 0.8rem;
+  color: var(--ink-light);
+}
+
+.text-muted span {
+  font-weight: 500;
+  color: var(--ink-mid);
+}
+
+.status-card__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .container { padding: 1rem 0.75rem 3rem; }
+  .status-card__header { padding: 1.1rem 1.2rem; }
+  .status-card__main   { padding: 1.3rem 1.1rem; gap: 1.1rem; }
+  .queue-number-display strong { font-size: 3rem; }
+  .info-grid { grid-template-columns: 1fr 1fr; gap: 0.65rem; }
+  .info-value { font-size: 1.6rem; }
+  .called-alert { padding: 1.5rem 1.1rem; }
+  .called-alert h2 { font-size: 1.2rem; }
+  .status-card__footer { padding: 0.8rem 1.1rem; }
+}

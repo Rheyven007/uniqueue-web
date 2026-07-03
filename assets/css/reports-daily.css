@@ -1,0 +1,398 @@
+/* ============================================================
+   Uniqueue — reports-daily.css
+   Reports · Daily Transactions
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
+
+/* ── Variables ────────────────────────────────────────────── */
+:root {
+  --red:           #C21010;
+  --red-deep:      #9a0c0c;
+  --red-soft:      rgba(194,16,16,0.07);
+  --red-border:    rgba(194,16,16,0.15);
+
+  --white:         #ffffff;
+  --off-white:     #faf8f8;
+  --mist:          #f3eeee;
+  --smoke:         #ede8e8;
+
+  --ink:           #1a0a0a;
+  --ink-mid:       #4a3333;
+  --ink-light:     #8a7070;
+  --ink-faint:     #c4b4b4;
+
+  --green:         #1a8c4e;
+  --green-soft:    rgba(26,140,78,0.08);
+  --green-border:  rgba(26,140,78,0.22);
+
+  --warning:       #b45309;
+  --warning-bg:    #fffbeb;
+  --warning-border:#fcd34d;
+
+  --blue:          #1d4ed8;
+  --blue-soft:     rgba(29,78,216,0.08);
+  --blue-border:   rgba(29,78,216,0.22);
+
+  --shadow-xs: 0 1px 4px  rgba(26,10,10,0.06);
+  --shadow-sm: 0 2px 10px rgba(26,10,10,0.08);
+  --shadow-md: 0 6px 24px rgba(26,10,10,0.10);
+  --shadow-red:0 4px 20px rgba(194,16,16,0.30);
+
+  --radius:    14px;
+  --radius-sm: 9px;
+  --radius-xs: 6px;
+
+  --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ── Reset ────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  background: var(--off-white);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+a      { color: inherit; text-decoration: none; }
+button { font-family: inherit; }
+
+/* ── Page wrapper ─────────────────────────────────────────── */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.2rem 1.8rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  animation: fadeUp 0.4s cubic-bezier(0.4,0,0.2,1) both;
+}
+
+/* ── Spacing utilities ────────────────────────────────────── */
+.mb-6 { margin-bottom: 1.5rem; }
+.mb-8 { margin-bottom: 2rem;   }
+.mb-0 { margin-bottom: 0;      }
+
+/* ── Flex utilities ───────────────────────────────────────── */
+.d-flex                  { display: flex; flex-wrap: wrap; }
+.gap-3                   { gap: 0.75rem; }
+.align-items-center      { align-items: center; }
+.justify-content-between { justify-content: space-between; }
+
+/* ── Header / actions bar ─────────────────────────────────── */
+.header-actions {
+  background: var(--white);
+  border: 1.5px solid var(--smoke);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.header-actions h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.3px;
+  line-height: 1.1;
+}
+
+/* ── Filter bar ───────────────────────────────────────────── */
+.report-filters form {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.form-input,
+.form-select {
+  height: 38px;
+  padding: 0 0.85rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  color: var(--ink);
+  background: var(--white);
+  border: 1.5px solid var(--smoke);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.form-input:focus,
+.form-select:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px var(--red-soft);
+}
+
+.form-select { cursor: pointer; padding-right: 2rem; }
+
+/* ── Stat cards grid ──────────────────────────────────────── */
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.stat-card {
+  background: var(--white);
+  border: 1.5px solid var(--smoke);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  box-shadow: var(--shadow-xs);
+  transition: box-shadow var(--transition), transform var(--transition);
+}
+
+.stat-card:hover {
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-2px);
+}
+
+.stat-card small {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--ink-light);
+}
+
+.stat-card strong {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+/* Coloured value variants */
+.text-success { color: var(--green);   }
+.text-danger  { color: var(--red);     }
+.text-warning { color: var(--warning); }
+
+/* ── Card ─────────────────────────────────────────────────── */
+.card {
+  background: var(--white);
+  border: 1.5px solid var(--smoke);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.card.shadow-sm { box-shadow: var(--shadow-sm); }
+
+.card-header {
+  padding: 0.95rem 1.4rem;
+  border-bottom: 1.5px solid var(--smoke);
+  background: var(--mist);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.2px;
+}
+
+/* ── Export actions ───────────────────────────────────────── */
+.export-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ── Table responsive wrapper ─────────────────────────────── */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Data table ───────────────────────────────────────────── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.data-table thead {
+  background: var(--mist);
+  border-bottom: 1.5px solid var(--smoke);
+}
+
+.data-table th {
+  padding: 0.75rem 1.2rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--ink-light);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.data-table tbody tr {
+  border-bottom: 1px solid var(--smoke);
+  transition: background var(--transition);
+}
+
+.data-table tbody tr:last-child { border-bottom: none; }
+.data-table tbody tr:hover       { background: var(--off-white); }
+
+.data-table td {
+  padding: 0.85rem 1.2rem;
+  vertical-align: middle;
+  color: var(--ink-mid);
+}
+
+.data-table td.font-bold,
+.data-table .font-bold { font-weight: 700; color: var(--ink); }
+
+.data-table td small {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--ink-light);
+  margin-top: 0.15rem;
+}
+
+/* Empty / muted cell */
+.text-center { text-align: center; }
+.text-muted  { color: var(--ink-faint); font-style: italic; }
+
+/* ── Ticket status badge ──────────────────────────────────── */
+.ticket-status-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.22rem 0.65rem;
+  border-radius: var(--radius-xs);
+  border: 1.5px solid transparent;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+}
+
+.ticket-status-badge--done {
+  background: var(--green-soft);
+  color: var(--green);
+  border-color: var(--green-border);
+}
+
+.ticket-status-badge--cancelled {
+  background: var(--red-soft);
+  color: var(--red);
+  border-color: var(--red-border);
+}
+
+.ticket-status-badge--waiting {
+  background: var(--warning-bg);
+  color: var(--warning);
+  border-color: var(--warning-border);
+}
+
+.ticket-status-badge--serving {
+  background: var(--blue-soft);
+  color: var(--blue);
+  border-color: var(--blue-border);
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  padding: 0.5rem 1.1rem;
+  height: 38px;
+  position: relative;
+  overflow: hidden;
+  transition: background var(--transition), color var(--transition),
+              border-color var(--transition), box-shadow var(--transition),
+              transform var(--transition);
+}
+.btn:active { transform: translateY(0) !important; }
+
+.btn--primary {
+  background: var(--red);
+  color: var(--white);
+  border-color: var(--red);
+  box-shadow: var(--shadow-red);
+}
+.btn--primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.14) 0%, transparent 55%);
+  pointer-events: none;
+}
+.btn--primary:hover {
+  background: var(--red-deep);
+  border-color: var(--red-deep);
+  box-shadow: 0 6px 24px rgba(194,16,16,0.40);
+  transform: translateY(-1px);
+}
+
+.btn--outline {
+  background: var(--white);
+  color: var(--ink-mid);
+  border-color: var(--smoke);
+}
+.btn--outline:hover {
+  background: var(--mist);
+  border-color: var(--ink-faint);
+  transform: translateY(-1px);
+}
+
+/* XS size — export button */
+.btn--xs {
+  font-size: 0.78rem;
+  padding: 0.28rem 0.75rem;
+  height: 30px;
+  border-radius: var(--radius-xs);
+}
+
+/* ── Animation ────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 700px) {
+  .container      { padding: 1.2rem 1rem 3rem; }
+  .header-actions { flex-direction: column; align-items: flex-start; }
+  .grid-4         { grid-template-columns: repeat(2, 1fr); }
+  .stat-card strong { font-size: 1.6rem; }
+  .data-table th,
+  .data-table td  { padding: 0.7rem 0.85rem; }
+}
+
+@media (max-width: 480px) {
+  .grid-4 { grid-template-columns: 1fr 1fr; }
+}
