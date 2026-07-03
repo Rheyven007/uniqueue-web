@@ -9,23 +9,22 @@ $student_id   = $_SESSION['student_id'];
 $student_name = $_SESSION['student_name'];
 $sr_code      = $_SESSION['sr_code'];
 
-$today = date('Y-m-d');
-
-/* ACTIVE TICKET */
+/* ACTIVE TICKET
+   Appointment tickets no longer carry a future appointment_date (that
+   field isn't collected in the wizard anymore — verification happens via
+   the physical Appointment Slip instead), so both queue types are now
+   found the same way: any of this student's tickets that hasn't reached
+   a terminal status yet. */
 $stmt = $pdo->prepare("
     SELECT qt.*, o.name AS office_name
     FROM queue_tickets qt
     JOIN offices o ON o.id = qt.office_id
     WHERE qt.student_id = ?
       AND qt.status NOT IN ('done','cancelled')
-      AND (
-            (qt.type = 'walkin' AND DATE(qt.created_at) = ?)
-         OR (qt.type = 'appointment' AND qt.appointment_date >= ?)
-      )
     ORDER BY qt.created_at DESC
     LIMIT 1
 ");
-$stmt->execute([$student_id, $today, $today]);
+$stmt->execute([$student_id]);
 $active_ticket = $stmt->fetch();
 
 /* OFFICES + CONFIG */
@@ -168,7 +167,7 @@ $est_wait_mins = $avg_per_hour > 0 ? round(($total_waiting / $avg_per_hour) * 60
                     <?= $office['end_time'] ? date('h:i A', strtotime($office['end_time'])) : '05:00 PM' ?>
                 </div>
                 <div class="office-card__actions">
-                    <a href="/student/<?= e($office['slug']) ?>-queue.php"
+                    <a href="/student/queue.php?office=<?= e($office['slug']) ?>"
                        class="btn btn--outline btn--xs">
                         Join Queue
                     </a>

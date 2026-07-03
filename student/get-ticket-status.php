@@ -1,5 +1,5 @@
 <?php
-// student/get-ticket-status.php — Polled by registrar-queue.js (pollTicketStatus)
+// student/get-ticket-status.php — Polled by queue.js (pollTicketStatus)
 
 require_once __DIR__ . '/../auth/session.php';
 require_once __DIR__ . '/../includes/db.php';
