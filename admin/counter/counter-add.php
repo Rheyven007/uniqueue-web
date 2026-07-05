@@ -24,7 +24,6 @@ if ($session_office_id) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name    = trim($_POST['name']);
     $speed   = $_POST['speed'];
-    $est_time = $_POST['est_time'] !== '' ? (int)$_POST['est_time'] : null;
     $doc_ids = $_POST['documents'] ?? [];
 
     // Queue type: walkin | appointment | both
@@ -48,8 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $pdo->beginTransaction();
         try {
-            $stmt = $pdo->prepare("INSERT INTO windows (name, office_id, speed, est_time, status, queue_type, appointment_date) VALUES (?, ?, ?, ?, 'closed', ?, ?)");
-            $stmt->execute([$name, $office_id, $speed, $est_time, $queue_type, $appointment_date]);
+            $stmt = $pdo->prepare("INSERT INTO windows (name, office_id, speed, status, queue_type, appointment_date) VALUES (?, ?, ?, 'closed', ?, ?)");
+            $stmt->execute([$name, $office_id, $speed, $queue_type, $appointment_date]);
             $window_id = $pdo->lastInsertId();
 
             if (!empty($doc_ids)) {
@@ -138,12 +137,6 @@ include __DIR__ . '/../../includes/header.php';
                 <option value="fast">Fast</option>
                 <option value="slow">Slow</option>
             </select>
-        </div>
-
-        <div class="form-group">
-            <label>Estimated Processing Time (minutes)</label>
-            <input type="number" name="est_time" class="form-control" min="1" placeholder="e.g. 10">
-            <small>Average time it takes this counter to serve one ticket.</small>
         </div>
 
         <div class="form-group">

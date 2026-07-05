@@ -52,13 +52,9 @@ include __DIR__ . '/../includes/header.php';
         <div class="ticket-view__details">
             <p><strong>Status:</strong> <?= ucfirst($ticket['status']) ?></p>
             <p><strong>Joined:</strong> <?= format_datetime($ticket['joined_at']) ?></p>
-            <?php if ($ticket['appointment_date']): ?>
-                <p><strong>Appointment Date:</strong> <?= e($ticket['appointment_date']) ?></p>
-            <?php endif; ?>
-            <?php if ($ticket['type'] === 'walkin'): ?>
-                <p><strong>Counter:</strong> <?= e($ticket['window_name'] ?? 'To be assigned') ?></p>
-            <?php else: ?>
-                <p><strong>Counter:</strong> Unassigned (will be assigned on appointment day)</p>
+            <p><strong>Counter:</strong> <?= e($ticket['window_name'] ?? 'To be assigned') ?></p>
+            <?php if ($ticket['type'] === 'appointment'): ?>
+                <p class="text-muted" style="font-size:.85rem;">Please present your Appointment Slip at the counter.</p>
             <?php endif; ?>
         </div>
 
