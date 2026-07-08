@@ -1,92 +1,199 @@
 <?php
-// auth/login.php — Login page (SR-Code or admin username)
+// auth/login.php — Login page (Student / Staff / Admin)
 
 require_once __DIR__ . '/session.php';
 require_once __DIR__ . '/../includes/db.php';
 
 redirect_if_authenticated();
 
-$error   = '';
-$role    = get_param('role', 'student'); // 'student' or 'admin'
+$error = '';
+
+$role = get_param('role', 'student');
+
 $successMessages = [
     'logged_out'      => 'You have been logged out.',
     'account_created' => 'Account created successfully. You can now log in.',
 ];
+
 $success = $successMessages[get_param('msg')] ?? '';
 
 if (is_post()) {
 
     if (!validate_csrf_token()) {
+
         $error = 'Invalid request. Please try again.';
 
     } elseif ($role === 'student') {
-        // ── Student login ─────────────────────────────────────────────────────
-        $identifier = post('identifier');  // SR-Code or email
+
+        /*
+        |--------------------------------------------------------------------------
+        | Student Login
+        |--------------------------------------------------------------------------
+        */
+
+        $identifier = post('identifier');
         $password   = post('password');
 
         if ($identifier === '' || $password === '') {
+
             $error = 'Please enter your SR-Code and password.';
+
         } else {
-            $stmt = $pdo->prepare(
-                "SELECT id, first_name, last_name, sr_code, password
-                 FROM students
-                 WHERE sr_code = ? OR sr_code = ?
-                 LIMIT 1"
-            );
-            // Accept both bare SR-Code and any format
-            $stmt->execute([$identifier, $identifier]);
+
+            $stmt = $pdo->prepare("
+                SELECT
+                    id,
+                    first_name,
+                    last_name,
+                    sr_code,
+                    password
+                FROM students
+                WHERE sr_code = ?
+                LIMIT 1
+            ");
+
+            $stmt->execute([$identifier]);
+
             $student = $stmt->fetch();
 
-            if ($student && password_verify($password, $student['password'])) {
-                // Clear any stale session data (e.g. a leftover admin login)
-                // before establishing a fresh, single-identity session.
+            if (
+                $student &&
+                password_verify($password, $student['password'])
+            ) {
+
                 $_SESSION = [];
+
                 session_regenerate_id(true);
-                $_SESSION['student_id']   = $student['id'];
-                $_SESSION['student_name'] = $student['first_name'] . ' ' . $student['last_name'];
-                $_SESSION['sr_code']      = $student['sr_code'];
+
+                $_SESSION['student_id'] = $student['id'];
+                $_SESSION['student_name'] =
+                    $student['first_name'] . ' ' . $student['last_name'];
+                $_SESSION['sr_code'] = $student['sr_code'];
+
                 redirect('/student/dashboard.php');
-            } else {
-                $error = 'Invalid SR-Code or password.';
+
             }
+
+            $error = 'Invalid SR-Code or password.';
+
         }
 
     } else {
-        // ── Admin login ───────────────────────────────────────────────────────
+
+        /*
+        |--------------------------------------------------------------------------
+        | Staff / Admin Login
+        |--------------------------------------------------------------------------
+        */
+
         $username = post('identifier');
         $password = post('password');
 
         if ($username === '' || $password === '') {
+
             $error = 'Please enter your username and password.';
+
         } else {
-            $stmt = $pdo->prepare(
-                "SELECT id, username, password, office_id, is_super_admin
-                 FROM admin_users
-                 WHERE username = ?
-                 LIMIT 1"
-            );
+
+            /*
+            =====================================================
+            CHECK ADMIN USERS FIRST
+            =====================================================
+            */
+
+            $stmt = $pdo->prepare("
+                SELECT
+                    id,
+                    username,
+                    password,
+                    office_id,
+                    is_super_admin
+                FROM admin_users
+                WHERE username = ?
+                LIMIT 1
+            ");
+
             $stmt->execute([$username]);
+
             $admin = $stmt->fetch();
 
-            if ($admin && password_verify($password, $admin['password'])) {
-                // Clear any stale session data (e.g. a leftover student login)
-                // before establishing a fresh, single-identity session.
+            if (
+                $admin &&
+                password_verify($password, $admin['password'])
+            ) {
+
                 $_SESSION = [];
+
                 session_regenerate_id(true);
-                $_SESSION['admin_id']       = $admin['id'];
+
+                $_SESSION['admin_id'] = $admin['id'];
                 $_SESSION['admin_username'] = $admin['username'];
-                $_SESSION['office_id']      = $admin['office_id'];
+                $_SESSION['office_id'] = $admin['office_id'];
                 $_SESSION['is_super_admin'] = (bool)$admin['is_super_admin'];
-                if ($_SESSION['is_super_admin']) redirect('/admin/dashboard.php');
-                else redirect('/admin/queue/office-dashboard.php');
-            } else {
-                $error = 'Invalid username or password.';
+
+                if ($_SESSION['is_super_admin']) {
+
+                    redirect('/admin/dashboard.php');
+
+                }
+
+                redirect('/admin/queue/office-dashboard.php');
+
             }
+
+            /*
+            =====================================================
+            CHECK STAFF
+            =====================================================
+            */
+
+            $stmt = $pdo->prepare("
+                SELECT
+                    id,
+                    name,
+                    username,
+                    password,
+                    office_id,
+                    window_id,
+                    status
+                FROM staff
+                WHERE username = ?
+                LIMIT 1
+            ");
+
+            $stmt->execute([$username]);
+
+            $staff = $stmt->fetch();
+
+            if (
+                $staff &&
+                $staff['status'] === 'active' &&
+                password_verify($password, $staff['password'])
+            ) {
+
+                $_SESSION = [];
+
+                session_regenerate_id(true);
+
+                $_SESSION['staff_id'] = $staff['id'];
+                $_SESSION['staff_name'] = $staff['name'];
+                $_SESSION['office_id'] = $staff['office_id'];
+                $_SESSION['window_id'] = $staff['window_id'];
+
+                redirect('/admin/staff/staff-dashboard.php');
+
+            }
+
+            $error = 'Invalid username or password.';
+
         }
+
     }
+
 }
 
 $csrf = generate_csrf_token();
+
 ?>
 <!DOCTYPE html>
 <html lang="en">

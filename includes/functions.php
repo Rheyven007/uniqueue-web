@@ -61,6 +61,10 @@ function is_admin_logged_in(): bool {
     return isset($_SESSION['admin_id']) && !empty($_SESSION['admin_id']);
 }
 
+function is_staff_logged_in(): bool {
+    return isset($_SESSION['staff_id']) && !empty($_SESSION['staff_id']);
+}
+
 /**
  * Format a datetime string for display.
  */

@@ -25,6 +25,12 @@ $stmt_assigned_docs = $pdo->prepare("SELECT document_id FROM window_document WHE
 $stmt_assigned_docs->execute([$window_id]);
 $assigned_doc_ids = array_column($stmt_assigned_docs->fetchAll(), 'document_id');
 
+// Fetch the staff member currently assigned to this window (if any)
+$stmt_assigned_staff = $pdo->prepare("SELECT id FROM staff WHERE window_id = ? LIMIT 1");
+$stmt_assigned_staff->execute([$window_id]);
+$assigned_staff_row = $stmt_assigned_staff->fetch();
+$assigned_staff_id = $assigned_staff_row ? (int)$assigned_staff_row['id'] : null;
+
 // Office list — super-admins can reassign; office admins cannot
 if ($session_office_id) {
     $stmt_office = $pdo->prepare("SELECT id, name FROM offices WHERE id = ? AND is_active = 1");
@@ -56,6 +62,28 @@ if ($session_office_id) {
 }
 $documents = $stmt_docs->fetchAll();
 
+// Staff list: office admins only see their own office's active staff
+// (the currently-assigned staff member is always included so they show up as selected).
+if ($session_office_id) {
+    $stmt_staff = $pdo->prepare("
+        SELECT id, name, position
+        FROM staff
+        WHERE office_id = ? AND (status = 'active' OR id = ?)
+        ORDER BY name ASC
+    ");
+    $stmt_staff->execute([$session_office_id, $assigned_staff_id ?: 0]);
+} else {
+    $stmt_staff = $pdo->prepare("
+        SELECT s.id, s.name, s.position, o.name as office_name
+        FROM staff s
+        JOIN offices o ON s.office_id = o.id
+        WHERE s.status = 'active' OR s.id = ?
+        ORDER BY o.name ASC, s.name ASC
+    ");
+    $stmt_staff->execute([$assigned_staff_id ?: 0]);
+}
+$staff_members = $stmt_staff->fetchAll();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name      = trim($_POST['name'] ?? '');
     $speed     = $_POST['speed'] ?? 'normal';
@@ -67,22 +95,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!in_array($queue_type, ['walkin', 'appointment', 'both'], true)) {
         $queue_type = 'walkin';
     }
-    // Appointment date only applies (and is required) when the counter accepts appointments
-    $appointment_date = null;
-    if ($queue_type !== 'walkin') {
-        $appointment_date = !empty($_POST['appointment_date']) ? $_POST['appointment_date'] : null;
-    }
+
+    // Staff member assigned to this counter (optional)
+    $staff_id = !empty($_POST['staff_id']) ? (int)$_POST['staff_id'] : null;
 
     // Force office_id from session for office admins; use POST value for super-admins
     $office_id = $session_office_id ?? ($_POST['office_id'] ?? null);
 
-    if ($queue_type !== 'walkin' && !$appointment_date) {
-        $error = "Please select an appointment date for this queue type.";
-    } elseif ($name && $office_id) {
+    if ($name && $office_id) {
         $pdo->beginTransaction();
         try {
-            $stmt = $pdo->prepare("UPDATE windows SET name = ?, office_id = ?, speed = ?, est_time = ?, queue_type = ?, appointment_date = ? WHERE id = ?");
-            $stmt->execute([$name, $office_id, $speed, $est_time, $queue_type, $appointment_date, $window_id]);
+            $stmt = $pdo->prepare("UPDATE windows SET name = ?, office_id = ?, speed = ?, est_time = ?, queue_type = ? WHERE id = ?");
+            $stmt->execute([$name, $office_id, $speed, $est_time, $queue_type, $window_id]);
 
             $stmt_delete_docs = $pdo->prepare("DELETE FROM window_document WHERE window_id = ?");
             $stmt_delete_docs->execute([$window_id]);
@@ -93,6 +117,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmt_insert_doc->execute([$window_id, $doc_id]);
                 }
             }
+
+            // Release whoever is currently assigned to this window, then assign the newly selected staff member
+            $pdo->prepare("UPDATE staff SET window_id = NULL WHERE window_id = ?")->execute([$window_id]);
+
+            if ($staff_id) {
+                $stmtValidateStaff = $pdo->prepare("SELECT id FROM staff WHERE id = ? AND office_id = ?");
+                $stmtValidateStaff->execute([$staff_id, $office_id]);
+                if ($stmtValidateStaff->fetch()) {
+                    $pdo->prepare("UPDATE staff SET window_id = ? WHERE id = ?")->execute([$window_id, $staff_id]);
+                }
+            }
+
             $pdo->commit();
             redirect('/admin/counter/counter-list.php');
         } catch (Exception $e) {
@@ -169,18 +205,25 @@ include __DIR__ . '/../../includes/header.php';
 
         <div class="form-group">
             <label>Queue Type</label>
-            <select name="queue_type" id="queue_type" class="form-control" onchange="toggleAppointmentDate()">
+            <select name="queue_type" id="queue_type" class="form-control">
                 <option value="walkin" <?= ($window['queue_type'] === 'walkin') ? 'selected' : '' ?>>Walk-in</option>
                 <option value="appointment" <?= ($window['queue_type'] === 'appointment') ? 'selected' : '' ?>>Appointment</option>
                 <option value="both" <?= ($window['queue_type'] === 'both') ? 'selected' : '' ?>>Both</option>
             </select>
         </div>
 
-        <div class="form-group" id="appointment_date_group" style="display:none;">
-            <label>Appointment Date</label>
-            <input type="date" name="appointment_date" id="appointment_date" class="form-control"
-                   value="<?= htmlspecialchars($window['appointment_date'] ?? '') ?>">
-            <small>Only appointments scheduled for this date will be accepted at this counter.</small>
+        <div class="form-group">
+            <label>Assigned Staff</label>
+            <select name="staff_id" class="form-control">
+                <option value="">— Unassigned —</option>
+                <?php foreach ($staff_members as $s): ?>
+                    <option value="<?= $s['id'] ?>" <?= ($s['id'] == $assigned_staff_id) ? 'selected' : '' ?>>
+                        <?php if (!$session_office_id): ?>[<?= htmlspecialchars($s['office_name']) ?>] <?php endif; ?>
+                        <?= htmlspecialchars($s['name']) ?><?= $s['position'] ? ' — ' . htmlspecialchars($s['position']) : '' ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <small>The staff member responsible for serving this counter.</small>
         </div>
 
         <div class="form-group">
@@ -210,16 +253,4 @@ include __DIR__ . '/../../includes/header.php';
 
 <link rel="stylesheet" href="/assets/css/requirements-manage.css">
 <link rel="stylesheet" href="/assets/css/counter-edit.css">
-<script>
-function toggleAppointmentDate() {
-    var queueType = document.getElementById('queue_type').value;
-    var group = document.getElementById('appointment_date_group');
-    var input = document.getElementById('appointment_date');
-    var needsDate = (queueType === 'appointment' || queueType === 'both');
-    group.style.display = needsDate ? '' : 'none';
-    input.required = needsDate;
-    if (!needsDate) input.value = '';
-}
-document.addEventListener('DOMContentLoaded', toggleAppointmentDate);
-</script>
 <?php include __DIR__ . '/../../includes/footer.php'; ?>

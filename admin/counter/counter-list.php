@@ -9,18 +9,20 @@ $session_office_id = $_SESSION['office_id'] ?? null;
 
 if ($session_office_id) {
     $stmt = $pdo->prepare("
-        SELECT w.*, o.name as office_name
+        SELECT w.*, o.name as office_name, s.name as staff_name, s.position as staff_position
         FROM windows w
         JOIN offices o ON w.office_id = o.id
+        LEFT JOIN staff s ON s.window_id = w.id
         WHERE w.office_id = ?
         ORDER BY w.name ASC
     ");
     $stmt->execute([$session_office_id]);
 } else {
     $stmt = $pdo->query("
-        SELECT w.*, o.name as office_name
+        SELECT w.*, o.name as office_name, s.name as staff_name, s.position as staff_position
         FROM windows w
         JOIN offices o ON w.office_id = o.id
+        LEFT JOIN staff s ON s.window_id = w.id
         ORDER BY o.name ASC, w.name ASC
     ");
 }
@@ -51,6 +53,7 @@ include __DIR__ . '/../../includes/header.php';
                 <th>Counter Name</th>
                 <th>Processing Speed</th>
                 <th>Queue Type</th>
+                <th>Assigned Staff</th>
                 <th>Status</th>
                 <th class="th-actions">Actions</th>
 
@@ -68,8 +71,15 @@ include __DIR__ . '/../../includes/header.php';
                             $queueType = $c['queue_type'] ?? 'walkin';
                         ?>
                         <span class="badge badge-info"><?= htmlspecialchars($queueLabels[$queueType] ?? ucfirst($queueType)) ?></span>
-                        <?php if ($queueType !== 'walkin' && !empty($c['appointment_date'])): ?>
-                            <br><small><?= htmlspecialchars($c['appointment_date']) ?></small>
+                    </td>
+                    <td>
+                        <?php if (!empty($c['staff_name'])): ?>
+                            <?= htmlspecialchars($c['staff_name']) ?>
+                            <?php if (!empty($c['staff_position'])): ?>
+                                <br><small><?= htmlspecialchars($c['staff_position']) ?></small>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <span class="staff-unassigned">Unassigned</span>
                         <?php endif; ?>
                     </td>
                     <td><span class="status-indicator <?= $c['status'] ?>"><?= ucfirst($c['status']) ?></span></td>
