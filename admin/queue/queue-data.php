@@ -19,33 +19,25 @@ try {
     |--------------------------------------------------------------------------
     */
 
-    $windowInfo = null;
+    $stmt = $pdo->prepare("
+        SELECT
+            w.id,
+            w.name,
+            w.status
+        FROM windows w
+        WHERE w.id = ?
+        LIMIT 1
+    ");
 
-    if ($window_id) {
+    $stmt->execute([$window_id]);
 
-        $stmt = $pdo->prepare("
-            SELECT
-                id AS window_id,
-                name AS window_name,
-                status AS window_status
-            FROM windows
-            WHERE id = ?
-            LIMIT 1
-        ");
-
-        $stmt->execute([
-            $window_id
-        ]);
-
-        $windowInfo = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    }
+    $window = $stmt->fetch(PDO::FETCH_ASSOC);
 
     $staffInfo = [
         'staff_name'    => $staff_name,
-        'window_id'     => $windowInfo['window_id'] ?? null,
-        'window_name'   => $windowInfo['window_name'] ?? null,
-        'window_status' => $windowInfo['window_status'] ?? null,
+        'window_id'     => $window['id'] ?? null,
+        'window_name'   => $window['name'] ?? null,
+        'window_status' => $window['status'] ?? null,
     ];
 
     /*
@@ -66,7 +58,7 @@ try {
         WHERE
             qt.office_id = ?
             AND qt.window_id = ?
-            AND qt.status IN ('called', 'in_progress')
+           AND qt.status='in_progress'
         ORDER BY qt.called_at DESC
         LIMIT 1
     ");
@@ -78,10 +70,8 @@ try {
 
     $currentTicket = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$currentTicket) {
-        $currentTicket = null;
-    }
-
+  
+   
     /*
     |--------------------------------------------------------------------------
     | WAITING QUEUE
@@ -99,7 +89,7 @@ try {
             ON s.id = qt.student_id
         WHERE
             qt.office_id = ?
-            AND (qt.window_id IS NULL OR qt.window_id = ?)
+            AND qt.window_id = ?
             AND qt.status = 'waiting'
         ORDER BY
             qt.priority DESC,
@@ -114,13 +104,28 @@ try {
 
     $waitingTickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    /* -------------------------------------------------------
+    DETERMINE NEXT TICKET
+    -------------------------------------------------------- */
+
+    $nextTicket = null;
+
+    if ($currentTicket) {
+        $nextTicket = $waitingTickets[0] ?? null;
+
+        if ($nextTicket) {
+            array_shift($waitingTickets);
+        }
+    }
+
     echo json_encode([
-        "success" => true,
+        "success"   => true,
         "office_id" => $office_id,
         "window_id" => $window_id,
-        "staff" => $staffInfo,
-        "current" => $currentTicket,
-        "waiting" => $waitingTickets
+        "staff"     => $staffInfo,
+        "current"   => $currentTicket ?: null,
+        "next"      => $nextTicket,
+        "waiting"   => $waitingTickets
     ]);
 
 } catch (PDOException $e) {
@@ -129,5 +134,4 @@ try {
         "success" => false,
         "message" => $e->getMessage()
     ]);
-
 }

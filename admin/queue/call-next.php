@@ -12,30 +12,6 @@ $office_id = $_SESSION['office_id'];
 
 try {
 
-    // Check active ticket
-    $stmt = $pdo->prepare("
-        SELECT id
-        FROM queue_tickets
-        WHERE window_id = ?
-        AND office_id = ?
-        AND status IN ('called','in_progress')
-        LIMIT 1
-    ");
-
-    $stmt->execute([
-        $window_id,
-        $office_id
-    ]);
-
-    if ($stmt->fetch()) {
-
-        echo json_encode([
-            'success'=>false,
-            'message'=>'Finish current transaction first.'
-        ]);
-
-        exit;
-    }
 
 
     // Get next queue
@@ -43,10 +19,10 @@ try {
         SELECT id
         FROM queue_tickets
         WHERE office_id = ?
+        AND window_id = ?
         AND status = 'waiting'
-        AND (window_id IS NULL OR window_id = ?)
         ORDER BY priority DESC, joined_at ASC
-        LIMIT 1
+        LIMIT 1 OFFSET 0
     ");
 
     $stmt->execute([
@@ -67,34 +43,35 @@ try {
         exit;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | CANCEL CURRENT WAITING TICKET
+    |--------------------------------------------------------------------------
+    */
 
-    // Assign window and call
     $stmt = $pdo->prepare("
         UPDATE queue_tickets
-        SET
-            window_id = ?,
-            status='called',
-            called_at = NOW()
-        WHERE id=?
+        SET status = 'cancelled'
+        WHERE id = ?
     ");
 
     $stmt->execute([
-        $window_id,
         $ticket['id']
     ]);
 
-
     echo json_encode([
-        'success'=>true,
-        'message'=>'Queue called.'
+        'success' => true,
+        'message' => 'Queue cancelled.'
     ]);
 
+    exit;
 
-}catch(PDOException $e){
+    }catch(PDOException $e){
 
-    echo json_encode([
-        'success'=>false,
-        'message'=>$e->getMessage()
-    ]);
+        echo json_encode([
+            'success'=>false,
+            'message'=>$e->getMessage()
+        ]);
 
-}
+    }
+

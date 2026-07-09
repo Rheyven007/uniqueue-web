@@ -14,64 +14,83 @@ $office_id = $_SESSION['office_id'];
 
 try {
 
+    // CHECK KUNG MAY NAKA-IN PROGRESS NA
+    $stmt = $pdo->prepare("
+        SELECT id
+        FROM queue_tickets
+        WHERE office_id = ?
+        AND window_id = ?
+        AND status = 'in_progress'
+        LIMIT 1
+    ");
 
-$stmt=$pdo->prepare("
-    SELECT id
-    FROM queue_tickets
-    WHERE office_id=?
-    AND window_id=?
-    AND status='called'
-    LIMIT 1
-");
-
-
-$stmt->execute([
-    $office_id,
-    $window_id
-]);
-
-
-$ticket=$stmt->fetch();
-
-
-if(!$ticket){
-
-    echo json_encode([
-        'success'=>false,
-        'message'=>'No called queue.'
+    $stmt->execute([
+        $office_id,
+        $window_id
     ]);
 
-    exit;
+    if ($stmt->fetch()) {
 
-}
+        echo json_encode([
+            'success' => false,
+            'message' => 'There is already an active transaction.'
+        ]);
 
-
-
-$stmt=$pdo->prepare("
-UPDATE queue_tickets
-SET status='in_progress'
-WHERE id=?
-");
+        exit;
+    }
 
 
-$stmt->execute([
-    $ticket['id']
-]);
+    // KUNIN ANG UNANG WAITING CUSTOMER
+    $stmt = $pdo->prepare("
+        SELECT id
+        FROM queue_tickets
+        WHERE office_id = ?
+        AND window_id = ?
+        AND status = 'waiting'
+        ORDER BY priority DESC, joined_at ASC
+        LIMIT 1
+    ");
 
+    $stmt->execute([
+        $office_id,
+        $window_id
+    ]);
 
+    $ticket = $stmt->fetch();
 
-echo json_encode([
-    'success'=>true,
-    'message'=>'Service started.'
-]);
+    if (!$ticket) {
 
+        echo json_encode([
+            'success' => false,
+            'message' => 'No waiting customer.'
+        ]);
 
+        exit;
+    }
 
-}catch(PDOException $e){
+    // START SERVICE
+    $stmt = $pdo->prepare("
+        UPDATE queue_tickets
+        SET
+            status = 'in_progress',
+            called_at = NOW()
+        WHERE id = ?
+    ");
 
-echo json_encode([
-    'success'=>false,
-    'message'=>$e->getMessage()
-]);
+    $stmt->execute([
+        $ticket['id']
+    ]);
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'Service started.'
+    ]);
+
+} catch (PDOException $e) {
+
+    echo json_encode([
+        'success' => false,
+        'message' => $e->getMessage()
+    ]);
 
 }

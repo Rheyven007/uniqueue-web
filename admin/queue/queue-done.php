@@ -16,12 +16,12 @@ $office_id=$_SESSION['office_id'];
 try{
 
 
-$stmt=$pdo->prepare("
+$stmt = $pdo->prepare("
 SELECT id
 FROM queue_tickets
-WHERE office_id=?
-AND window_id=?
-AND status IN ('called','in_progress')
+WHERE office_id = ?
+AND window_id = ?
+AND status = 'in_progress'
 LIMIT 1
 ");
 
@@ -62,6 +62,42 @@ $stmt->execute([
     $ticket['id']
 ]);
 
+// Hanapin ang susunod na waiting customer
+
+$stmt = $pdo->prepare("
+SELECT id
+FROM queue_tickets
+WHERE office_id = ?
+AND status = 'waiting'
+AND (window_id IS NULL OR window_id = ?)
+ORDER BY priority DESC, joined_at ASC
+LIMIT 1
+");
+
+$stmt->execute([
+    $office_id,
+    $window_id
+]);
+
+$nextTicket = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if ($nextTicket) {
+
+    // Automatic na gawing current serving
+    $stmt = $pdo->prepare("
+        UPDATE queue_tickets
+        SET
+            window_id = ?,
+            status = 'in_progress',
+            called_at = NOW()
+        WHERE id = ?
+    ");
+
+    $stmt->execute([
+        $window_id,
+        $nextTicket['id']
+    ]);
+}
 
 
 echo json_encode([
