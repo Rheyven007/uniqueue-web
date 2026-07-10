@@ -2,10 +2,31 @@
 <?php
 
 require_once __DIR__ . '/../../auth/session.php';
+require_once __DIR__ . '/../../includes/db.php';
 
 require_staff();
 
-$staffName = $_SESSION['staff_name'] ?? 'Staff';
+$staffId = $_SESSION['staff_id'];
+
+$stmt = $pdo->prepare("
+    SELECT
+        s.name,
+        s.window_id,
+        w.name AS window_name,
+        o.name AS office_name
+    FROM staff s
+    LEFT JOIN windows w ON s.window_id = w.id
+    LEFT JOIN offices o ON s.office_id = o.id
+    WHERE s.id = ?
+");
+
+$stmt->execute([$staffId]);
+
+$staff = $stmt->fetch(PDO::FETCH_ASSOC);
+
+$staffName = $staff['name'] ?? 'Staff';
+$windowName = $staff['window_name'] ?? 'No Window Assigned';
+$officeName = $staff['office_name'] ?? '';
 
 ?>
 
@@ -26,7 +47,15 @@ $staffName = $_SESSION['staff_name'] ?? 'Staff';
             <p class="staff-dashboard__window">
                 Welcome,
                 <strong><?= htmlspecialchars($staffName) ?></strong>
-                <span id="staffWindowInfo"> • Loading assigned window...</span>
+
+                <span id="staffWindowInfo">
+                    • <?= htmlspecialchars($windowName) ?>
+
+                    <?php if (!empty($officeName)): ?>
+                        (<?= htmlspecialchars($officeName) ?>)
+                    <?php endif; ?>
+
+                </span>
             </p>
         </div>
 

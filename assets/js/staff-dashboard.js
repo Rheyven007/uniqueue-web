@@ -1,4 +1,4 @@
-const BASE_URL = "/uniqueue/UNIQUEUE%20v2/admin/queue/";
+const BASE_URL = "/admin/queue/";
 
 const currentDiv = document.getElementById("current-ticket");
 const nextDiv = document.getElementById("next-ticket");
@@ -15,53 +15,53 @@ const btnDone = document.getElementById("doneBtn");
 
 let servedToday = 0;
 
+// Store previous queue state
+let lastQueueData = "";
 /* ==========================================================
    LOAD QUEUE
 ========================================================== */
 
 async function loadQueue() {
 
-    currentDiv.innerHTML =
-        `<div class="loading-card"></div>`;
-
-    nextDiv.innerHTML =
-        `<div class="loading-card"></div>`;
-
-    waitingDiv.innerHTML =
-        `<div class="loading-card"></div>`;
 
     try {
 
-        const response = await fetch(
-            BASE_URL + "queue-data.php",
-            {
-                cache: "no-store",
-                credentials: "same-origin"
-            }
-        );
+        const response = await fetch(BASE_URL + "queue-data.php", {
+            cache: "no-store",
+            credentials: "same-origin"
+        });
 
-        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
 
-        renderStaffInfo(data.staff);
-        renderCurrent(data.current);
-        renderNext(data.waiting);
-        renderWaiting(data.waiting);
+    const data = await response.json();
+
+    console.log("QUEUE DATA:", data);
+
+    if (!data.success) {
+        throw new Error(data.message || "Failed to load queue.");
+    }
+
+    // Check if anything changed
+    const currentState = JSON.stringify(data);
+
+    if (currentState === lastQueueData) {
+        return; // Nothing changed, don't redraw
+    }
+
+    lastQueueData = currentState;
+
+    renderStaffInfo(data.staff);
+    renderCurrent(data.current);
+    renderNext(data.next);
+    renderWaiting(data.waiting);
 
     } catch (err) {
 
-        console.error(err);
-
-        currentDiv.innerHTML =
-            `<div class="empty">Unable to load current customer.</div>`;
-
-        nextDiv.innerHTML =
-            `<div class="empty">Unable to load next customer.</div>`;
-
-        waitingDiv.innerHTML =
-            `<div class="empty">Unable to load queue.</div>`;
+        console.error("Queue Load Error:", err);
 
     }
-
 }
 
 /* ==========================================================
@@ -142,13 +142,9 @@ function renderCurrent(ticket) {
    NEXT CUSTOMER
 ========================================================== */
 
-function renderNext(waiting = []) {
+function renderNext(ticket) {
 
-    if (!nextDiv) {
-        return;
-    }
-
-    const ticket = waiting[0];
+    if (!nextDiv) return;
 
     if (!ticket) {
 
@@ -161,11 +157,9 @@ function renderNext(waiting = []) {
         `;
 
         return;
-
     }
 
     nextDiv.innerHTML = `
-
         <div class="current-ticket-card">
 
             <div class="ticket-label">
@@ -174,23 +168,17 @@ function renderNext(waiting = []) {
 
             <h2>${ticket.queue_number}</h2>
 
-            <h4>
-                ${ticket.first_name} ${ticket.last_name}
-            </h4>
+            <h4>${ticket.first_name} ${ticket.last_name}</h4>
 
-            <p>
-                SR Code: ${ticket.sr_code}
-            </p>
+            <p>SR Code: ${ticket.sr_code}</p>
 
-            <small>
-                Status: ${ticket.status}
-            </small>
+            <small>Status: ${ticket.status}</small>
 
         </div>
-
     `;
-
 }
+
+
 
 /* ==========================================================
    WAITING QUEUE
@@ -198,10 +186,11 @@ function renderNext(waiting = []) {
 
 function renderWaiting(waiting = []) {
 
-    waitingCount.textContent = waiting.length;
-
-    queueCount.textContent =
-        `${waiting.length} Customer${waiting.length === 1 ? "" : "s"}`;
+    // Update queue counter
+    if (queueCount) {
+        queueCount.textContent =
+            `${waiting.length} Customer${waiting.length === 1 ? "" : "s"}`;
+    }
 
     if (waiting.length === 0) {
 
@@ -219,13 +208,9 @@ function renderWaiting(waiting = []) {
 
     waiting.forEach((ticket, index) => {
 
-        html += `
+       html += `
 
             <div class="queue-item">
-
-                <div class="queue-number">
-                    ${index + 1}
-                </div>
 
                 <div class="queue-details">
 
@@ -249,10 +234,6 @@ function renderWaiting(waiting = []) {
 
                 <div class="queue-side">
 
-                    <div class="queue-position">
-                        #${index + 1}
-                    </div>
-
                     <span class="queue-time">
                         In Queue
                     </span>
@@ -261,7 +242,7 @@ function renderWaiting(waiting = []) {
 
             </div>
 
-        `;
+            `;
 
     });
 
@@ -297,43 +278,38 @@ async function queueAction(file) {
 
     try {
 
-        const response = await fetch(
+        const response = await fetch(BASE_URL + file, {
+            method: "POST",
+            credentials: "same-origin"
+        });
 
-            BASE_URL + file,
-
-            {
-                method: "POST",
-
-                credentials: "same-origin",
-
-                headers: {
-                    "Content-Type":
-                        "application/x-www-form-urlencoded"
-                }
-
-            }
-
-        );
+        if (!response.ok) {
+            throw new Error("HTTP " + response.status);
+        }
 
         const data = await response.json();
 
-        alert(data.message);
+        if (!data.success) {
+            console.warn(data.message);
+            return;
+        }
 
         if (file === "queue-done.php") {
 
             servedToday++;
 
-            servedCount.textContent = servedToday;
+            if (servedCount) {
+                servedCount.textContent = servedToday;
+            }
 
         }
 
-        loadQueue();
+        // Refresh dashboard immediately
+        await loadQueue();
 
     } catch (err) {
 
-        console.error(err);
-
-        alert("Something went wrong.");
+        console.error("Queue Action Error:", err);
 
     } finally {
 
