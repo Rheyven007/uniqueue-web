@@ -38,34 +38,55 @@ $today_stats = $pdo->prepare("
 $today_stats->execute([$oid]);
 $ts = $today_stats->fetch();
 
-// ── Windows for this office ───────────────────────────────────────────────────
+// ── Windows for this office ───────────────────────────────────────────────
 $win_stmt = $pdo->prepare("
-    SELECT w.*,
-        (SELECT COUNT(*)
+    SELECT
+        w.*,
+
+        (
+            SELECT name
+            FROM staff
+            WHERE window_id = w.id
+            LIMIT 1
+        ) AS staff_name,
+
+        (
+            SELECT COUNT(*)
             FROM queue_tickets qt
             WHERE qt.window_id = w.id
               AND qt.status IN ('called','in_progress')
               AND DATE(qt.joined_at) = CURDATE()
         ) AS active_tickets,
-        (SELECT s.first_name
+
+        (
+            SELECT s.first_name
             FROM queue_tickets qt
-            JOIN students s ON qt.student_id = s.id
+            INNER JOIN students s
+                ON s.id = qt.student_id
             WHERE qt.window_id = w.id
               AND qt.status IN ('called','in_progress')
-            ORDER BY qt.called_at DESC LIMIT 1
+            ORDER BY qt.called_at DESC
+            LIMIT 1
         ) AS current_student_fname,
-        (SELECT qt.queue_number
+
+        (
+            SELECT qt.queue_number
             FROM queue_tickets qt
             WHERE qt.window_id = w.id
               AND qt.status IN ('called','in_progress')
-            ORDER BY qt.called_at DESC LIMIT 1
+            ORDER BY qt.called_at DESC
+            LIMIT 1
         ) AS current_ticket_num
+
     FROM windows w
     WHERE w.office_id = ?
     ORDER BY w.name ASC
 ");
+
 $win_stmt->execute([$oid]);
-$windows = $win_stmt->fetchAll();
+$windows = $win_stmt->fetchAll(PDO::FETCH_ASSOC);
+    $win_stmt->execute([$oid]);
+    $windows = $win_stmt->fetchAll();
 
 $pageTitle = "Dashboard — " . $office['name'];
 include __DIR__ . '/../../includes/header.php';
@@ -91,10 +112,25 @@ include __DIR__ . '/../../includes/header.php';
                 Refresh
             </button>
 
-            <a href="/admin/queue/queue-list.php?office_id=<?= $oid ?>" class="btn btn-ghost">Queue List</a>
-            <a href="/admin/document/document-list.php" class="btn btn-ghost">Documents</a>
-            <a href="/admin/counter/counter-list.php"           class="btn btn-ghost">Manage Windows</a>
-            <a href="/admin/capacity/capacity-settings.php?office_id=<?= $oid ?>" class="btn btn-ghost">Settings</a>
+         <a href="/admin/queue/queue-list.php?office_id=<?= $oid ?>" class="btn btn-ghost">
+            Queue List
+        </a>
+
+        <a href="/admin/document/document-list.php" class="btn btn-ghost">
+            Documents
+        </a>
+
+        <a href="/admin/counter/counter-list.php" class="btn btn-ghost">
+            Manage Windows
+        </a>
+
+        <a href="/admin/staff/staff-list.php" class="btn btn-ghost">
+            Manage Staff
+        </a>
+
+        <a href="/admin/capacity/capacity-settings.php?office_id=<?= $oid ?>" class="btn btn-ghost">
+            Settings
+        </a>
         </div>
     </div>
 
@@ -175,7 +211,20 @@ include __DIR__ . '/../../includes/header.php';
                     Status: <strong style="color: <?= $w['status'] === 'open' ? 'var(--green)' : 'var(--muted)' ?>">
                         <?= ucfirst($w['status']) ?>
                     </strong>
+
+                       <?php if (!empty($w['staff_name'])): ?>
+                    <br>
+                    Staff:
+                    <strong><?= htmlspecialchars($w['staff_name']) ?></strong>
+                    <?php else: ?>
+                        <br>
+                        <span style="color:#dc2626;">
+                            No Staff Assigned
+                        </span>
+                    <?php endif; ?>
                 </div>
+
+             
 
                 <div class="window-card__serving">
                     <?php if ($w['current_ticket_num']): ?>

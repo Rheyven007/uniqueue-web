@@ -1,0 +1,80 @@
+.form-container{
+
+    max-width:900px;
+
+    margin:auto;
+
+    padding:30px;
+
+}
+
+.page-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:25px;
+
+}
+
+.form-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:20px;
+
+}
+
+.form-grid label{
+
+    display:block;
+
+    margin-bottom:8px;
+
+    font-weight:600;
+
+}
+
+.form-grid input,
+.form-grid select{
+
+    width:100%;
+
+    padding:12px;
+
+    border:1px solid #ddd;
+
+    border-radius:8px;
+
+    font-size:14px;
+
+}
+
+.form-actions{
+
+    margin-top:30px;
+
+}
+
+.alert{
+
+    padding:15px;
+
+    margin-bottom:20px;
+
+    border-radius:8px;
+
+}
+
+.alert-danger{
+
+    background:#ffe5e5;
+
+    color:#c40000;
+
+}

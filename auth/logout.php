@@ -3,18 +3,46 @@
 
 require_once __DIR__ . '/session.php';
 
-// Determine which role was logged in so we can show the right login tab
+
+/*
+|--------------------------------------------------------------------------
+| Detect logged-in role
+|--------------------------------------------------------------------------
+*/
+
 $role = 'student';
-if (is_admin_logged_in()) {
+
+
+if (is_staff_logged_in()) {
+
+    $role = 'staff';
+
+} elseif (is_admin_logged_in()) {
+
     $role = 'admin';
+
 }
 
-// Unset all session data
+
+/*
+|--------------------------------------------------------------------------
+| Clear session data
+|--------------------------------------------------------------------------
+*/
+
 $_SESSION = [];
 
-// Delete the session cookie
+
+/*
+|--------------------------------------------------------------------------
+| Remove session cookie
+|--------------------------------------------------------------------------
+*/
+
 if (ini_get('session.use_cookies')) {
+
     $params = session_get_cookie_params();
+
     setcookie(
         session_name(),
         '',
@@ -24,8 +52,23 @@ if (ini_get('session.use_cookies')) {
         $params['secure'],
         $params['httponly']
     );
+
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| Destroy session
+|--------------------------------------------------------------------------
+*/
+
 session_destroy();
+
+
+/*
+|--------------------------------------------------------------------------
+| Redirect back to login
+|--------------------------------------------------------------------------
+*/
 
 redirect('/auth/login.php?role=' . $role . '&msg=logged_out');
