@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../auth/session.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
-require_once __DIR__ . '/../includes/algo.php';
+require_once __DIR__ . '/../api/algo.php';
 
 // Ensure timestamps (joined_at, created_at) are recorded in the
 // institution's local timezone rather than the server's default.
@@ -81,11 +81,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Clean the submitted document list to a deduped set of ints, then
     // re-verify each one actually belongs to this office — never trust
     // IDs from the client as-is. Both queue types collect documents now:
-    // the appointment slip only proves name + appointment date, not which
-    // document is being requested, so that still has to be picked here.
-    $document_ids = array_values(array_unique(array_filter(array_map('intval', (array)$document_ids))));
+    // the appointment slip only proves name + appointment date, not which document
+    // is being requested, so that still has to be picked here.
+    $raw_doc_ids = [];
+    if (is_array($document_ids)) {
+        $raw_doc_ids = $document_ids;
+    } elseif (is_string($document_ids)) {
+        $raw_doc_ids = explode(',', $document_ids);
+    }
+    $document_ids = array_values(array_unique(array_filter(array_map('intval', $raw_doc_ids))));
 
     if ($document_ids) {
+        // Re-verify that all requested documents belong to this office
         $placeholders = implode(',', array_fill(0, count($document_ids), '?'));
         $valid_stmt = $pdo->prepare("SELECT id FROM documents WHERE office_id = ? AND id IN ($placeholders)");
         $valid_stmt->execute(array_merge([$office['id']], $document_ids));

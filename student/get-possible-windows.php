@@ -6,7 +6,7 @@
 
 require_once __DIR__ . '/../auth/session.php';
 require_once __DIR__ . '/../includes/db.php';
-require_once __DIR__ . '/../includes/algo.php';
+require_once __DIR__ . '/../api/algo.php';
 require_student();
 
 header('Content-Type: application/json');
@@ -15,10 +15,17 @@ $office_id = (int)($_GET['office_id'] ?? 0);
 $raw       = $_GET['doc_ids'] ?? '';
 $type      = $_GET['type'] ?? 'walkin';
 $type      = in_array($type, ['walkin', 'appointment'], true) ? $type : 'walkin';
-$document_ids = array_values(array_unique(array_filter(array_map('intval', explode(',', $raw)))));
+
+$raw_doc_ids = [];
+if (is_array($raw)) {
+    $raw_doc_ids = $raw;
+} elseif (is_string($raw)) {
+    $raw_doc_ids = explode(',', $raw);
+}
+$document_ids = array_values(array_unique(array_filter(array_map('intval', $raw_doc_ids))));
 
 if (!$office_id || !$document_ids) {
-    json_response(['success' => false, 'windows' => []]);
+    json_response(['success' => true, 'windows' => []]); // Return success but empty
 }
 
 $windows = get_eligible_windows($pdo, $office_id, $document_ids, $type);
