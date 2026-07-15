@@ -52,7 +52,7 @@ exit;
 $stmt=$pdo->prepare("
 UPDATE queue_tickets
 SET
-status='completed',
+status='done',
 done_at=NOW()
 WHERE id=?
 ");
