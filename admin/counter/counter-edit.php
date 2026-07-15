@@ -87,7 +87,6 @@ $staff_members = $stmt_staff->fetchAll();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name      = trim($_POST['name'] ?? '');
     $speed     = $_POST['speed'] ?? 'normal';
-    $est_time  = $_POST['est_time'] !== '' ? (int)$_POST['est_time'] : null;
     $doc_ids   = $_POST['documents'] ?? [];
 
     // Queue type: walkin | appointment | both
@@ -105,8 +104,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($name && $office_id) {
         $pdo->beginTransaction();
         try {
-            $stmt = $pdo->prepare("UPDATE windows SET name = ?, office_id = ?, speed = ?, est_time = ?, queue_type = ? WHERE id = ?");
-            $stmt->execute([$name, $office_id, $speed, $est_time, $queue_type, $window_id]);
+            $stmt = $pdo->prepare("UPDATE windows SET name = ?, office_id = ?, speed = ?, queue_type = ? WHERE id = ?");
+            $stmt->execute([$name, $office_id, $speed, $queue_type, $window_id]);
 
             $stmt_delete_docs = $pdo->prepare("DELETE FROM window_document WHERE window_id = ?");
             $stmt_delete_docs->execute([$window_id]);
@@ -194,13 +193,6 @@ include __DIR__ . '/../../includes/header.php';
                 <option value="fast"   <?= ($window['speed'] === 'fast')   ? 'selected' : '' ?>>Fast</option>
                 <option value="slow"   <?= ($window['speed'] === 'slow')   ? 'selected' : '' ?>>Slow</option>
             </select>
-        </div>
-
-        <div class="form-group">
-            <label>Estimated Processing Time (minutes)</label>
-            <input type="number" name="est_time" class="form-control" min="1"
-                   value="<?= htmlspecialchars($window['est_time'] ?? '') ?>" placeholder="e.g. 10">
-            <small>Average time it takes this counter to serve one ticket.</small>
         </div>
 
         <div class="form-group">

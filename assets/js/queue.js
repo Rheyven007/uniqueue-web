@@ -103,6 +103,45 @@ function onDocToggle(checkbox) {
 
     const warning = document.getElementById('docSelectWarning');
     if (warning && checkbox.checked) warning.style.display = 'none';
+
+    loadPossibleWindows();
+}
+
+/* ── Possible windows (display-only) ─────────────────────────── */
+// Shown as soon as documents are selected, instead of only revealing a
+// window once the student is about to be called. The actual assignment
+// still happens server-side (includes/algo.php) at submission — this is
+// just a preview of which window(s) qualify for the chosen documents.
+function loadPossibleWindows() {
+    const box = document.getElementById('possibleWindowsBox');
+    if (!box) return;
+
+    const docIds = getSelectedDocIds();
+    if (docIds.length === 0 || typeof OFFICE_ID === 'undefined') {
+        box.style.display = 'none';
+        box.innerHTML = '';
+        return;
+    }
+
+    box.style.display = 'block';
+    box.innerHTML = '<span class="text-muted" style="font-size:.85rem;">Checking possible windows&hellip;</span>';
+
+    fetch('/student/get-possible-windows.php?office_id=' + encodeURIComponent(OFFICE_ID)
+        + '&doc_ids=' + encodeURIComponent(docIds.join(','))
+        + '&type=' + encodeURIComponent(selectedType || 'walkin'))
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success || !data.windows.length) {
+                box.innerHTML = '<span class="text-muted" style="font-size:.85rem;">No window currently handles this combination.</span>';
+                return;
+            }
+            const names = data.windows.map(w => w.name).join(', ');
+            box.innerHTML = '<span style="font-size:.85rem;">Possible window(s): <strong>' + names + '</strong></span>';
+        })
+        .catch(() => {
+            box.innerHTML = '';
+            box.style.display = 'none';
+        });
 }
 
 // Event delegation for the per-document quantity +/- buttons, since

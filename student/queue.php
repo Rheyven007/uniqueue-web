@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../auth/session.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../api/algo.php';
 
 // Ensure timestamps (joined_at, created_at) are recorded in the
 // institution's local timezone rather than the server's default.
@@ -80,11 +81,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Clean the submitted document list to a deduped set of ints, then
     // re-verify each one actually belongs to this office — never trust
     // IDs from the client as-is. Both queue types collect documents now:
-    // the appointment slip only proves name + appointment date, not which
-    // document is being requested, so that still has to be picked here.
-    $document_ids = array_values(array_unique(array_filter(array_map('intval', (array)$document_ids))));
+    // the appointment slip only proves name + appointment date, not which document
+    // is being requested, so that still has to be picked here.
+    $raw_doc_ids = [];
+    if (is_array($document_ids)) {
+        $raw_doc_ids = $document_ids;
+    } elseif (is_string($document_ids)) {
+        $raw_doc_ids = explode(',', $document_ids);
+    }
+    $document_ids = array_values(array_unique(array_filter(array_map('intval', $raw_doc_ids))));
 
     if ($document_ids) {
+        // Re-verify that all requested documents belong to this office
         $placeholders = implode(',', array_fill(0, count($document_ids), '?'));
         $valid_stmt = $pdo->prepare("SELECT id FROM documents WHERE office_id = ? AND id IN ($placeholders)");
         $valid_stmt->execute(array_merge([$office['id']], $document_ids));
@@ -140,20 +148,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // A ticket is served at a single window, so when several documents are
-    // requested together, the first selected document determines routing
-    // for both queue types now. (Per-document routing/splitting would be a
-    // bigger change — flagging it rather than assuming it's wanted.)
-    $win_stmt = $pdo->prepare("
-        SELECT w.id
-        FROM windows w
-        JOIN window_document wd ON wd.window_id = w.id
-        WHERE w.office_id = ? AND wd.document_id = ?
-        ORDER BY w.name ASC
-        LIMIT 1
-    ");
-    $win_stmt->execute([$office['id'], $document_ids[0]]);
-    $window_id = $win_stmt->fetchColumn() ?: null;
+    // A ticket is served at a single window, so the window assigned must
+    // be able to handle EVERY requested document at once (e.g. a request
+    // for docs 1+2 only qualifies a window that covers both — not one
+    // that only covers doc 1). Among windows that qualify, the actual
+    // pick is load-based (see includes/algo.php).
+    $window_id = pick_best_window($pdo, $office['id'], $document_ids, $type);
+
+    if ($window_id === null) {
+        $_SESSION['error_message'] = "No window currently handles this combination of documents. Please contact the office.";
+        header("Location: $redirect_back");
+        exit;
+    }
 
     /* QUEUE NUMBER */
     $count_stmt = $pdo->prepare("SELECT COUNT(*) + 1 FROM queue_tickets WHERE office_id = ?");
@@ -398,6 +404,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="alert alert--error" id="docSelectWarning" style="display:none; margin-top:.6rem;">
                         Please select at least one document.
                     </div>
+
+                    <!-- Shows which window(s) COULD serve this document
+                         combination. This is informational only — the
+                         actual window is assigned by the algorithm
+                         (includes/algo.php) once the ticket is submitted. -->
+                    <div class="possible-windows" id="possibleWindowsBox" style="display:none;"></div>
                 </div>
 
                 <!-- PRIORITY LANE — available for both walk-in and appointment
@@ -568,7 +580,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // it's operating on (e.g. for building the get-requirements.php URL
     // if that endpoint is ever scoped per office).
     var OFFICE_SLUG = <?= json_encode($office['slug']) ?>;
-    var OFFICE_ID = <?= (int)$office['id'] ?>;
+    var OFFICE_ID = <?= (int)$office['id'] ?>; // used by loadPossibleWindows() in queue.js
     var WALKIN_ENABLED = <?= $walkin_enabled ? 'true' : 'false' ?>;
     var APPOINTMENT_ENABLED = <?= $appointment_enabled ? 'true' : 'false' ?>;
     <?php if ($active_ticket): ?>
