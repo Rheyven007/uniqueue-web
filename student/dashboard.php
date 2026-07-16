@@ -20,7 +20,7 @@ $stmt = $pdo->prepare("
     FROM queue_tickets qt
     JOIN offices o ON o.id = qt.office_id
     WHERE qt.student_id = ?
-      AND qt.status NOT IN ('done','cancelled')
+      AND qt.status NOT IN ('done', 'cancelled', 'completed')
     ORDER BY qt.created_at DESC
     LIMIT 1
 ");
@@ -90,14 +90,14 @@ $est_wait_mins = $avg_per_hour > 0 ? round(($total_waiting / $avg_per_hour) * 60
         <div class="dash-hero__stats">
 
             <div class="hero-stat">
-                <div class="hero-stat__value"><?= $total_waiting ?></div>
+                <div class="hero-stat__value" id="stat-total-waiting"><?= $total_waiting ?></div>
                 <div class="hero-stat__label">In Queue Today</div>
             </div>
 
             <div class="hero-stat-divider"></div>
 
             <div class="hero-stat">
-                <div class="hero-stat__value">
+                <div class="hero-stat__value" id="stat-est-wait">
                     <?= $est_wait_mins !== null ? $est_wait_mins . '<span class="hero-stat__unit">min</span>' : '&mdash;' ?>
                 </div>
                 <div class="hero-stat__label">Est. Wait</div>
@@ -116,7 +116,7 @@ $est_wait_mins = $avg_per_hour > 0 ? round(($total_waiting / $avg_per_hour) * 60
 
     <!-- ── ACTIVE TICKET ─────────────────────────────── -->
     <?php if ($active_ticket): ?>
-    <section class="active-ticket-section">
+    <section class="active-ticket-section" id="active-ticket-section">
         <h2 class="section-title">Your Current Queue</h2>
 
         <div class="active-ticket-card"

@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../auth/session.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../api/algo.php';
 
 // Ensure timestamps (joined_at, created_at) are recorded in the
 // institution's local timezone rather than the server's default.
@@ -67,31 +68,35 @@ $active_stmt = $pdo->prepare("
 $active_stmt->execute([$student_id, $office['id']]);
 $active_ticket = $active_stmt->fetch();
 
-/* SUBMIT */
+//para makapag queue muna ng paulit ulit for testing
+$active_ticket = null;
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $type          = $_POST['type']             ?? null;
-    $document_ids  = $_POST['document_ids']     ?? [];  // walk-in: 1+ documents
-    $doc_qty_input   = $_POST['doc_qty']         ?? [];  // quantity keyed by document_id
+    $document_ids  = $_POST['document_ids']     ?? [];  
+    $doc_qty_input   = $_POST['doc_qty']         ?? []; 
     $priority        = isset($_POST['priority']) ? 1 : 0;
     $reason          = $_POST['priority_reason'] ?? null;
     $appt_slip_ok    = isset($_POST['appointment_slip_confirmed']);
 
-    // Clean the submitted document list to a deduped set of ints, then
-    // re-verify each one actually belongs to this office — never trust
-    // IDs from the client as-is. Both queue types collect documents now:
-    // the appointment slip only proves name + appointment date, not which
-    // document is being requested, so that still has to be picked here.
-    $document_ids = array_values(array_unique(array_filter(array_map('intval', (array)$document_ids))));
+    $raw_doc_ids = [];
+    if (is_array($document_ids)) {
+        $raw_doc_ids = $document_ids;
+    } elseif (is_string($document_ids)) {
+        $raw_doc_ids = explode(',', $document_ids);
+    }
+    $document_ids = array_values(array_unique(array_filter(array_map('intval', $raw_doc_ids))));
 
     if ($document_ids) {
+
         $placeholders = implode(',', array_fill(0, count($document_ids), '?'));
         $valid_stmt = $pdo->prepare("SELECT id FROM documents WHERE office_id = ? AND id IN ($placeholders)");
         $valid_stmt->execute(array_merge([$office['id']], $document_ids));
         $document_ids = array_map('intval', $valid_stmt->fetchAll(PDO::FETCH_COLUMN));
     }
 
-    // Quantity is per document. Clamp to a sane 1–20 range, default to 1.
+
     $doc_quantities = [];
     foreach ($document_ids as $did) {
         $q = isset($doc_qty_input[$did]) ? (int)$doc_qty_input[$did] : 1;
@@ -106,8 +111,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Re-check against this office's own config — never trust the submitted
-    // type alone, since a disabled option could still be POSTed directly.
     if ($type === 'walkin' && !$walkin_enabled) {
         $_SESSION['error_message'] = "Walk-in queueing is not available for this office.";
         header("Location: $redirect_back");
@@ -125,44 +128,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $reason   = null;
     }
 
-    if (!$document_ids) {
+    if ($type === 'walkin' && empty($document_ids)) {
         $_SESSION['error_message'] = "Please select at least one document.";
         header("Location: $redirect_back");
         exit;
     }
 
-    // Appointment holders are verified via their physical Appointment Slip
-    // (not a date picked here), so this checkbox is the one mandatory
-    // requirement for that type — re-checked server-side too.
     if ($type === 'appointment' && !$appt_slip_ok) {
         $_SESSION['error_message'] = "Please confirm you have your Appointment Slip.";
         header("Location: $redirect_back");
         exit;
     }
 
-    // A ticket is served at a single window, so when several documents are
-    // requested together, the first selected document determines routing
-    // for both queue types now. (Per-document routing/splitting would be a
-    // bigger change — flagging it rather than assuming it's wanted.)
-    $win_stmt = $pdo->prepare("
-        SELECT w.id
-        FROM windows w
-        JOIN window_document wd ON wd.window_id = w.id
-        WHERE w.office_id = ? AND wd.document_id = ?
-        ORDER BY w.name ASC
+   if ($type === 'appointment') {
+
+    $stmt = $pdo->prepare("
+        SELECT id
+        FROM windows
+        WHERE office_id = ?
+          AND queue_type IN ('appointment', 'both')
+          AND status = 'open'
+        ORDER BY id
         LIMIT 1
     ");
-    $win_stmt->execute([$office['id'], $document_ids[0]]);
-    $window_id = $win_stmt->fetchColumn() ?: null;
+
+    $stmt->execute([$office['id']]);
+
+    $window_id = $stmt->fetchColumn();
+
+} else {
+
+    $window_id = pick_best_window(
+        $pdo,
+        $office['id'],
+        $document_ids,
+        'walkin'
+    );
+
+}
+
+    if ($window_id === null) {
+        $_SESSION['error_message'] = "No window currently handles this combination of documents. Please contact the office.";
+        header("Location: $redirect_back");
+        exit;
+    }
 
     /* QUEUE NUMBER */
     $count_stmt = $pdo->prepare("SELECT COUNT(*) + 1 FROM queue_tickets WHERE office_id = ?");
     $count_stmt->execute([$office['id']]);
     $queue_number = 'Q-' . str_pad((int)$count_stmt->fetchColumn(), 4, '0', STR_PAD_LEFT);
 
-    /* INSERT TICKET — appointment_date is no longer collected in this
-       wizard (verification happens via the physical slip instead), so
-       it's left NULL regardless of type. */
     $stmt = $pdo->prepare("
         INSERT INTO queue_tickets
             (student_id, office_id, queue_number, type, status,
@@ -174,15 +189,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $ticket_id = $pdo->lastInsertId();
 
-    // One row per requested document — each keeps its own quantity, so a
-    // student can request several documents in a single ticket, for
-    // either queue type.
     $doc_insert = $pdo->prepare("
         INSERT INTO queue_ticket_document (ticket_id, document_id, quantity)
         VALUES (?, ?, ?)
     ");
-    foreach ($document_ids as $did) {
-        $doc_insert->execute([$ticket_id, $did, $doc_quantities[$did]]);
+    if ($type === 'walkin') {
+        foreach ($document_ids as $did) {
+            $doc_insert->execute([
+                $ticket_id,
+                $did,
+                $doc_quantities[$did]
+            ]);
+        }
     }
 
     header("Location: /student/dashboard.php");
@@ -352,10 +370,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <h2 class="step-title" id="step2Title">Details</h2>
                 <p class="step-subtitle" id="step2Sub">Select the document(s) you need and any priority options.</p>
 
-                <!-- DOCUMENTS — shared by both queue types. An appointment
-                     slip only proves name + appointment date, not which
-                     document is being requested, so appointment students
-                     pick documents here too, same as walk-in. -->
                 <div class="form-group">
                     <label class="form-label">Documents Requested</label>
                     <p class="text-muted" style="margin:-2px 0 10px;font-size:.85rem;">
@@ -398,13 +412,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="alert alert--error" id="docSelectWarning" style="display:none; margin-top:.6rem;">
                         Please select at least one document.
                     </div>
+
+                    <div class="possible-windows" id="possibleWindowsBox" style="display:none;"></div>
                 </div>
 
-                <!-- PRIORITY LANE — available for both walk-in and appointment
-                     queues. Appointment holders (PWD, pregnant, senior citizens)
-                     may still need priority handling once they arrive, so this
-                     is not limited to walk-in-only requests. Rendered only if
-                     this office has priority lane enabled. -->
                 <?php if ($priority_enabled): ?>
                 <div class="priority-toggle">
                     <label class="toggle-label" for="priorityChk">
@@ -561,14 +572,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
 
 <script>
-    // Data provided by the server for queue.js to consume.
-    // All wizard behavior lives in the external file — this block only
-    // exposes the values that come from PHP/the database. queue.js is now
-    // shared across every office; OFFICE_SLUG lets it know which office
-    // it's operating on (e.g. for building the get-requirements.php URL
-    // if that endpoint is ever scoped per office).
+
     var OFFICE_SLUG = <?= json_encode($office['slug']) ?>;
-    var OFFICE_ID = <?= (int)$office['id'] ?>;
+    var OFFICE_ID = <?= (int)$office['id'] ?>; // used by loadPossibleWindows() in queue.js
     var WALKIN_ENABLED = <?= $walkin_enabled ? 'true' : 'false' ?>;
     var APPOINTMENT_ENABLED = <?= $appointment_enabled ? 'true' : 'false' ?>;
     <?php if ($active_ticket): ?>

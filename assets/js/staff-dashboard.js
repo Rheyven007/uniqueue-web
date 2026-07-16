@@ -14,7 +14,7 @@ const btnStart = document.getElementById("startServiceBtn");
 const btnDone = document.getElementById("doneBtn");
 
 let servedToday = 0;
-
+let startMode = "start";
 // Store previous queue state
 let lastQueueData = "";
 /* ==========================================================
@@ -54,6 +54,7 @@ async function loadQueue() {
 
     renderStaffInfo(data.staff);
     renderCurrent(data.current);
+    updateStartButton(data.current);
     renderNext(data.next);
     renderWaiting(data.waiting);
 
@@ -87,8 +88,7 @@ function renderStaffInfo(staff) {
         ? staff.window_name
         : "No window assigned";
 
-    staffWindowInfo.textContent =
-        `${staff.staff_name} — ${windowLabel}`;
+    staffWindowInfo.textContent = windowLabel;
 
 }
 
@@ -128,13 +128,165 @@ function renderCurrent(ticket) {
                 SR Code: ${ticket.sr_code}
             </p>
 
+            ${renderDocumentTags(ticket.documents, ticket.queue_type)}
+
             <small>
                 Status: ${ticket.status}
             </small>
 
         </div>
 
+        ${renderQueueTypeBadge(ticket.queue_type)}
+
     `;
+
+}
+
+/* ==========================================================
+   QUEUE TYPE BADGE (Appointment / Walk-in)
+========================================================== */
+
+function renderQueueTypeBadge(queueType) {
+
+    if (!queueType) return "";
+
+    const normalized = String(queueType).trim().toLowerCase();
+
+    let label = null;
+    let modifier = "";
+
+    if (normalized === "appointment") {
+        label = "Appointment";
+        modifier = "appointment";
+    } else if (normalized === "walk-in" || normalized === "walkin" || normalized === "walk in") {
+        label = "Walk-in";
+        modifier = "walkin";
+    } else {
+        return "";
+    }
+
+    return `
+        <div class="queue-type-badge-wrap">
+            <span class="queue-type-badge queue-type-badge--${modifier}">
+                ${label}
+            </span>
+        </div>
+    `;
+
+}
+
+/* ==========================================================
+   REQUESTED DOCUMENTS (TAG STYLE)
+========================================================== */
+
+function renderDocumentTags(documents, queueType) {
+
+    // Appointment → don't show the Requested Documents section
+    if (String(queueType).toLowerCase() === "appointment") {
+        return "";
+    }
+
+    const hasDocs = documents && documents.length;
+
+    return `
+        <div class="ticket-documents">
+            <strong>Requested Documents</strong>
+            <div class="document-tags">
+                ${
+                    hasDocs
+                    ? documents.map(doc => `
+                        <span class="doc-tag">
+                            ${doc.name}
+                            ${doc.quantity > 1 ? `<span class="doc-tag__qty">${doc.quantity}x</span>` : ""}
+                        </span>
+                    `).join("")
+                    : ""
+                }
+            </div>
+        </div>
+    `;
+}
+
+//UPDATE BUTTON TO PAUSE
+
+function updateStartButton(ticket) {
+
+    if (!btnStart) return;
+
+    // Default
+    startMode = "start";
+
+    if (!ticket) {
+
+        btnStart.innerHTML = `
+            <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2">
+
+                <polygon points="5 3 19 12 5 21"/>
+
+            </svg>
+
+            Start Service
+        `;
+
+        btnStart.classList.remove("btn-warning");
+        btnStart.classList.add("btn-success");
+
+        return;
+    }
+
+    if (ticket.status === "in_progress") {
+
+        startMode = "pause";
+
+        btnStart.innerHTML = `
+            <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2">
+
+                <rect x="6" y="4" width="4" height="16"></rect>
+                <rect x="14" y="4" width="4" height="16"></rect>
+
+            </svg>
+
+            Pause Service
+        `;
+
+        btnStart.classList.remove("btn-success");
+        btnStart.classList.add("btn-warning");
+
+    } else {
+
+        startMode = "start";
+
+        btnStart.innerHTML = `
+            <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2">
+
+                <polygon points="5 3 19 12 5 21"/>
+
+            </svg>
+
+            Start Service
+        `;
+
+        btnStart.classList.remove("btn-warning");
+        btnStart.classList.add("btn-success");
+    }
 
 }
 
@@ -172,9 +324,14 @@ function renderNext(ticket) {
 
             <p>SR Code: ${ticket.sr_code}</p>
 
+            ${renderDocumentTags(ticket.documents, ticket.queue_type)}
+
             <small>Status: ${ticket.status}</small>
 
         </div>
+
+        ${renderQueueTypeBadge(ticket.queue_type)}
+
     `;
 }
 
@@ -218,21 +375,17 @@ function renderWaiting(waiting = []) {
                         ${ticket.queue_number}
                     </div>
 
-                    <div class="queue-subtitle">
+                    <div class="queue-subtitle" title="${ticket.first_name} ${ticket.last_name}">
                         ${ticket.first_name} ${ticket.last_name}
-                    </div>
-
-                    <div class="queue-meta">
-
-                        <span class="queue-status waiting">
-                            Waiting
-                        </span>
-
                     </div>
 
                 </div>
 
                 <div class="queue-side">
+
+                    <span class="queue-status waiting">
+                        Waiting
+                    </span>
 
                     <span class="queue-time">
                         In Queue
@@ -331,7 +484,15 @@ btnCallNext?.addEventListener("click", () => {
 
 btnStart?.addEventListener("click", () => {
 
-    queueAction("start-service.php");
+    if (startMode === "start") {
+
+        queueAction("start-service.php");
+
+    } else {
+
+        queueAction("pause-service.php");
+
+    }
 
 });
 

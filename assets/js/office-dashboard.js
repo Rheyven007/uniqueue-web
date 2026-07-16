@@ -1,362 +1,251 @@
-// assets/js/office-dashboard.js — Office dashboard live refresh & interactions
+// assets/js/office-dashboard.js
+
 (function () {
-    'use strict';
+    "use strict";
 
-    /* ── DOM refs ──────────────────────────────────────────────────────────── */
-    const waitingListEl    = document.getElementById('waiting-queue-list');
-    const inProgressListEl = document.getElementById('in-progress-queue-list');
-    const waitingCount     = document.getElementById('waiting-count');
-    const servingCount     = document.getElementById('serving-count');
-    const smartAssignBtn   = document.getElementById('smart-assign-btn');
+    if (typeof CURRENT_OFFICE_ID === "undefined") return;
 
-    if (!waitingListEl || !inProgressListEl) return;
-    if (typeof CURRENT_OFFICE_ID === 'undefined') return;
+    const REFRESH_MS = 15000; // keep in sync with the "every 15 seconds" comment below
 
-    const REFRESH_INTERVAL = 15; // seconds
+    // Theme palette (kept in sync with office-dashboard.css)
+    const COLORS = {
+        red:    "#C21010",
+        green:  "#1a8c4e",
+        teal:   "#0d9488",
+        amber:  "#d97706",
+        blue:   "#2563eb",
+        violet: "#7c3aed",
+        muted:  "#8a7070",
+        grid:   "#ede8e8"
+    };
 
-    /* ── Toast ─────────────────────────────────────────────────────────────── */
-    let toastContainer = document.getElementById('toast-container');
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.id = 'toast-container';
-        document.body.appendChild(toastContainer);
+    Chart.defaults.font.family = "'DM Sans', sans-serif";
+    Chart.defaults.font.size = 12;
+    Chart.defaults.color = "#4a3333";
+    Chart.defaults.plugins.tooltip.padding = 10;
+    Chart.defaults.plugins.tooltip.cornerRadius = 8;
+    Chart.defaults.plugins.tooltip.backgroundColor = "#1a0a0a";
+
+    const charts = {
+        queueStatus: null,
+        queueType: null,
+        hourly: null,
+        window: null,
+        documents: null
+    };
+
+    // ── Initial paint from data already embedded by PHP (instant, no round-trip) ──
+    function renderInitial() {
+        drawQueueStatus(queueStatus);
+        drawQueueTypes(queueTypes);
+        drawHourly(hourlyLabels, hourlyData);
+        drawWindows(windowLabels, windowData);
+        drawDocuments(documentLabels, documentData);
     }
 
-    function showToast(msg, type = '') {
-        const el = document.createElement('div');
-        el.className = 'toast' + (type ? ' toast-' + type : '');
-
-        // icon
-        const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
-        el.innerHTML = `<span>${icon}</span><span>${esc(msg)}</span>`;
-        toastContainer.appendChild(el);
-
-        setTimeout(() => {
-            el.style.animation = 'toastOut 0.3s ease forwards';
-            el.addEventListener('animationend', () => el.remove());
-        }, 3200);
-    }
-
-    /* ── Auto-refresh ring ─────────────────────────────────────────────────── */
-    const CIRCUMFERENCE = 2 * Math.PI * 18; // ~113
-
-    const ring = document.createElement('button');
-    ring.className = 'refresh-ring';
-    ring.title = 'Click to refresh now';
-    ring.setAttribute('aria-label', 'Auto-refresh countdown');
-    ring.innerHTML = `
-        <svg viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg">
-          <circle class="refresh-ring__track" cx="21" cy="21" r="18"/>
-          <circle class="refresh-ring__fill"  cx="21" cy="21" r="18"/>
-          <text x="21" y="25.5" text-anchor="middle"
-                font-family="DM Sans,sans-serif" font-size="10" font-weight="600"
-                fill="var(--ink-mid)" id="ring-label">15</text>
-        </svg>`;
-    document.body.appendChild(ring);
-
-    const ringFill  = ring.querySelector('.refresh-ring__fill');
-    const ringLabel = ring.querySelector('#ring-label');
-    let countdown   = REFRESH_INTERVAL;
-
-    function updateRing() {
-        const pct    = countdown / REFRESH_INTERVAL;
-        const offset = CIRCUMFERENCE * (1 - pct);
-        ringFill.style.strokeDashoffset = offset;
-        if (ringLabel) ringLabel.textContent = countdown;
-    }
-
-    ring.addEventListener('click', () => {
-        fetchDashboardData();
-        countdown = REFRESH_INTERVAL;
-        updateRing();
-    });
-
-    /* ── Fetch & render ────────────────────────────────────────────────────── */
-    function fetchDashboardData(silent = true) {
-        if (!silent) {
-            waitingListEl.innerHTML    = skeletonRows(3);
-            inProgressListEl.innerHTML = skeletonRows(2);
-        }
-
-        fetch(`/api/get-counters.php?office_id=${CURRENT_OFFICE_ID}`)
-            .then(r => r.json())
+    // ── Live refresh from the API, silently keeps last render if unreachable ──
+    function refreshDashboard() {
+        fetch(`/api/dashboard-stats.php?office_id=${CURRENT_OFFICE_ID}`)
+            .then(res => res.json())
             .then(data => {
-                if (!data.success) {
-                    console.error('Dashboard fetch failed:', data.message);
-                    return;
-                }
-                renderWaitingQueue(data.waiting_queue     ?? []);
-                renderInProgressQueue(data.in_progress_queue ?? []);
-            })
-            .catch(err => {
-                console.error('Dashboard network error:', err);
-            });
-    }
+                if (!data || !data.success) return;
 
-    function skeletonRows(n) {
-        return Array.from({ length: n }, (_, i) => `
-            <div class="queue-row" style="animation-delay:${i * 0.06}s">
-                <div class="skeleton" style="width:52px;height:22px;border-radius:4px;"></div>
-                <div style="flex:1;display:flex;flex-direction:column;gap:6px">
-                    <div class="skeleton" style="width:140px;height:14px;border-radius:4px;"></div>
-                    <div class="skeleton" style="width:100px;height:11px;border-radius:4px;"></div>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    /* ── Waiting queue ─────────────────────────────────────────────────────── */
-    function renderWaitingQueue(tickets) {
-        updateBadge(waitingCount, tickets.length, 'amber');
-
-        if (!tickets.length) {
-            waitingListEl.innerHTML = emptyState('No students waiting.');
-            return;
-        }
-
-        waitingListEl.innerHTML = tickets.map((t, i) => `
-            <div class="queue-row" style="animation-delay:${i * 0.04}s">
-                <div class="queue-row__num">${esc(t.queue_number)}</div>
-                <div class="queue-row__info">
-                    <span class="queue-row__name">${esc(t.first_name)} ${esc(t.last_name)}</span>
-                    <span class="queue-row__sub">${esc(t.sr_code)} &nbsp;·&nbsp; ${formatTime(t.joined_at)}</span>
-                </div>
-                <div class="queue-row__badges">
-                    <span class="badge badge-type">${esc(t.type)}</span>
-                    ${t.priority ? '<span class="badge badge-priority">Priority</span>' : ''}
-                </div>
-            </div>
-        `).join('');
-    }
-
-    /* ── In-progress queue ─────────────────────────────────────────────────── */
-    function renderInProgressQueue(tickets) {
-        updateBadge(servingCount, tickets.length, 'teal');
-
-        if (!tickets.length) {
-            inProgressListEl.innerHTML = emptyState('No tickets currently being served.');
-            return;
-        }
-
-        inProgressListEl.innerHTML = tickets.map((t, i) => `
-            <div class="queue-row queue-row--serving" style="animation-delay:${i * 0.04}s">
-                <div class="queue-row__num serving">${esc(t.queue_number)}</div>
-                <div class="queue-row__info">
-                    <span class="queue-row__name">${esc(t.first_name)} ${esc(t.last_name)}</span>
-                    <span class="queue-row__sub">${esc(t.sr_code)} &nbsp;·&nbsp; Called: ${formatTime(t.called_at)}</span>
-                </div>
-                <div class="queue-row__badges">
-                    <span class="badge badge-type">${esc(t.type)}</span>
-                    <span class="badge badge-window">Window: ${esc(t.window_name ?? '—')}</span>
-                </div>
-                <div class="queue-row__actions">
-                    <button class="btn btn-xs btn-success btn-ticket-action"
-                        data-id="${t.id}" data-action="complete">Done</button>
-                    <button class="btn btn-xs btn-ghost btn-ticket-action"
-                        data-id="${t.id}" data-action="skip">Skip</button>
-                    <button class="btn btn-xs btn-danger btn-ticket-action"
-                        data-id="${t.id}" data-action="cancel">Cancel</button>
-                </div>
-            </div>
-        `).join('');
-
-        inProgressListEl.querySelectorAll('.btn-ticket-action').forEach(btn => {
-            btn.addEventListener('click', handleTicketAction);
-        });
-    }
-
-    /* ── Update badge with pop animation ──────────────────────────────────── */
-    function updateBadge(el, count, cls) {
-        if (!el) return;
-        const prev = parseInt(el.textContent, 10);
-        el.textContent = count;
-        if (!isNaN(prev) && prev !== count) {
-            el.classList.remove('pop');
-            void el.offsetWidth; // reflow
-            el.classList.add('pop');
-        }
-    }
-
-    /* ── Empty state HTML ──────────────────────────────────────────────────── */
-    function emptyState(msg) {
-        return `<div class="empty-state">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
-            </svg>
-            ${esc(msg)}
-        </div>`;
-    }
-
-    /* ── Ticket actions ────────────────────────────────────────────────────── */
-    function handleTicketAction() {
-        const btn    = this;
-        const id     = btn.dataset.id;
-        const action = btn.dataset.action;
-
-        const labels = { complete: 'Mark as done', skip: 'Skip', cancel: 'Cancel' };
-        if (!confirm(`${labels[action] || capitalize(action)} this ticket?`)) return;
-
-        btn.disabled    = true;
-        btn.textContent = '…';
-
-        const fd = new FormData();
-        fd.append('ticket_id', id);
-        fd.append('action', action);
-
-        fetch('/api/update-queue-status.php', { method: 'POST', body: fd })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    const msgs = { complete: 'Ticket completed.', skip: 'Ticket skipped.', cancel: 'Ticket cancelled.' };
-                    showToast(msgs[action] || 'Updated.', 'success');
-                    fetchDashboardData();
-                } else {
-                    showToast(data.message || 'Action failed.', 'error');
-                    btn.disabled    = false;
-                    btn.textContent = capitalize(action);
-                }
+                drawQueueStatus(data.queueStatus);
+                drawQueueTypes(data.queueTypes);
+                drawHourly(data.hourlyLabels, data.hourlyData);
+                drawWindows(data.windowLabels, data.windowData);
+                drawDocuments(data.documentLabels, data.documentData);
             })
             .catch(() => {
-                showToast('Network error. Please try again.', 'error');
-                btn.disabled    = false;
-                btn.textContent = capitalize(action);
+                // Live-refresh endpoint unavailable — keep showing the last
+                // known good render instead of leaving blank charts.
             });
     }
 
-    /* ── Window open/close toggle ──────────────────────────────────────────── */
-    document.querySelectorAll('.btn-toggle-counter').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const windowId      = this.dataset.id;
-            const currentStatus = this.dataset.status; // 'open' | 'closed'
-            const label         = currentStatus === 'open' ? 'Close' : 'Open';
+    function hasData(values) {
+        return Array.isArray(values) && values.some(v => Number(v) > 0);
+    }
 
-            if (!confirm(`${label} this window?`)) return;
+    function showEmpty(canvas, show) {
+        const card = canvas.closest(".chart-card");
+        if (!card) return;
+        let msg = card.querySelector(".chart-empty");
+        if (show) {
+            canvas.style.display = "none";
+            if (!msg) {
+                msg = document.createElement("div");
+                msg.className = "chart-empty";
+                msg.textContent = "No data yet today";
+                card.appendChild(msg);
+            }
+        } else {
+            canvas.style.display = "";
+            if (msg) msg.remove();
+        }
+    }
 
-            const orig = this.textContent;
-            this.disabled    = true;
-            this.textContent = '…';
+    function drawQueueStatus(values) {
+        const canvas = document.getElementById("queueStatusChart");
+        showEmpty(canvas, !hasData(values));
+        if (!hasData(values)) return;
 
-            const fd = new FormData();
-            fd.append('id',     windowId);       // counter-toggle.php expects 'id'
-            fd.append('status', currentStatus);  // counter-toggle.php expects CURRENT status
-
-            fetch('/admin/counter/counter-toggle.php', { method: 'POST', credentials: 'same-origin', body: fd })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success) {
-                        const newStatus = data.new_status;
-                        showToast(`Window ${newStatus === 'open' ? 'opened' : 'closed'}.`, 'success');
-
-                        // Update button without full reload
-                        this.dataset.status  = newStatus;
-                        this.textContent     = newStatus === 'open' ? 'Close Window' : 'Open Window';
-                        this.disabled        = false;
-
-                        // Update window card visuals
-                        const card = this.closest('.window-card');
-                        if (card) {
-                            card.classList.remove('is-open', 'is-closed');
-                            card.classList.add(`is-${newStatus}`);
-
-                            const dot = card.querySelector('.status-dot');
-                            if (dot) {
-                                dot.classList.remove('open', 'closed');
-                                dot.classList.add(newStatus);
-                                dot.title = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
-                            }
-
-                            const metaStrong = card.querySelector('.window-card__meta strong');
-                            if (metaStrong) {
-                                metaStrong.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
-                                metaStrong.style.color = newStatus === 'open' ? 'var(--green)' : 'var(--muted)';
-                            }
-
-                            const emptySlot = card.querySelector('.empty-slot');
-                            if (emptySlot) {
-                                emptySlot.textContent = newStatus === 'open' ? 'Idle — ready for next' : 'Window closed';
-                            }
-                        }
-                    } else {
-                        showToast(data.message || 'Failed to update window.', 'error');
-                        this.disabled    = false;
-                        this.textContent = orig;
-                    }
-                })
-                .catch(() => {
-                    showToast('Network error. Please try again.', 'error');
-                    this.disabled    = false;
-                    this.textContent = orig;
-                });
-        });
-    });
-
-    /* ── Smart assign ──────────────────────────────────────────────────────── */
-    if (smartAssignBtn) {
-        smartAssignBtn.addEventListener('click', function () {
-            this.disabled    = true;
-            this.textContent = 'Assigning…';
-
-            fetch('/api/smart-assign.php', {
-                method: 'POST',
-                body: new URLSearchParams({ office_id: CURRENT_OFFICE_ID })
-            })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success) {
-                        showToast('Smart assign complete.', 'success');
-                        fetchDashboardData();
-                    } else {
-                        showToast(data.message || 'Smart assign failed.', 'error');
-                    }
-                })
-                .catch(() => showToast('Network error.', 'error'))
-                .finally(() => {
-                    this.disabled    = false;
-                    this.textContent = 'Smart Assign';
-                });
+        if (charts.queueStatus) charts.queueStatus.destroy();
+        charts.queueStatus = new Chart(canvas, {
+            type: "doughnut",
+            data: {
+                labels: ["Completed", "Cancelled"],
+                datasets: [{
+                    data: values,
+                    backgroundColor: [COLORS.amber, COLORS.teal, COLORS.green, COLORS.muted],
+                    borderColor: "#fff",
+                    borderWidth: 2,
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: "62%",
+                plugins: {
+                    legend: { position: "bottom", labels: { boxWidth: 10, padding: 14 } }
+                }
+            }
         });
     }
 
-    /* ── Helpers ───────────────────────────────────────────────────────────── */
-    function esc(str) {
-        if (!str && str !== 0) return '';
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
+    function drawQueueTypes(values) {
+        const canvas = document.getElementById("queueTypeChart");
+        showEmpty(canvas, !hasData(values));
+        if (!hasData(values)) return;
+
+        if (charts.queueType) charts.queueType.destroy();
+        charts.queueType = new Chart(canvas, {
+            type: "pie",
+            data: {
+                labels: ["Walk-in", "Appointment"],
+                datasets: [{
+                    data: values,
+                    backgroundColor: [COLORS.red, COLORS.blue],
+                    borderColor: "#fff",
+                    borderWidth: 2,
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: "bottom", labels: { boxWidth: 10, padding: 14 } }
+                }
+            }
+        });
     }
 
-    function formatTime(dt) {
-        if (!dt) return '—';
-        return new Date(dt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    function drawHourly(labels, values) {
+        const canvas = document.getElementById("hourlyChart");
+        showEmpty(canvas, !hasData(values));
+        if (!hasData(values)) return;
+
+        if (charts.hourly) charts.hourly.destroy();
+        charts.hourly = new Chart(canvas, {
+            type: "line",
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: "Transactions",
+                    data: values,
+                    borderColor: COLORS.red,
+                    backgroundColor: "rgba(194,16,16,0.08)",
+                    pointBackgroundColor: COLORS.red,
+                    pointRadius: 3,
+                    tension: 0.35,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { beginAtZero: true, grid: { color: COLORS.grid }, ticks: { precision: 0 } }
+                }
+            }
+        });
     }
 
-    function capitalize(s) {
-        return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+    function drawWindows(labels, values) {
+        const canvas = document.getElementById("windowChart");
+        showEmpty(canvas, !hasData(values));
+        if (!hasData(values)) return;
+
+        if (charts.window) charts.window.destroy();
+        charts.window = new Chart(canvas, {
+            type: "bar",
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: "Completed",
+                    data: values,
+                    backgroundColor: COLORS.teal,
+                    borderRadius: 6,
+                    maxBarThickness: 46
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { beginAtZero: true, grid: { color: COLORS.grid }, ticks: { precision: 0 } }
+                }
+            }
+        });
     }
 
-    /* ── Boot ──────────────────────────────────────────────────────────────── */
-    // Initial load with skeleton
-    fetchDashboardData(false);
-    updateRing();
+    function drawDocuments(labels, values) {
+        const canvas = document.getElementById("documentsChart");
+        showEmpty(canvas, !hasData(values));
+        if (!hasData(values)) return;
 
-    // Countdown ticker + periodic refresh
-    const ticker = setInterval(() => {
-        countdown--;
-        updateRing();
+        if (charts.documents) charts.documents.destroy();
+        charts.documents = new Chart(canvas, {
+            type: "bar",
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: "Requests",
+                    data: values,
+                    backgroundColor: COLORS.violet,
+                    borderRadius: 6,
+                    maxBarThickness: 22
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: "y",
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { beginAtZero: true, grid: { color: COLORS.grid }, ticks: { precision: 0 } },
+                    y: { grid: { display: false } }
+                }
+            }
+        });
+    }
 
-        if (countdown <= 0) {
-            fetchDashboardData();
-            countdown = REFRESH_INTERVAL;
-        }
-    }, 1000);
+    document.addEventListener("DOMContentLoaded", () => {
 
-    // Clean up on page hide
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            clearInterval(ticker);
-        }
+        // Initial chart render from PHP data
+        renderInitial();
+
+        // Auto fetch latest dashboard data
+        refreshDashboard();
+
+        // Update every 15 seconds
+        setInterval(refreshDashboard, REFRESH_MS);
+
     });
 
 })();
