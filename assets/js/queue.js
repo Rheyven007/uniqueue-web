@@ -1,11 +1,3 @@
-// assets/js/queue.js — Shared Queue Wizard (all offices)
-//
-// Flow is now uniform for both queue types: Type -> Details -> Requirements -> Confirm.
-//  - Walk-in Details: pick 1+ documents, each with its own quantity.
-//    Requirements step shows the union of each selected document's
-//    requirements, grouped per document.
-//  - Appointment Details: pick a date. Requirements step shows one
-//    fixed, mandatory item: bring the Appointment Slip.
 
 let currentStep = 1;
 let selectedType = null;
@@ -16,8 +8,24 @@ const TOTAL_STEPS = 4; // 1 Type, 2 Details, 3 Requirements, 4 Confirm
 function setType() {
     selectedType = document.querySelector('input[name="type"]:checked')?.value;
 
-    // Visually highlight selected type card
-    document.querySelectorAll('.type-card').forEach(card => card.classList.remove('selected'));
+    document.querySelectorAll('.type-card').forEach(card => {
+        card.classList.remove('selected');
+
+        const radio = card.querySelector('input[type="radio"]');
+        if (radio && radio.checked) {
+            card.classList.add('selected');
+        }
+    });
+
+    const docsSection = document.querySelector('#docMultiList')?.closest('.form-group');
+    const windowsBox = document.getElementById('possibleWindowsBox');
+
+    if (selectedType === 'appointment') {
+        if (docsSection) docsSection.style.display = 'none';
+        if (windowsBox) windowsBox.style.display = 'none';
+    } else {
+        if (docsSection) docsSection.style.display = '';
+    }
 }
 
 function showStep(step) {
@@ -58,24 +66,39 @@ function nextStep() {
     }
 
     if (currentStep === 2) {
-        const selectedDocs = getSelectedDocIds();
-        if (selectedDocs.length === 0) {
-            document.getElementById('docSelectWarning').style.display = 'block';
-            showFieldError("Please select at least one document.");
-            return;
+
+        if (selectedType === 'walkin') {
+
+            const selectedDocs = getSelectedDocIds();
+
+            if (selectedDocs.length === 0) {
+                document.getElementById('docSelectWarning').style.display = 'block';
+                showFieldError("Please select at least one document.");
+                return;
+            }
+
+            document.getElementById('docSelectWarning').style.display = 'none';
         }
-        document.getElementById('docSelectWarning').style.display = 'none';
+
         return showStep(3);
     }
 
     if (currentStep === 3) {
-        const checks = document.querySelectorAll('#requirementsBox input[type="checkbox"]');
-        if (checks.length === 0) { showFieldError("Requirements could not be loaded. Please try again."); return; }
-        const allChecked = [...checks].every(c => c.checked);
-        if (!allChecked) { showFieldError("Please confirm all requirements are met."); return; }
-
+        if (selectedType === 'walkin') {
+            const checks = document.querySelectorAll('#requirementsBox input[type="checkbox"]');
+            if (checks.length === 0) {
+                showFieldError("Requirements could not be loaded.");
+                return;
+            }
+            const allChecked = [...checks].every(c => c.checked);
+            if (!allChecked) {
+                showFieldError("Please confirm all requirements are met.");
+                return;
+            }
+        }
         if (selectedType === 'appointment') {
             const slip = document.getElementById('apptSlipCheck');
+
             if (!slip || !slip.checked) {
                 showFieldError("Please confirm you'll bring your Appointment Slip.");
                 return;
@@ -107,14 +130,15 @@ function onDocToggle(checkbox) {
     loadPossibleWindows();
 }
 
-/* ── Possible windows (display-only) ─────────────────────────── */
-// Shown as soon as documents are selected, instead of only revealing a
-// window once the student is about to be called. The actual assignment
-// still happens server-side (includes/algo.php) at submission — this is
-// just a preview of which window(s) qualify for the chosen documents.
 function loadPossibleWindows() {
     const box = document.getElementById('possibleWindowsBox');
     if (!box) return;
+
+    if (selectedType === 'appointment') {
+        box.style.display = 'none';
+        box.innerHTML = '';
+        return;
+    }
 
     const docIds = getSelectedDocIds();
     if (docIds.length === 0 || typeof OFFICE_ID === 'undefined') {
@@ -171,23 +195,28 @@ function loadPossibleWindows() {
 
 /* ── Requirements ────────────────────────────────────────────── */
 
-// Called when Step 3 becomes active. Shows the right requirements box for
-// the selected type, and (for walk-in) loads the union of requirements
-// for every currently-selected document.
 function enterRequirementsStep() {
+
     const reqBox = document.getElementById('requirementsBox');
     const apptBox = document.getElementById('apptRequirementBox');
 
-    // Documents are picked in Step 2 for both types now, so the
-    // per-document requirements box applies either way.
-    if (reqBox) reqBox.style.display = 'block';
-    loadRequirements();
+    if (selectedType === 'walkin') {
 
-    // Appointment gets one extra, fixed requirement on top: the slip.
-    if (apptBox) apptBox.style.display = (selectedType === 'appointment') ? 'block' : 'none';
+        if (reqBox) reqBox.style.display = 'block';
+        if (apptBox) apptBox.style.display = 'none';
+
+        loadRequirements();
+
+    } else {
+
+        if (reqBox) reqBox.style.display = 'none';
+        if (apptBox) apptBox.style.display = 'block';
+
+    }
 }
 
 function loadRequirements() {
+    if (selectedType === 'appointment') return;
     const docIds = getSelectedDocIds();
     const box = document.getElementById('requirementsBox');
     if (!box) return;
@@ -234,7 +263,13 @@ function updateSummary() {
             const qty  = item.querySelector('.qty-input--sm')?.value || '1';
             return name + ' (x' + qty + ')';
         });
-    setText('cDocList', docLines.length ? docLines.join(', ') : 'N/A');
+    if (selectedType === 'walkin') {
+        setRowVisible('cDocList', true);
+        setText('cDocList', docLines.length ? docLines.join(', ') : 'N/A');
+    } else {
+        const row = document.querySelector('.confirm-row--docs');
+        if (row) row.style.display = 'none';
+    }
 
     const priority = document.getElementById('priorityChk')?.checked ? 'Yes' : 'No';
     setText('cPriority', priority);

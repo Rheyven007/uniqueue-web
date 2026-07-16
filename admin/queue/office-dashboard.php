@@ -26,7 +26,7 @@ $today_stats = $pdo->prepare("
         COUNT(*)                                                    AS total,
         SUM(status = 'waiting')                                     AS waiting,
         SUM(status IN ('called','in_progress'))                     AS serving,
-        SUM(status = 'done')                                        AS done,
+        SUM(status = 'completed')                                        AS completed,
         SUM(status = 'cancelled')                                   AS cancelled,
         SUM(type = 'priority' OR priority = 1)                     AS priority_count,
         SUM(type = 'appointment')                                   AS appointments,
@@ -37,6 +37,78 @@ $today_stats = $pdo->prepare("
 ");
 $today_stats->execute([$oid]);
 $ts = $today_stats->fetch();
+
+/* ───────── Dashboard Chart Data ───────── */
+
+// Queue Status
+$queueStatus = [
+     (int)$ts['completed'], (int)$ts['cancelled']
+];
+
+// Queue Types
+$typeStmt = $pdo->prepare("
+SELECT SUM(type='walkin') walkin, SUM(type='appointment') appointment
+FROM queue_tickets WHERE office_id=? AND DATE(joined_at)=CURDATE()
+");
+
+$typeStmt->execute([$oid]);
+$type = $typeStmt->fetch();
+
+$queueTypes = [
+    (int)$type['walkin'],
+    (int)$type['appointment']
+];
+
+// Hourly Transactions
+$hourStmt = $pdo->prepare("
+SELECT HOUR(joined_at) hr, COUNT(*) total
+FROM queue_tickets WHERE office_id=? AND DATE(joined_at)=CURDATE() GROUP BY HOUR(joined_at) ORDER BY hr
+");
+
+$hourStmt->execute([$oid]);
+
+$hours = [];
+$hourTotals = [];
+
+while($r = $hourStmt->fetch()){
+    $hours[] = sprintf('%02d:00',$r['hr']);
+    $hourTotals[] = (int)$r['total'];
+}
+
+// Window Performance
+$windowStmt = $pdo->prepare("
+SELECT w.name, COUNT(q.id) total
+FROM windows w LEFT JOIN queue_tickets q ON q.window_id=w.id AND q.status='completed'
+AND DATE(q.done_at)=CURDATE() WHERE w.office_id=? GROUP BY w.id
+");
+
+$windowStmt->execute([$oid]);
+
+$windowNames=[];
+$windowTotals=[];
+
+while($r=$windowStmt->fetch()){
+    $windowNames[]=$r['name'];
+    $windowTotals[]=(int)$r['total'];
+}
+
+// Documents
+$docStmt=$pdo->prepare("
+SELECT d.name, COUNT(td.document_id) total
+FROM queue_ticket_document td JOIN documents d ON d.id=td.document_id
+JOIN queue_tickets qt ON qt.id=td.ticket_id WHERE qt.office_id=?
+AND DATE(qt.joined_at)=CURDATE() GROUP BY d.id ORDER BY total DESC LIMIT 10
+");
+
+$docStmt->execute([$oid]);
+
+$docNames=[];
+$docTotals=[];
+
+while($r=$docStmt->fetch()){
+    $docNames[]=$r['name'];
+    $docTotals[]=(int)$r['total'];
+}
 
 // ── Windows for this office ───────────────────────────────────────────────
 $win_stmt = $pdo->prepare("
@@ -83,8 +155,6 @@ $win_stmt = $pdo->prepare("
     ORDER BY w.name ASC
 ");
 
-$win_stmt->execute([$oid]);
-$windows = $win_stmt->fetchAll(PDO::FETCH_ASSOC);
     $win_stmt->execute([$oid]);
     $windows = $win_stmt->fetchAll();
 
@@ -92,7 +162,48 @@ $pageTitle = "Dashboard — " . $office['name'];
 include __DIR__ . '/../../includes/header.php';
 ?>
 
-<div class="od-wrap">
+<link rel="stylesheet" href="/assets/css/office-dashboard.css">
+
+<div class="app-shell">
+
+    <!-- ── Sidebar nav ──────────────────────────────────────────────────────── -->
+    <aside class="od-sidebar" aria-label="Office admin navigation">
+        <div class="od-sidebar__label">Office</div>
+
+        <a href="/admin/queue/office-dashboard.php" class="od-sidebar__link active">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            Dashboard
+        </a>
+
+        <a href="/admin/queue/queue-list.php?office_id=<?= $oid ?>" class="od-sidebar__link">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            Queue List
+        </a>
+
+        <a href="/admin/document/document-list.php" class="od-sidebar__link">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+            Documents
+        </a>
+
+        <a href="/admin/counter/counter-list.php" class="od-sidebar__link">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="18" x2="12" y2="21"/></svg>
+            Manage Windows
+        </a>
+
+        <a href="/admin/staff/staff-list.php" class="od-sidebar__link">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Manage Staff
+        </a>
+
+        <div class="od-sidebar__divider"></div>
+
+        <a href="/admin/capacity/capacity-settings.php?office_id=<?= $oid ?>" class="od-sidebar__link">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Settings
+        </a>
+    </aside>
+
+    <div class="od-wrap">
 
     <!-- ── Top bar ──────────────────────────────────────────────────────────── -->
     <div class="od-topbar">
@@ -100,87 +211,35 @@ include __DIR__ . '/../../includes/header.php';
             <h1><?= htmlspecialchars($office['name']) ?></h1>
             <p>Queue Dashboard &nbsp;·&nbsp; <?= date('l, F j, Y') ?></p>
         </div>
-
-        <div class="od-actions">
-            <button id="refresh-btn" class="btn btn-green" onclick="location.reload()">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-                    <polyline points="23 4 23 10 17 10"/>
-                    <polyline points="1 20 1 14 7 14"/>
-                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-                </svg>
-                Refresh
-            </button>
-
-         <a href="/admin/queue/queue-list.php?office_id=<?= $oid ?>" class="btn btn-ghost">
-            Queue List
-        </a>
-
-        <a href="/admin/document/document-list.php" class="btn btn-ghost">
-            Documents
-        </a>
-
-        <a href="/admin/counter/counter-list.php" class="btn btn-ghost">
-            Manage Windows
-        </a>
-
-        <a href="/admin/staff/staff-list.php" class="btn btn-ghost">
-            Manage Staff
-        </a>
-
-        <a href="/admin/capacity/capacity-settings.php?office_id=<?= $oid ?>" class="btn btn-ghost">
-            Settings
-        </a>
-        </div>
     </div>
 
-    <!-- ── Today's summary ──────────────────────────────────────────────────── -->
-    <div class="sec-label">Today's summary</div>
-    <div class="stats-row" role="list" aria-label="Today's queue statistics">
-
-        <div class="stat-box s-blue" role="listitem">
-            <div class="stat-box__lbl">Total Today</div>
-            <div class="stat-box__val" aria-label="<?= (int)$ts['total'] ?> total tickets today">
-                <?= (int)$ts['total'] ?>
-            </div>
+    <!-- ── Today's stats ────────────────────────────────────────────────────── -->
+    <div class="stats-row">
+        <div class="stat-box s-red">
+            <span class="stat-box__lbl">Total Today</span>
+            <span class="stat-box__val"><?= (int)$ts['total'] ?></span>
         </div>
-
-        <div class="stat-box s-amber" role="listitem">
-            <div class="stat-box__lbl">Waiting</div>
-            <div class="stat-box__val" aria-label="<?= (int)$ts['waiting'] ?> waiting">
-                <?= (int)$ts['waiting'] ?>
-            </div>
+        <div class="stat-box s-amber">
+            <span class="stat-box__lbl">Waiting</span>
+            <span class="stat-box__val"><?= (int)$ts['waiting'] ?></span>
         </div>
-
-        <div class="stat-box s-teal" role="listitem">
-            <div class="stat-box__lbl">Serving</div>
-            <div class="stat-box__val" aria-label="<?= (int)$ts['serving'] ?> currently serving">
-                <?= (int)$ts['serving'] ?>
-            </div>
+        <div class="stat-box s-teal">
+            <span class="stat-box__lbl">Serving</span>
+            <span class="stat-box__val"><?= (int)$ts['serving'] ?></span>
         </div>
-
-        <div class="stat-box s-green" role="listitem">
-            <div class="stat-box__lbl">Completed</div>
-            <div class="stat-box__val" aria-label="<?= (int)$ts['done'] ?> completed">
-                <?= (int)$ts['done'] ?>
-            </div>
+        <div class="stat-box s-green">
+            <span class="stat-box__lbl">Completed</span>
+            <span class="stat-box__val"><?= (int)$ts['completed'] ?></span>
         </div>
-
-        <div class="stat-box s-red" role="listitem">
-            <div class="stat-box__lbl">Cancelled</div>
-            <div class="stat-box__val" aria-label="<?= (int)$ts['cancelled'] ?> cancelled">
-                <?= (int)$ts['cancelled'] ?>
-            </div>
+        <div class="stat-box s-blue">
+            <span class="stat-box__lbl">Appointments</span>
+            <span class="stat-box__val"><?= (int)$ts['appointments'] ?></span>
         </div>
-
-        <div class="stat-box s-violet" role="listitem">
-            <div class="stat-box__lbl">Avg. Serve (min)</div>
-            <div class="stat-box__val">
-                <?= $ts['avg_service_min'] ? round($ts['avg_service_min']) : '—' ?>
-            </div>
+        <div class="stat-box s-violet">
+            <span class="stat-box__lbl">Priority</span>
+            <span class="stat-box__val"><?= (int)$ts['priority_count'] ?></span>
         </div>
-
-    </div><!-- /.stats-row -->
+    </div>
 
     <!-- ── Main grid ────────────────────────────────────────────────────────── -->
     <div class="od-grid">
@@ -252,42 +311,80 @@ include __DIR__ . '/../../includes/header.php';
         <!-- Right: queue panels (JS-driven) ────────────────────────────────── -->
         <div class="queue-col">
 
-            <!-- In Progress -->
-            <section class="queue-section" aria-labelledby="serving-heading">
-                <div class="queue-section__head">
-                    <h2 id="serving-heading">
-                        Called / In Progress
-                        <span class="count-badge teal" id="serving-count" aria-live="polite">…</span>
-                    </h2>
-                </div>
-                <div id="in-progress-queue-list" role="list" aria-label="Tickets being served">
-                    <div class="empty-state">Loading…</div>
-                </div>
-            </section>
+            <div class="dashboard-charts">
 
-            <!-- Waiting -->
-            <section class="queue-section" aria-labelledby="waiting-heading">
-                <div class="queue-section__head">
-                    <h2 id="waiting-heading">
-                        Waiting Queue
-                        <span class="count-badge amber" id="waiting-count" aria-live="polite">…</span>
-                    </h2>
-                    <button class="btn btn-primary btn-sm" id="smart-assign-btn">
-                        Smart Assign
-                    </button>
-                </div>
-                <div id="waiting-queue-list" role="list" aria-label="Students waiting">
-                    <div class="empty-state">Loading…</div>
-                </div>
-            </section>
+                <!-- Hourly trend leads — it's the most useful at-a-glance signal -->
+                <section class="chart-card chart-card--wide">
+                    <div class="chart-card__head">
+                        <h3>Transactions Per Hour</h3>
+                        <span>Today's Activity</span>
+                    </div>
 
+                    <canvas id="hourlyChart"></canvas>
+                </section>
+
+                <!-- Queue Status -->
+                <section class="chart-card">
+                    <div class="chart-card__head">
+                        <h3>Queue Status</h3>
+                        <span>Today's Queue Distribution</span>
+                    </div>
+
+                    <canvas id="queueStatusChart"></canvas>
+                </section>
+
+                <!-- Queue Type -->
+                <section class="chart-card">
+                    <div class="chart-card__head">
+                        <h3>Queue Types</h3>
+                        <span>Walk-in vs Appointment</span>
+                    </div>
+
+                    <canvas id="queueTypeChart"></canvas>
+                </section>
+
+                <!-- Windows -->
+                <section class="chart-card chart-card--wide">
+                    <div class="chart-card__head">
+                        <h3>Window Performance</h3>
+                        <span>Completed Transactions</span>
+                    </div>
+
+                    <canvas id="windowChart"></canvas>
+                </section>
+
+                <!-- Documents -->
+                <section class="chart-card chart-card--wide">
+                    <div class="chart-card__head">
+                        <h3>Most Requested Documents</h3>
+                        <span>Today's Requests</span>
+                    </div>
+
+                    <canvas id="documentsChart"></canvas>
+                </section>
+
+            </div>
         </div><!-- /.queue-col -->
-    </div><!-- /.od-grid -->
-</div><!-- /.od-wrap -->
 
-<link rel="stylesheet" href="/assets/css/office-dashboard.css">
-<script>const CURRENT_OFFICE_ID = <?= (int)$target_office_id ?>;</script>
+    </div><!-- /.od-grid -->
+    </div><!-- /.od-wrap -->
+</div><!-- /.app-shell -->
+
+<script src="/assets/js/vendor/chart.umd.min.js"></script>
+
+<script>
+const CURRENT_OFFICE_ID = <?= (int)$target_office_id ?>;
+const queueStatus = <?= json_encode($queueStatus) ?>;
+const queueTypes = <?= json_encode($queueTypes) ?>;
+const hourlyLabels = <?= json_encode($hours) ?>;
+const hourlyData = <?= json_encode($hourTotals) ?>;
+const windowLabels = <?= json_encode($windowNames) ?>;
+const windowData = <?= json_encode($windowTotals) ?>;
+const documentLabels = <?= json_encode($docNames) ?>;
+const documentData = <?= json_encode($docTotals) ?>;
+</script>
+
 <script src="/assets/js/office-dashboard.js" defer></script>
-<script src="/assets/js/smart-assign.js"     defer></script>
+<script src="/assets/js/smart-assign.js" defer></script>
 
 <?php include __DIR__ . '/../../includes/footer.php'; ?>

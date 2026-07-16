@@ -1,4 +1,3 @@
-
 <?php
 
 require_once __DIR__ . '/../../auth/session.php';
@@ -10,10 +9,12 @@ $staffId = $_SESSION['staff_id'];
 
 $stmt = $pdo->prepare("
     SELECT
-        s.name,
-        s.window_id,
-        w.name AS window_name,
-        o.name AS office_name
+    s.name,
+    s.window_id,
+    w.name AS window_name,
+    w.queue_type,
+    o.name AS office_name
+
     FROM staff s
     LEFT JOIN windows w ON s.window_id = w.id
     LEFT JOIN offices o ON s.office_id = o.id
@@ -27,6 +28,21 @@ $staff = $stmt->fetch(PDO::FETCH_ASSOC);
 $staffName = $staff['name'] ?? 'Staff';
 $windowName = $staff['window_name'] ?? 'No Window Assigned';
 $officeName = $staff['office_name'] ?? '';
+$windowQueueType = $staff['queue_type'] ?? 'both';
+
+switch ($windowQueueType) {
+    case 'walkin':
+        $windowQueueTypeLabel = 'Walk-in Only';
+        break;
+
+    case 'appointment':
+        $windowQueueTypeLabel = 'Appointment Only';
+        break;
+
+    default:
+        $windowQueueTypeLabel = 'Walk-in & Appointment';
+}
+
 
 ?>
 
@@ -49,11 +65,19 @@ $officeName = $staff['office_name'] ?? '';
                 <strong><?= htmlspecialchars($staffName) ?></strong>
 
                 <span id="staffWindowInfo">
-                    • <?= htmlspecialchars($windowName) ?>
+                    <span class="staff-window-pill">
+                        <?= htmlspecialchars($windowName) ?>
+                    </span>
 
                     <?php if (!empty($officeName)): ?>
-                        (<?= htmlspecialchars($officeName) ?>)
+                        <span class="staff-office-pill">
+                            <?= htmlspecialchars($officeName) ?>
+                        </span>
                     <?php endif; ?>
+
+                    <span class="staff-office-pill">
+                        <?= htmlspecialchars($windowQueueTypeLabel) ?>
+                    </span>
 
                 </span>
             </p>
@@ -75,6 +99,104 @@ $officeName = $staff['office_name'] ?? '';
 
             Logout
         </a>
+
+    </div>
+
+    <!-- =========================
+         QUEUE STATISTICS
+    ========================== -->
+
+    <div class="staff-stats-bar">
+
+        <div class="stat-tile stat-tile--waiting">
+            <div class="stat-tile__icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M1 21v-2a4 4 0 0 1 3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M9 15a4 4 0 0 0-4 4v2h10v-2a4 4 0 0 0-4-4z"/>
+                </svg>
+            </div>
+            <div class="stat-tile__body">
+                <span class="stat-tile__label">Waiting in Your Queue</span>
+                <span class="stat-tile__value" id="statWaitingCount">0</span>
+            </div>
+        </div>
+
+        <div class="stat-tile stat-tile--serving">
+            <div class="stat-tile__icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"/>
+                    <path d="M12 4h9"/>
+                    <path d="M4 4h.01"/>
+                    <path d="M4 12h.01"/>
+                    <path d="M4 20h.01"/>
+                    <path d="M9 12h12"/>
+                </svg>
+            </div>
+            <div class="stat-tile__body">
+                <span class="stat-tile__label">Now Serving</span>
+                <span class="stat-tile__value" id="statNowServing">—</span>
+            </div>
+        </div>
+
+        <div class="stat-tile stat-tile--window">
+            <div class="stat-tile__icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="16" rx="2"/>
+                    <path d="M3 10h18"/>
+                    <path d="M8 2v4"/>
+                    <path d="M16 2v4"/>
+                </svg>
+            </div>
+            <div class="stat-tile__body">
+                <span class="stat-tile__label">Assigned Window</span>
+                <span class="stat-tile__value">
+                    <?= htmlspecialchars($windowName) ?>
+                    <?php if (!empty($officeName)): ?>
+                        <small><?= htmlspecialchars($officeName) ?> Office</small><br>
+                    <?php endif; ?>
+                </span>
+            </div>
+            
+        </div>
+
+        <div class="stat-tile stat-tile--queue-type">
+
+    <div class="stat-tile__icon">
+        <svg width="24"
+             height="24"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2"
+             stroke-linecap="round"
+             stroke-linejoin="round">
+
+            <path d="M8 6h13"/>
+            <path d="M8 12h13"/>
+            <path d="M8 18h13"/>
+            <circle cx="4" cy="6" r="1"/>
+            <circle cx="4" cy="12" r="1"/>
+            <circle cx="4" cy="18" r="1"/>
+
+        </svg>
+    </div>
+
+    <div class="stat-tile__body">
+
+        <span class="stat-tile__label">
+            Queue Type Handled
+        </span>
+
+        <span class="stat-tile__value">
+            <?= htmlspecialchars($windowQueueTypeLabel) ?>
+        </span>
+
+    </div>
+
+</div>
 
     </div>
 
@@ -247,5 +369,43 @@ $officeName = $staff['office_name'] ?? '';
 
 <script src="../../assets/js/staff-dashboard.js"></script>
 
+<script>
+    // Keeps the new "Queue Statistics" tiles in sync with the data
+    // that staff-dashboard.js already renders into #queueCount and
+    // #current-ticket, so no changes to that script are required.
+    (function () {
+        var waitingStat   = document.getElementById('statWaitingCount');
+        var servingStat   = document.getElementById('statNowServing');
+        var queueCountEl  = document.getElementById('queueCount');
+        var currentTicket = document.getElementById('current-ticket');
+
+        function extractNumber(text) {
+            var match = (text || '').match(/\d+/);
+            return match ? match[0] : '0';
+        }
+
+        function syncWaiting() {
+            if (queueCountEl && waitingStat) {
+                waitingStat.textContent = extractNumber(queueCountEl.textContent);
+            }
+        }
+
+        function syncServing() {
+            if (!currentTicket || !servingStat) return;
+            var heading = currentTicket.querySelector('h2');
+            servingStat.textContent = heading ? heading.textContent.trim() : '—';
+        }
+
+        if (queueCountEl) {
+            new MutationObserver(syncWaiting).observe(queueCountEl, { childList: true, characterData: true, subtree: true });
+            syncWaiting();
+        }
+
+        if (currentTicket) {
+            new MutationObserver(syncServing).observe(currentTicket, { childList: true, characterData: true, subtree: true });
+            syncServing();
+        }
+    })();
+</script>
+
 <?php include __DIR__ . '/../../includes/footer.php'; ?>
-```

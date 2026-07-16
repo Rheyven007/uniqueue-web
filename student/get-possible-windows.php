@@ -1,8 +1,4 @@
 <?php
-// student/get-possible-windows.php — Polled by queue.js while picking documents.
-// Shows the student which windows COULD serve their combination of
-// documents. The actual assignment still happens server-side, in
-// pick_best_window(), at ticket submission — this is display-only.
 
 require_once __DIR__ . '/../auth/session.php';
 require_once __DIR__ . '/../includes/db.php';
@@ -24,13 +20,45 @@ if (is_array($raw)) {
 }
 $document_ids = array_values(array_unique(array_filter(array_map('intval', $raw_doc_ids))));
 
-if (!$office_id || !$document_ids) {
-    json_response(['success' => true, 'windows' => []]); // Return success but empty
+if (!$office_id) {
+    json_response([
+        'success' => true,
+        'windows' => []
+    ]);
 }
 
-$windows = get_eligible_windows($pdo, $office_id, $document_ids, $type);
+if ($type === 'appointment') {
+
+    $stmt = $pdo->prepare("
+        SELECT id, name
+        FROM windows
+        WHERE office_id = ?
+        AND queue_type IN ('appointment','both')
+        AND status = 'open'
+        ORDER BY name
+    ");
+    $stmt->execute([$office_id]);
+    $windows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} else {
+
+    if (!$document_ids) {
+        json_response([
+            'success' => true,
+            'windows' => []
+        ]);
+    }
+    $windows = get_eligible_windows(
+        $pdo,
+        $office_id,
+        $document_ids,
+        'walkin'
+    );
+}
 
 json_response([
     'success' => true,
-    'windows' => array_map(fn($w) => ['id' => (int)$w['id'], 'name' => $w['name']], $windows),
+    'windows' => array_map(fn($w)=>[
+        'id'=>(int)$w['id'],
+        'name'=>$w['name']
+    ],$windows)
 ]);

@@ -72,6 +72,15 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Column layout so the footer always sits at the bottom of the
+   viewport and the sidebar + main content can sit side by side
+   between the header and footer. */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
 a   { color: inherit; text-decoration: none; }
 img { display: block; max-width: 100%; }
 button { font-family: inherit; cursor: pointer; }
@@ -248,7 +257,7 @@ button { font-family: inherit; cursor: pointer; }
 .site-footer {
   background: var(--white);
   border-top: 1.5px solid var(--smoke);
-  margin-top: auto;
+  flex-shrink: 0;
 }
 
 .site-footer__inner {
@@ -266,11 +275,87 @@ button { font-family: inherit; cursor: pointer; }
   letter-spacing: 0.2px;
 }
 
-/* ── Page wrapper ─────────────────────────────────────────── */
+/* ── App shell (sidebar + main content) ──────────────────────
+   Sits between the sticky header and the footer. .od-sidebar is
+   the persistent nav rail; .od-wrap is the scrollable main
+   column next to it. ──────────────────────────────────────── */
+.app-shell {
+  display: flex;
+  align-items: flex-start;
+  flex: 1;
+  width: 100%;
+}
+
+.od-sidebar {
+  width: 232px;
+  flex-shrink: 0;
+  background: var(--white);
+  border-right: 1.5px solid var(--smoke);
+  min-height: calc(100vh - 60px);
+  position: sticky;
+  top: 60px;
+  padding: 1.6rem 1rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.od-sidebar__label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--ink-light);
+  padding: 0 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.od-sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.87rem;
+  font-weight: 500;
+  color: var(--ink-mid);
+  text-decoration: none;
+  transition: background var(--transition), color var(--transition);
+}
+
+.od-sidebar__link svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.od-sidebar__link:hover {
+  background: var(--mist);
+  color: var(--ink);
+}
+
+.od-sidebar__link.active {
+  background: var(--red-soft);
+  color: var(--red);
+  font-weight: 600;
+}
+
+.od-sidebar__link.active svg { opacity: 1; }
+
+.od-sidebar__divider {
+  height: 1px;
+  background: var(--smoke);
+  margin: 0.6rem 0.5rem;
+}
+
+/* ── Page wrapper (main content column, sibling of .od-sidebar) ── */
 .od-wrap {
-  max-width: 1300px;
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 2rem 1.8rem 4rem;
+  padding: 2rem 2.5rem 4rem;
   display: flex;
   flex-direction: column;
   gap: 1.4rem;
@@ -998,6 +1083,24 @@ button { font-family: inherit; cursor: pointer; }
   }
 }
 
+@media (max-width: 900px) {
+  .app-shell { flex-direction: column; }
+  .od-sidebar {
+    width: 100%;
+    min-height: auto;
+    flex-direction: row;
+    align-items: center;
+    overflow-x: auto;
+    border-right: none;
+    border-bottom: 1.5px solid var(--smoke);
+    padding: 0.65rem 1rem;
+    gap: 0.4rem;
+  }
+  .od-sidebar__label,
+  .od-sidebar__divider { display: none; }
+  .od-sidebar__link { flex-shrink: 0; }
+}
+
 @media (max-width: 860px) {
   .od-wrap   { padding: 1.5rem 1rem 3rem; gap: 1.2rem; }
   .stats-row { grid-template-columns: repeat(3, 1fr); gap: 0.7rem; }
@@ -1024,4 +1127,84 @@ button { font-family: inherit; cursor: pointer; }
   .windows-col   { grid-template-columns: 1fr; }
   .stat-box__val { font-size: 1.55rem; }
   .od-topbar__left h1 { font-size: 1.25rem; }
+}
+
+
+/* =====================================================
+   DASHBOARD CHARTS
+===================================================== */
+
+.dashboard-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.chart-card {
+  background: var(--white);
+  border: 1.5px solid var(--smoke);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.2rem;
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+  height: 260px;
+  position: relative;
+  transition: box-shadow var(--transition), border-color var(--transition);
+}
+
+.chart-card:hover {
+  box-shadow: var(--shadow-sm);
+  border-color: var(--red-border);
+}
+
+.chart-card--wide { grid-column: span 2; }
+
+.chart-card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.chart-card__head h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.chart-card__head span {
+  font-size: 0.76rem;
+  color: var(--ink-light);
+  white-space: nowrap;
+}
+
+.chart-card canvas {
+  flex: 1;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.chart-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  color: var(--dim);
+  font-style: italic;
+}
+
+/* =====================================================
+   RESPONSIVE — dashboard charts
+===================================================== */
+@media (max-width: 1200px) {
+  .chart-card--wide { grid-column: span 1; }
+}
+
+@media (max-width: 768px) {
+  .dashboard-charts { grid-template-columns: 1fr; gap: 0.85rem; }
+  .chart-card { height: 230px; padding: 1rem; }
 }

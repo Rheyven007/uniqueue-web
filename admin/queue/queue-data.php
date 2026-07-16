@@ -70,6 +70,25 @@ try {
 
     $currentTicket = $stmt->fetch(PDO::FETCH_ASSOC);
 
+    if ($currentTicket) {
+
+    $stmt = $pdo->prepare("
+        SELECT
+            d.name,
+            qtd.quantity
+        FROM queue_ticket_document qtd
+        INNER JOIN documents d
+            ON d.id = qtd.document_id
+        WHERE qtd.ticket_id = ?
+    ");
+
+    $stmt->execute([
+        $currentTicket['id']
+    ]);
+
+    $currentTicket['documents'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $currentTicket['queue_type'] = $currentTicket['type'];
+    }
   
    
     /*
@@ -103,6 +122,10 @@ try {
     ]);
 
     $waitingTickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($waitingTickets as &$ticket) {
+    $ticket['queue_type'] = $ticket['type'];
+}
+unset($ticket);
 
     /* -------------------------------------------------------
     DETERMINE NEXT TICKET
@@ -116,6 +139,26 @@ try {
         if ($nextTicket) {
             array_shift($waitingTickets);
         }
+    }
+
+    if ($nextTicket) {
+
+    $stmt = $pdo->prepare("
+        SELECT
+            d.name,
+            qtd.quantity
+        FROM queue_ticket_document qtd
+        INNER JOIN documents d
+            ON d.id = qtd.document_id
+        WHERE qtd.ticket_id = ?
+    ");
+
+    $stmt->execute([
+        $nextTicket['id']
+    ]);
+
+    $nextTicket['documents'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $nextTicket['queue_type'] = $nextTicket['type'];
     }
 
     echo json_encode([
