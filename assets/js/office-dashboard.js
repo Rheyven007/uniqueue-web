@@ -5,8 +5,6 @@
 
     if (typeof CURRENT_OFFICE_ID === "undefined") return;
 
-    const REFRESH_MS = 15000; // keep in sync with the "every 15 seconds" comment below
-
     // Theme palette (kept in sync with office-dashboard.css)
     const COLORS = {
         red:    "#C21010",
