@@ -1,24 +1,24 @@
 /* ==========================================================
    STAFF DASHBOARD
-   Palette sourced from mobile app constants/theme.ts so the
-   web dashboard shares the same brand identity as the app.
+   Palette: Deep Red / Stone / Dark Red / Grey Orange
+   Full-screen, no-scroll queue dashboard layout.
 ========================================================== */
 
 :root{
     /* Brand */
-    --brand-primary:#660810;
+    --brand-primary:#660810;       /* Deep Red */
     --brand-primary-light:#8a2e35;
     --brand-primary-dark:#450509;
-    --brand-secondary:#270707;
+    --brand-secondary:#270707;     /* Dark Red */
 
     /* Neutrals */
-    --bg:#f1ebeb;
-    --accent:#d6c0b1;
+    --bg:#f1ebeb;                  /* Stone */
+    --accent:#d6c0b1;              /* Grey Orange */
     --white:#ffffff;
     --text:#1f1f1f;
     --gray:#7a7a7a;
     --light-gray:#f2f2f2;
-    --border:rgba(102,8,16,0.08);
+    --border:rgba(102,8,16,0.10);
     --overlay:rgba(39,7,7,0.55);
 
     /* Cream surfaces */
@@ -31,8 +31,8 @@
     /* Status */
     --success:#2e7d32;
     --success-light:#dff6dd;
-    --warning:#f39c12;
-    --warning-light:#fceed8;
+    --warning:#b3791a;
+    --warning-light:#f3e3d1;
     --info:#1976d2;
     --info-light:#dcebfb;
     --purple:#7b1fa2;
@@ -58,15 +58,28 @@
     box-sizing:border-box;
 }
 
+html,body{
+    height:100%;
+    overflow:hidden;
+    background:var(--bg);
+}
+
+/* ==========================================================
+   ROOT DASHBOARD — fills the screen, no page scroll
+========================================================== */
+
 .staff-dashboard{
     width:100%;
-    max-width:1400px;
-    margin:20px auto;
-    padding:0 24px;
+    height:100vh;
+    height:100dvh;
+    margin:0 auto;
+    padding:14px 20px;
     display:flex;
     flex-direction:column;
-    gap:16px;
+    gap:10px;
     color:var(--text);
+    background:var(--bg);
+    overflow:hidden;
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
 }
 
@@ -75,26 +88,18 @@
 ========================================================== */
 
 .staff-dashboard__header{
+    flex:0 0 auto;
     display:flex;
+    flex-wrap:wrap;
     justify-content:space-between;
     align-items:center;
-    gap:16px;
-    padding:18px 24px;
-    background:var(--white);
-    background-image:linear-gradient(135deg,var(--brand-primary-light) 0%,var(--brand-primary) 100%);
+    gap:12px 16px;
+    padding:14px 22px;
+    background:var(--brand-primary);
     border-radius:var(--radius-xl);
     border:1px solid var(--border);
-    box-shadow:0 14px 34px rgba(138,46,53,.22);
+    box-shadow:0 14px 30px rgba(39,7,7,.24);
     position:relative;
-    overflow:hidden;
-}
-
-.staff-dashboard__header::after{
-    content:"";
-    position:absolute;
-    inset:0;
-    background:radial-gradient(circle at top right, rgba(255,255,255,.08), transparent 55%);
-    pointer-events:none;
 }
 
 .staff-dashboard__heading{
@@ -102,11 +107,40 @@
     flex-direction:column;
     position:relative;
     z-index:1;
+    flex:1 1 220px;
+    min-width:200px;
+}
+
+.staff-dashboard__eyebrow{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-bottom:5px;
+    font-size:10.5px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.8px;
+    color:rgba(255,255,255,.65);
+}
+
+.live-dot{
+    width:7px;
+    height:7px;
+    flex:0 0 auto;
+    border-radius:50%;
+    background:var(--success);
+    animation:live-pulse 1.8s ease-out infinite;
+}
+
+@keyframes live-pulse{
+    0%{ box-shadow:0 0 0 0 rgba(46,125,50,.55); }
+    70%{ box-shadow:0 0 0 6px rgba(46,125,50,0); }
+    100%{ box-shadow:0 0 0 0 rgba(46,125,50,0); }
 }
 
 .staff-dashboard__heading h2{
     margin:0;
-    font-size:26px;
+    font-size:21px;
     font-weight:800;
     letter-spacing:-.3px;
     color:var(--white);
@@ -117,9 +151,9 @@
     display:flex;
     align-items:center;
     flex-wrap:wrap;
-    gap:8px 10px;
-    color:rgba(255,255,255,.85);
-    font-size:14px;
+    gap:6px 10px;
+    color:rgba(255,255,255,.75);
+    font-size:13px;
     font-weight:500;
 }
 
@@ -135,180 +169,134 @@
     flex-wrap:wrap;
 }
 
-.staff-window-pill{
+/* ==========================================================
+   INFO PILLS — window / office / queue-type, each with an icon
+   so the three are distinguishable at a glance. Solid colors
+   only (no gradients).
+========================================================== */
+
+.info-pill{
     display:inline-flex;
     align-items:center;
     gap:6px;
-    padding:4px 12px;
+    padding:5px 13px;
     border-radius:var(--radius-full);
     background:rgba(255,255,255,.16);
     border:1px solid rgba(255,255,255,.28);
     color:var(--white);
-    font-size:13px;
+    font-size:12px;
     font-weight:600;
     letter-spacing:.2px;
+    white-space:nowrap;
 }
 
-.staff-office-pill{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    padding:4px 12px;
-    border-radius:var(--radius-full);
+.info-pill svg{
+    flex:0 0 auto;
+    opacity:.85;
+}
+
+.info-pill--office{
     background:rgba(255,255,255,.08);
-    border:1px solid rgba(255,255,255,.18);
+    border-color:rgba(255,255,255,.18);
     color:rgba(255,255,255,.8);
-    font-size:12px;
+    font-size:11px;
     font-weight:600;
     text-transform:uppercase;
     letter-spacing:.5px;
 }
 
-/* ==========================================================
-   LOGOUT BUTTON
-========================================================== */
-
-.logout-btn{
-    position:relative;
-    z-index:1;
-    display:inline-flex;
-    align-items:center;
-    gap:10px;
-    padding:12px 20px;
-    border-radius:var(--radius-md);
-    background:rgba(255,255,255,.14);
-    border:1px solid rgba(255,255,255,.3);
-    color:var(--white);
-    text-decoration:none;
-    font-weight:600;
-    font-size:14px;
-    backdrop-filter:blur(4px);
-    transition:.25s;
-}
-
-.logout-btn:hover{
+/* Queue-type pill is solid white so its color-coding (below)
+   reads clearly against the dark header. */
+.info-pill--queuetype{
     background:var(--white);
-    color:var(--brand-primary);
-    transform:translateY(-2px);
-    box-shadow:0 10px 22px rgba(0,0,0,.18);
+    font-size:10.5px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.5px;
 }
 
-.logout-btn svg{
-    flex-shrink:0;
-}
-
-/* ==========================================================
-   QUEUE STATISTICS (KEY STATS BAR)
-========================================================== */
-
-.staff-stats-bar{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:12px;
-}
-
-.stat-tile{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    background:var(--white);
-    border:1px solid var(--border);
-    border-radius:var(--radius-lg);
-    padding:12px 16px;
-    box-shadow:0 8px 22px rgba(102,8,16,.05);
-    transition:transform .2s,box-shadow .2s;
-}
-
-.stat-tile:hover{
-    transform:translateY(-3px);
-    box-shadow:0 14px 30px rgba(102,8,16,.1);
-}
-
-.stat-tile__icon{
-    width:40px;
-    height:40px;
-    flex-shrink:0;
-    border-radius:var(--radius-md);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:var(--primary-tint);
-    color:var(--brand-primary);
-}
-
-.stat-tile--waiting .stat-tile__icon{
-    background:var(--warning-light);
+.info-pill--walkin{
     color:var(--warning);
 }
 
-.stat-tile--serving .stat-tile__icon{
-    background:var(--info-light);
+.info-pill--appointment{
     color:var(--info);
 }
 
-.stat-tile--window .stat-tile__icon{
-    background:var(--purple-light);
-    color:var(--purple);
-}
-
-.stat-tile--queue-type .stat-tile__icon{
-    background:var(--info-light);
-    color:var(--info);
-}
-
-.stat-tile__body{
-    display:flex;
-    flex-direction:column;
-    gap:2px;
-    min-width:0;
-}
-
-.stat-tile__label{
-    font-size:11px;
-    font-weight:700;
-    letter-spacing:.6px;
-    text-transform:uppercase;
-    color:var(--gray);
-}
-
-.stat-tile__value{
-    font-size:24px;
-    font-weight:800;
-    color:var(--brand-secondary);
-    line-height:1.2;
-}
-
-.stat-tile__value small{
-    display:block;
-    margin-top:3px;
-    font-size:12px;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:.4px;
-    color:var(--brand-primary-light);
+.info-pill--both{
+    color:var(--brand-primary);
 }
 
 /* ==========================================================
-   GRID
+   HEADER RIGHT — window/office/queue-type chips + quick stats
+   (logout now lives in the shared site header, see header.php)
+========================================================== */
+
+.staff-dashboard__header-right{
+    position:relative;
+    z-index:1;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+    flex:1 1 260px;
+    min-width:0;
+}
+
+/* Window / office / queue-type pills, relocated here from the
+   old standalone "info strip" row so everything about the
+   staff's current window lives on the right of the header,
+   next to the live counts. */
+.header-info-chips{
+    display:inline-flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-right:4px;
+}
+
+/* ==========================================================
+   MAIN GRID — fills remaining viewport height
 ========================================================== */
 
 .staff-dashboard__grid{
+    flex:1 1 auto;
+    min-height:0;
     display:grid;
-    grid-template-columns:420px 1fr;
-    gap:16px;
-    align-items:start;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
 }
 
 .staff-dashboard__left{
-    display:flex;
-    flex-direction:column;
-    gap:16px;
+    min-height:0;
+    display:grid;
+    grid-template-rows:1.15fr 1.05fr auto;
+    gap:12px;
+    transition:grid-template-rows .25s ease;
+}
+
+/* One of the two ticket cards has a long document list — give it
+   more of the column's fixed height so its tags have room to wrap
+   without scrolling or getting clipped. Total height used stays
+   the same; it's reallocated, not added. */
+.staff-dashboard__left.grid--current-heavy{
+    grid-template-rows:1.65fr 0.65fr auto;
+}
+
+.staff-dashboard__left.grid--next-heavy{
+    grid-template-rows:0.75fr 1.55fr auto;
+}
+
+.staff-dashboard__left.grid--both-heavy{
+    grid-template-rows:1.3fr 1.1fr auto;
 }
 
 .staff-dashboard__right{
-    display:flex;
-    flex-direction:column;
-    gap:16px;
+    min-height:0;
+    display:grid;
+    grid-template-rows:1fr auto;
+    gap:12px;
 }
 
 /* ==========================================================
@@ -316,40 +304,78 @@
 ========================================================== */
 
 .staff-dashboard__section{
+    min-height:0;
+    display:flex;
+    flex-direction:column;
     background:var(--white);
     border-radius:var(--radius-xl);
     border:1px solid var(--border);
-    box-shadow:0 8px 24px rgba(102,8,16,.05);
-    padding:16px;
-    transition:transform .2s,box-shadow .2s;
-}
-
-.staff-dashboard__section:hover{
-    box-shadow:0 14px 35px rgba(102,8,16,.08);
+    box-shadow:0 8px 22px rgba(102,8,16,.05);
+    padding:14px 16px;
+    overflow:hidden;
 }
 
 .staff-dashboard__section h3{
-    margin:0 0 12px;
+    flex:0 0 auto;
+    margin:0 0 10px;
     display:flex;
     align-items:center;
     gap:10px;
     padding-bottom:8px;
     border-bottom:1px solid var(--cream-dark);
-    font-size:15px;
+    font-size:13.5px;
     font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.4px;
     color:var(--brand-secondary);
 }
 
 .staff-dashboard__section h3::before{
     content:"";
     width:4px;
-    height:16px;
+    height:14px;
     border-radius:var(--radius-full);
     background:var(--brand-primary-light);
 }
 
+/* Title text sits right after the colored bar; the badge (added
+   below) is pushed to the far right via margin-left:auto so it
+   lands next to the section title instead of stacking inside the
+   card underneath it. */
+.section-title-text{
+    display:inline-block;
+}
+
+.section-title-badge{
+    margin-left:auto;
+    display:inline-flex;
+    text-transform:none;
+    letter-spacing:normal;
+}
+
+.section-title-badge:empty,
+.section-title-badge.is-empty{
+    display:none;
+}
+
+.section-title-badge .queue-type-badge{
+    padding:3px 11px;
+    font-size:10px;
+}
+
 .staff-dashboard__queue h3::before{
     background:var(--success);
+}
+
+.staff-dashboard__section--last h3::before{
+    background:var(--accent);
+}
+
+/* Current serving card gets a touch more visual weight since it's
+   the most important thing on screen for the staff member. */
+.staff-dashboard__section--current{
+    background:var(--white);
+    border-top:3px solid var(--brand-primary);
 }
 
 /* ==========================================================
@@ -357,10 +383,13 @@
 ========================================================== */
 
 .queue-header{
+    flex:0 0 auto;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    margin-bottom:12px;
+    margin-bottom:10px;
+    padding-bottom:8px;
+    border-bottom:1px solid var(--cream-dark);
 }
 
 .queue-header h3{
@@ -369,52 +398,246 @@
     padding:0;
 }
 
-.queue-header h3::before{
-    background:var(--success);
-}
-
 .queue-count{
     background:var(--success-light);
     color:var(--success);
-    padding:5px 12px;
+    padding:4px 12px;
     border-radius:var(--radius-full);
-    font-size:13px;
+    font-size:12px;
     font-weight:700;
+    white-space:nowrap;
 }
 
 /* ==========================================================
-   CURRENT SERVING
+   CURRENT SERVING / NEXT IN QUEUE
 ========================================================== */
 
-#current-ticket{
+#current-ticket,
+#next-ticket{
+    flex:1 1 auto;
+    min-height:0;
     width:100%;
+    display:flex;
+    flex-direction:column;
 }
 
 .current-ticket-card{
     width:100%;
-    padding:18px 20px;
-    border-radius:var(--radius-xl);
+    padding:16px 20px;
+    border-radius:var(--radius-lg);
     background:var(--white);
     border:1px solid var(--border);
     border-top:4px solid var(--brand-primary-light);
     color:var(--text);
-    text-align:center;
+    display:flex;
+    flex-direction:row;
+    align-items:stretch;
+    gap:18px;
+    min-height:0;
+    flex:1;
+    box-shadow:0 10px 22px rgba(102,8,16,.07);
+    overflow:hidden;
+}
+
+/* LEFT — identity: ticket number, name, SR code, status */
+.ticket-col--main{
+    flex:1 1 50%;
+    min-width:0;
     display:flex;
     flex-direction:column;
     justify-content:center;
-    align-items:center;
-    min-height:150px;
-    box-shadow:0 10px 26px rgba(102,8,16,.08);
+    text-align:left;
+    transition:flex-basis .2s ease;
+}
+
+/* RIGHT — queue type + requested documents */
+.ticket-col--side{
+    flex:0 0 50%;
+    width:auto;
+    min-width:140px;
+    max-width:50%;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    align-items:flex-start;
+    gap:10px;
+    padding-left:18px;
+    border-left:1px solid var(--cream-dark);
+    text-align:left;
+    overflow:hidden;
+    transition:flex-basis .2s ease,max-width .2s ease;
+}
+
+.ticket-col--side.is-empty{
+    display:none;
+}
+
+/* ==========================================================
+   MANY-DOCUMENTS MODE
+   When a ticket has a long requested-documents list, the side
+   column is given most of the card's width (and the identity
+   column shrinks to just what it needs) so the document tags
+   have room to lay out cleanly instead of being squeezed into
+   a narrow 38% strip. Toggled via JS (staff-dashboard.js) by
+   counting ticket.documents.
+========================================================== */
+
+.current-ticket-card.has-many-docs .ticket-col--main{
+    flex:0 1 30%;
+    min-width:96px;
+}
+
+.current-ticket-card.has-many-docs .ticket-col--side{
+    flex:1 1 auto;
+    max-width:70%;
+}
+
+.current-ticket-card.has-many-docs .ticket-col--main h2{
+    font-size:clamp(22px,2.6vw,30px);
+}
+
+.current-ticket-card.has-many-docs .ticket-col--main h4{
+    font-size:13px;
+    margin-top:6px;
+}
+
+.current-ticket-card.has-many-docs .ticket-col--main p{
+    font-size:11.5px;
+}
+
+.current-ticket-card.has-many-docs .ticket-col--main small{
+    font-size:11px;
+}
+
+/* Extra-long lists (has-lots-docs, a higher threshold) claim even
+   more width and drop to the smallest readable chip size. */
+.current-ticket-card.has-lots-docs .ticket-col--main{
+    flex:0 1 24%;
+    min-width:88px;
+}
+
+.current-ticket-card.has-lots-docs .ticket-col--side{
+    max-width:76%;
+}
+
+.current-ticket-card.has-lots-docs .doc-tag{
+    padding:6px 11px;
+    font-size:10.5px;
+}
+
+.current-ticket-card.has-lots-docs .document-tags{
+    gap:6px;
+}
+
+/* Extreme lists — every document is still shown in full, so tags
+   drop to their smallest legible size and the identity column
+   shrinks to a minimum to give the list maximum width to wrap in. */
+.current-ticket-card.has-extreme-docs .ticket-col--main{
+    flex:0 1 18%;
+    min-width:76px;
+}
+
+.current-ticket-card.has-extreme-docs .ticket-col--side{
+    max-width:82%;
+}
+
+.current-ticket-card.has-extreme-docs .doc-tag{
+    padding:5px 10px;
+    font-size:10px;
+    gap:8px;
+}
+
+.current-ticket-card.has-extreme-docs .doc-tag__qty{
+    padding:1px 6px;
+    font-size:9px;
+}
+
+.current-ticket-card.has-extreme-docs .document-tags{
+    gap:5px;
+}
+
+.current-ticket-card.has-extreme-docs .ticket-col--main h2{
+    font-size:clamp(18px,2.2vw,24px);
+}
+
+.current-ticket-card.has-extreme-docs .ticket-col--main h4{
+    font-size:12px;
+    margin-top:4px;
+}
+
+.current-ticket-card.has-extreme-docs .ticket-col--main p{
+    font-size:10.5px;
+}
+
+.current-ticket-card.has-extreme-docs .ticket-col--main small{
+    font-size:10px;
 }
 
 /* "Next in Queue" reuses the same card markup/class so it stays
-   exactly the same size as "Current Serving", but gets a softer
-   cream surface so it's still visually distinguishable while
-   remaining just as readable. */
+   structurally consistent with "Current Serving", but is dialed
+   back visually (dashed accent border, smaller ticket number,
+   tighter padding) so it reads as "coming up" rather than
+   competing with the active ticket for attention. */
 #next-ticket .current-ticket-card{
     background:var(--cream);
-    border-top-color:var(--accent);
-    box-shadow:0 8px 20px rgba(102,8,16,.05);
+    border-style:dashed;
+    border-top:4px dashed var(--accent);
+    box-shadow:0 6px 16px rgba(102,8,16,.05);
+    padding:13px 20px;
+}
+
+#next-ticket .current-ticket-card h2{
+    font-size:clamp(22px,3vw,30px);
+}
+
+#next-ticket .ticket-col--main{
+    justify-content:center;
+}
+
+@media (max-height:820px){
+    #next-ticket .ticket-col--main,
+    #next-ticket .ticket-col--side{
+        justify-content:flex-start;
+    }
+}
+
+#next-ticket .ticket-col--side{
+    justify-content:flex-start;
+    gap:6px;
+}
+
+/* The next-in-queue card has less vertical room than the current
+   card, so its inner text needs tighter spacing — otherwise the
+   status line (bottom of the main column) and the requested
+   documents (bottom of the side column) get pushed past the
+   card's overflow:hidden edge and disappear. */
+#next-ticket .current-ticket-card h4{
+    margin-top:4px;
+}
+
+#next-ticket .current-ticket-card p{
+    margin-top:2px;
+    font-size:12px;
+}
+
+#next-ticket .current-ticket-card small{
+    margin-top:3px;
+    display:block;
+}
+
+#next-ticket .ticket-documents strong{
+    margin-bottom:3px;
+}
+
+#next-ticket .document-tags{
+    gap:4px;
+    max-height:clamp(40px,9vh,84px);
+}
+
+#next-ticket .doc-tag{
+    padding:2px 8px;
+    font-size:10.5px;
 }
 
 /* When a card is only showing a loading/error placeholder
@@ -427,13 +650,12 @@
     border:none;
     box-shadow:none;
     padding:0;
-    min-height:auto;
-    height:auto;
+    min-height:0;
 }
 
 .current-ticket-card h2{
     margin:0;
-    font-size:44px;
+    font-size:clamp(28px,4vw,42px);
     font-weight:800;
     letter-spacing:1px;
     color:var(--brand-primary);
@@ -441,23 +663,39 @@
 }
 
 .current-ticket-card h4{
-    margin-top:10px;
-    font-size:17px;
+    margin-top:8px;
+    font-size:15px;
     font-weight:700;
     color:var(--brand-secondary);
 }
 
 .current-ticket-card p{
-    margin-top:5px;
-    font-size:14px;
+    margin-top:4px;
+    font-size:13px;
     color:var(--gray);
 }
 
 .current-ticket-card small{
     margin-top:6px;
     color:var(--gray);
-    font-size:12px;
+    font-size:11.5px;
 }
+
+/* Small color indicator next to the status text — just a dot of
+   color, not a background badge/pill on the whole line. */
+.status-dot{
+    display:inline-block;
+    width:7px;
+    height:7px;
+    margin-right:6px;
+    border-radius:50%;
+    vertical-align:middle;
+}
+
+.status-dot--waiting{ background:var(--warning); }
+.status-dot--in-progress{ background:var(--info); }
+.status-dot--done{ background:var(--success); }
+.status-dot--default{ background:var(--gray); }
 
 /* ==========================================================
    SMALL INFO TEXT / STATUS
@@ -466,29 +704,29 @@
 .ticket-label{
     display:inline-flex;
     align-items:center;
-    padding:5px 14px;
+    padding:4px 13px;
     border-radius:var(--radius-full);
     background:var(--primary-tint);
-    font-size:12px;
+    font-size:11px;
     font-weight:700;
     text-transform:uppercase;
     letter-spacing:.6px;
     color:var(--brand-primary-light);
-    margin-bottom:8px;
+    margin-bottom:6px;
 }
 
-.ticket-time{
-    margin-top:10px;
-    padding-top:8px;
-    border-top:1px solid var(--cream-dark);
-    width:100%;
-    font-size:13px;
-    color:var(--gray);
+.ticket-label--next{
+    background:var(--accent-soft);
+    color:var(--brand-secondary);
 }
 
 /* ==========================================================
    QUEUE CONTROLS
 ========================================================== */
+
+.staff-dashboard__section--actions{
+    flex:0 0 auto;
+}
 
 .staff-actions{
     display:grid;
@@ -500,12 +738,12 @@
     display:flex;
     align-items:center;
     justify-content:center;
-    gap:9px;
+    gap:8px;
     width:100%;
-    height:46px;
+    height:44px;
     border:none;
     border-radius:var(--radius-lg);
-    font-size:14px;
+    font-size:13.5px;
     font-weight:700;
     cursor:pointer;
     transition:transform .2s,box-shadow .2s,opacity .2s,background .2s;
@@ -517,7 +755,7 @@
 
 .btn:hover{
     transform:translateY(-2px);
-    box-shadow:0 10px 25px rgba(0,0,0,.14);
+    box-shadow:0 10px 22px rgba(0,0,0,.14);
 }
 
 .btn:active{
@@ -542,6 +780,15 @@
     background:#256a29;
 }
 
+.btn-warning{
+    background:var(--warning);
+    color:var(--white);
+}
+
+.btn-warning:hover{
+    background:#96650e;
+}
+
 .btn-danger{
     background:var(--danger);
     color:var(--white);
@@ -552,36 +799,27 @@
 }
 
 /* ==========================================================
-   WAITING QUEUE
+   WAITING QUEUE (right column, primary — first 5 shown, no scroll)
 ========================================================== */
 
+.staff-dashboard__queue{
+    min-height:0;
+}
+
 #waiting-list{
+    flex:1 1 auto;
+    min-height:0;
     display:flex;
     flex-direction:column;
-    gap:8px;
-    overflow-y:auto;
-    max-height:700px;
-    padding-right:6px;
+    gap:7px;
+    overflow:hidden;
 }
 
-/* Scrollbar */
-
-#waiting-list::-webkit-scrollbar{
-    width:8px;
-}
-
-#waiting-list::-webkit-scrollbar-track{
-    background:var(--cream);
-    border-radius:var(--radius-full);
-}
-
-#waiting-list::-webkit-scrollbar-thumb{
-    background:var(--accent);
-    border-radius:var(--radius-full);
-}
-
-#waiting-list::-webkit-scrollbar-thumb:hover{
-    background:var(--brand-primary-light);
+#waiting-list .empty{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
 }
 
 /* ==========================================================
@@ -589,11 +827,12 @@
 ========================================================== */
 
 .queue-item{
+    flex:0 0 auto;
     display:grid;
-    grid-template-columns:56px 1fr auto;
+    grid-template-columns:1fr auto;
     align-items:center;
     gap:12px;
-    padding:10px 12px;
+    padding:8px 14px;
     border-radius:var(--radius-md);
     border:1px solid var(--border);
     background:var(--cream);
@@ -601,32 +840,9 @@
 }
 
 .queue-item:hover{
-    transform:translateY(-2px);
     border-color:var(--brand-primary-light);
     background:var(--white);
-    box-shadow:0 10px 24px rgba(102,8,16,.1);
-}
-
-/* ==========================================================
-   QUEUE NUMBER
-========================================================== */
-
-.queue-number{
-    width:40px;
-    height:40px;
-    border-radius:var(--radius-sm);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:var(--primary-tint);
-    color:var(--brand-primary-light);
-    font-size:15px;
-    font-weight:700;
-    transition:.2s;
-}
-
-.queue-item:hover .queue-number{
-    transform:scale(1.08);
+    box-shadow:0 8px 18px rgba(102,8,16,.09);
 }
 
 /* ==========================================================
@@ -635,24 +851,45 @@
 
 .queue-details{
     display:flex;
-    flex-direction:column;
-    gap:2px;
+    align-items:baseline;
+    gap:10px;
     min-width:0;
 }
 
 .queue-title{
-    font-size:14px;
-    font-weight:700;
-    color:var(--brand-secondary);
+    flex:0 0 auto;
+    padding:3px 10px;
+    border-radius:var(--radius-sm);
+    background:var(--primary-tint);
+    font-size:13px;
+    font-weight:800;
+    color:var(--brand-primary-light);
 }
 
 .queue-subtitle{
-    color:var(--gray);
-    font-size:12px;
+    color:var(--text);
+    font-size:13px;
+    font-weight:600;
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
     max-width:100%;
+}
+
+/* ==========================================================
+   "MORE WAITING" INDICATOR
+========================================================== */
+
+.queue-more{
+    flex:0 0 auto;
+    text-align:center;
+    padding:7px 10px;
+    border-radius:var(--radius-md);
+    background:var(--accent-soft);
+    color:var(--brand-secondary);
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.2px;
 }
 
 /* ==========================================================
@@ -669,11 +906,12 @@
     font-weight:700;
     text-transform:uppercase;
     letter-spacing:.5px;
+    white-space:nowrap;
 }
 
 .queue-status.waiting{
     background:var(--warning-light);
-    color:#8a5a09;
+    color:var(--warning);
 }
 
 .queue-status.serving{
@@ -716,18 +954,79 @@
 }
 
 /* ==========================================================
+   LAST IN LINE CARD
+========================================================== */
+
+.staff-dashboard__section--last{
+    flex:0 0 auto;
+    background:var(--white);
+    border-top:3px solid var(--accent);
+}
+
+#last-ticket{
+    flex:1;
+    display:flex;
+}
+
+#last-ticket .empty{
+    flex:1;
+    padding:14px 16px;
+    min-height:0;
+}
+
+.last-ticket-card{
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:10px 14px;
+    border-radius:var(--radius-lg);
+    background:var(--cream);
+    border:1px dashed var(--accent);
+}
+
+.last-ticket-card__position{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:42px;
+    height:42px;
+    border-radius:var(--radius-md);
+    background:var(--accent-soft);
+    color:var(--brand-secondary);
+    font-size:14px;
+    font-weight:800;
+}
+
+.last-ticket-card__details{
+    flex:1;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+}
+
+.last-ticket-card__details .queue-title{
+    align-self:flex-start;
+}
+
+/* ==========================================================
    EMPTY STATE
 ========================================================== */
 
 .empty{
     width:100%;
-    padding:22px 16px;
+    padding:16px;
     border:2px dashed var(--accent);
     border-radius:var(--radius-lg);
     background:var(--cream);
     color:var(--gray);
     text-align:center;
-    font-size:15px;
+    font-size:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
 }
 
 /* ==========================================================
@@ -738,151 +1037,133 @@
     width:100%;
     height:140px;
     border-radius:var(--radius-lg);
-    background:linear-gradient(
-        90deg,
-        var(--skeleton-base) 25%,
-        var(--skeleton-highlight) 50%,
-        var(--skeleton-base) 75%
-    );
-    background-size:200% 100%;
-    animation:loading 1.4s infinite;
+    background:var(--skeleton-base);
+    animation:loading 1.4s ease-in-out infinite;
 }
 
 @keyframes loading{
-    from{ background-position:200% 0; }
-    to{ background-position:-200% 0; }
+    0%, 100%{ background-color:var(--skeleton-base); }
+    50%{ background-color:var(--skeleton-highlight); }
 }
 
 /* ==========================================================
-   RESPONSIVE DESIGN
+   TICKET DOCUMENTS
 ========================================================== */
 
-@media (max-width:1200px){
-    .staff-dashboard{
-        max-width:1000px;
-    }
-    .staff-dashboard__grid{
-        grid-template-columns:360px 1fr;
-    }
+.ticket-documents{
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    flex:0 0 auto;
+    text-align:left;
 }
 
-@media (max-width:992px){
-    .staff-dashboard{
-        padding:0 18px;
-    }
-    .staff-dashboard__grid{
-        grid-template-columns:1fr;
-    }
-    .staff-stats-bar{
-        grid-template-columns:repeat(2,1fr);
-    }
-    .staff-dashboard__left,
-    .staff-dashboard__right{
-        width:100%;
-    }
-    #waiting-list{
-        max-height:500px;
-    }
+.ticket-documents strong{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-bottom:6px;
+    font-size:10px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.6px;
+    color:var(--brand-primary-light);
+    flex:0 0 auto;
 }
 
-@media (max-width:768px){
-    .staff-dashboard{
-        margin:20px auto;
-        gap:18px;
-    }
-    .staff-dashboard__header{
-        flex-direction:column;
-        align-items:flex-start;
-        padding:22px;
-    }
-    .staff-dashboard__heading h2{
-        font-size:26px;
-    }
-    .logout-btn{
-        width:100%;
-        justify-content:center;
-    }
-    .staff-stats-bar{
-        grid-template-columns:1fr;
-    }
-    .queue-header{
-        flex-direction:column;
-        align-items:flex-start;
-        gap:12px;
-    }
-    .queue-item{
-        grid-template-columns:60px 1fr;
-    }
-    .queue-side{
-        grid-column:1 / -1;
-        flex-direction:row;
-        align-items:center;
-        justify-content:space-between;
-        text-align:left;
-        margin-top:10px;
-        padding-top:10px;
-        border-top:1px solid var(--border);
-    }
-    .current-ticket-card{
-        min-height:140px;
-        padding:16px 18px;
-    }
-    .current-ticket-card h2{
-        font-size:38px;
-    }
+/* Web/desktop: two columns so a longer document list fits within
+   the card's available height instead of needing a single tall
+   column. Falls back to one column on mobile (see responsive
+   section) where a narrow card can't comfortably fit two. The list
+   is capped in JS (a "+N more" chip stands in for anything past
+   the cap). */
+.document-tags{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:5px 8px;
+    width:100%;
 }
 
-@media (max-width:480px){
-    .staff-dashboard{
-        padding:0 12px;
-    }
-    .staff-dashboard__section{
-        padding:14px;
-    }
-    .staff-dashboard__heading h2{
-        font-size:22px;
-    }
-    .current-ticket-card{
-        min-height:130px;
-    }
-    .current-ticket-card h2{
-        font-size:32px;
-    }
-    .btn{
-        height:44px;
-        font-size:13px;
-    }
-    .queue-number{
-        width:36px;
-        height:36px;
-        font-size:14px;
-    }
-    .queue-title{
-        font-size:13px;
-    }
-    .queue-subtitle{
-        font-size:11px;
-    }
+/* 1 or 2 requested documents don't need the two-column grid — a
+   single document in a 2-col grid leaves an awkward empty cell,
+   and two tags side-by-side don't need to compete for width. One
+   tag per line (so 1 document = 1 line, 2 documents = 2 lines)
+   reads cleaner than either case. */
+.document-tags--compact{
+    grid-template-columns:1fr;
+}
+
+.doc-tag{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    width:100%;
+    min-width:0;
+    padding:5px 10px;
+    border-radius:var(--radius-md);
+    background:var(--primary-tint);
+    border:1px solid var(--border);
+    font-size:11px;
+    font-weight:600;
+    color:var(--brand-primary-light);
+    line-height:1.2;
+    white-space:normal;
+}
+
+.doc-tag__qty{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:1px 7px;
+    border-radius:var(--radius-full);
+    background:var(--brand-primary-light);
+    color:var(--white);
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:.3px;
+}
+
+.doc-tag--empty{
+    background:var(--cream);
+    border-color:var(--border);
+    color:var(--gray);
+    font-weight:500;
+    font-style:italic;
 }
 
 /* ==========================================================
-   SMOOTH ANIMATIONS
+   QUEUE TYPE BADGE
 ========================================================== */
 
-.staff-dashboard__section,
-.stat-tile{
-    animation:fadeUp .4s ease;
+.queue-type-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:4px 13px;
+    border-radius:var(--radius-full);
+    font-size:10.5px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.5px;
 }
 
-@keyframes fadeUp{
-    from{
-        opacity:0;
-        transform:translateY(15px);
-    }
-    to{
-        opacity:1;
-        transform:translateY(0);
-    }
+.queue-type-badge::before{
+    content:"";
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:currentColor;
+}
+
+.queue-type-badge--appointment{
+    background:var(--info-light);
+    color:var(--info);
+}
+
+.queue-type-badge--walkin{
+    background:var(--warning-light);
+    color:var(--warning);
 }
 
 /* ==========================================================
@@ -916,112 +1197,298 @@ button:focus,
 .status-info{ color:var(--info); }
 
 /* ==========================================================
-   TICKET DOCUMENTS
+   RESPONSIVE FALLBACKS
+   Below ~1024px there isn't room for a true no-scroll dashboard,
+   so the layout switches to a normal scrolling page instead of
+   crushing the content unreadably small.
 ========================================================== */
 
-.ticket-documents{
-    width:100%;
-    margin-top:12px;
-    padding-top:10px;
-    border-top:1px solid var(--cream-dark);
-    text-align:left;
+@media (max-width:1024px){
+    html,body{
+        height:auto !important;
+        overflow:auto !important;
+    }
+    .staff-dashboard{
+        height:auto !important;
+        min-height:100vh;
+        overflow:visible !important;
+        padding:16px;
+    }
+    .staff-dashboard__grid{
+        grid-template-columns:1fr;
+        overflow:visible !important;
+    }
+    .staff-dashboard__left,
+    .staff-dashboard__right{
+        grid-template-rows:none !important;
+    }
+    .staff-dashboard__left.grid--current-heavy,
+    .staff-dashboard__left.grid--next-heavy,
+    .staff-dashboard__left.grid--both-heavy{
+        grid-template-rows:none !important;
+    }
+    .staff-dashboard__section{
+        overflow:visible !important;
+        min-height:0;
+        height:auto;
+    }
+    #current-ticket,
+    #next-ticket{
+        overflow:visible !important;
+        height:auto;
+    }
+    #current-ticket .current-ticket-card,
+    #next-ticket .current-ticket-card{
+        min-height:150px;
+        height:auto;
+        overflow:visible !important;
+    }
+    .current-ticket-card{
+        overflow:visible !important;
+        height:auto;
+        min-height:0;
+        flex:1 1 auto;
+    }
+    .ticket-col--main,
+    .ticket-col--side{
+        overflow:visible !important;
+        min-height:0;
+        height:auto;
+    }
+    .staff-dashboard__queue{
+        min-height:0;
+        height:auto;
+    }
+    #waiting-list{
+        overflow:visible !important;
+        height:auto;
+    }
+    #last-ticket{
+        overflow:visible !important;
+        height:auto;
+    }
+    .queue-item{
+        flex:none;
+    }
+    /* This cap only makes sense in the fixed-height desktop layout,
+       where the card's own overflow:hidden cleanly truncates it. On
+       mobile the card grows to fit its content instead, so the cap
+       would just make the list visually spill out past the card
+       (looking broken) rather than being contained — remove it. */
+    #next-ticket .document-tags{
+        max-height:none;
+    }
+    #next-ticket .ticket-col--side{
+        justify-content:flex-start;
+    }
+
+    /* Below desktop width the three chips (window / office / queue
+       type) don't reliably fit on one line and were wrapping into
+       mismatched row lengths — pin them to a clean, equal-width
+       2-column grid instead so every chip is the same size and the
+       whole block stays anchored to the right of the header. */
+    .header-info-chips{
+        display:grid;
+        grid-template-columns:repeat(2, 1fr);
+        gap:6px;
+        width:100%;
+        max-width:300px;
+        margin-left:auto;
+    }
+    .info-pill{
+        width:100%;
+        box-sizing:border-box;
+        justify-content:center;
+        text-align:center;
+        white-space:normal;
+    }
 }
 
-.ticket-documents strong{
-    display:flex;
-    align-items:center;
-    gap:6px;
-    margin-bottom:6px;
-    font-size:11px;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:.6px;
-    color:var(--brand-primary-light);
+@media (max-width:768px){
+    .staff-dashboard{
+        padding:14px;
+        gap:12px;
+    }
+    .staff-dashboard__header{
+        padding:14px 16px;
+    }
+    .staff-dashboard__header-right{
+        gap:8px;
+    }
+    .header-info-chips{
+        gap:5px;
+    }
+    .staff-dashboard__grid{
+        gap:14px;
+    }
+    .staff-dashboard__left,
+    .staff-dashboard__right{
+        gap:14px;
+    }
+
+    /* Below tablet width there isn't room for the identity column and
+       the side column (queue-type badge is now in the header, but
+       Requested Documents still lives here) to sit side by side
+       without squeezing — stack them instead so nothing gets clipped
+       or overlaps the section below it. */
+    .current-ticket-card{
+        flex-direction:column;
+        text-align:left;
+    }
+
+    .ticket-col--main,
+    .current-ticket-card.has-many-docs .ticket-col--main,
+    .current-ticket-card.has-lots-docs .ticket-col--main,
+    .current-ticket-card.has-extreme-docs .ticket-col--main{
+        flex:1 1 auto;
+        width:100%;
+        min-width:0;
+    }
+
+    .ticket-col--side,
+    .current-ticket-card.has-many-docs .ticket-col--side,
+    .current-ticket-card.has-lots-docs .ticket-col--side,
+    .current-ticket-card.has-extreme-docs .ticket-col--side{
+        flex:1 1 auto;
+        width:100%;
+        max-width:100%;
+        min-width:0;
+        border-left:none;
+        border-top:1px solid var(--cream-dark);
+        padding-left:0;
+        padding-top:10px;
+        align-items:flex-start;
+    }
+
+    .staff-dashboard__section h3{
+        flex-wrap:wrap;
+        row-gap:6px;
+    }
+
+    /* Two columns work well on the wider desktop card, but once the
+       card stacks to full width on a narrower screen, two columns
+       leaves each document too little room and forces awkward
+       wrapping — a single column reads more cleanly here. */
+    .document-tags{
+        grid-template-columns:1fr;
+    }
 }
 
-.document-tags{
-    display:flex;
-    flex-wrap:wrap;
-    gap:6px;
-    justify-content:flex-start;
-}
+@media (max-width:640px){
+    .staff-dashboard{
+        padding:12px;
+        gap:10px;
+    }
+    .staff-dashboard__header{
+        flex-direction:column;
+        align-items:stretch;
+        padding:16px;
+        gap:14px;
+    }
+    .staff-dashboard__heading h2{
+        font-size:18px;
+    }
 
-.doc-tag{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    padding:6px 12px;
-    border-radius:var(--radius-full);
-    background:var(--primary-tint);
-    border:1px solid var(--border);
-    font-size:12px;
-    font-weight:600;
-    color:var(--brand-primary-light);
-    line-height:1.3;
-    white-space:nowrap;
-}
-
-.doc-tag__qty{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    padding:1px 7px;
-    border-radius:var(--radius-full);
-    background:var(--brand-primary-light);
-    color:var(--white);
-    font-size:10px;
-    font-weight:700;
-    letter-spacing:.3px;
-}
-
-.doc-tag--empty{
-    background:var(--cream);
-    border-color:var(--border);
-    color:var(--gray);
-    font-weight:500;
-    font-style:italic;
+    /* Mobile layout for the chips block: with the Waiting / Now
+       Serving stat boxes removed from the header entirely (that
+       count is already shown as "In Queue: N" in the Waiting Queue
+       section below), the chips get the full row to themselves. */
+    .staff-dashboard__header-right{
+        display:flex;
+        width:100%;
+        padding-top:14px;
+        margin-top:2px;
+        border-top:1px solid rgba(255,255,255,.15);
+    }
+    .header-info-chips{
+        width:100%;
+        justify-content:flex-start;
+    }
+    .info-pill--queuetype{
+        grid-column:1 / -1;
+        justify-content:center;
+        margin-top:2px;
+    }
+    .info-pill--office{
+        max-width:100%;
+        white-space:normal;
+        line-height:1.3;
+    }
+    .staff-dashboard__section{
+        padding:12px 14px;
+    }
+    .staff-actions{
+        grid-template-columns:1fr;
+    }
+    .queue-details{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:2px;
+    }
+    .queue-item{
+        grid-template-columns:1fr;
+        align-items:flex-start;
+        gap:6px;
+    }
+    .queue-side{
+        flex-direction:row;
+        align-items:center;
+        gap:8px;
+        width:100%;
+    }
 }
 
 /* ==========================================================
-   QUEUE TYPE BADGE
+   SMALL PHONES
 ========================================================== */
 
-.queue-type-badge-wrap{
-    display:flex;
-    justify-content:center;
-    margin-top:10px;
+@media (max-width:480px){
+    .staff-dashboard{
+        padding:10px;
+    }
+    .staff-dashboard__header{
+        padding:14px;
+        border-radius:var(--radius-lg);
+    }
+    .staff-dashboard__eyebrow{
+        font-size:10px;
+    }
+    .staff-dashboard__heading h2{
+        font-size:17px;
+    }
+    .staff-dashboard__window{
+        font-size:12px;
+    }
+    .info-pill{
+        font-size:11px;
+        padding:4px 10px;
+        white-space:normal;
+        text-align:center;
+        max-width:100%;
+    }
+    .staff-dashboard__section{
+        padding:12px;
+        border-radius:var(--radius-lg);
+    }
+    .staff-dashboard__section h3{
+        font-size:12.5px;
+    }
+    .section-title-badge .queue-type-badge{
+        padding:2px 9px;
+        font-size:9.5px;
+    }
+    .current-ticket-card{
+        padding:12px 14px;
+    }
+    .current-ticket-card h2{
+        font-size:clamp(24px,7vw,32px);
+    }
+    .doc-tag,
+    .queue-type-badge{
+        font-size:10.5px;
+    }
+    .btn{
+        height:42px;
+        font-size:13px;
+    }
 }
-
-.queue-type-badge{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    padding:5px 14px;
-    border-radius:var(--radius-full);
-    font-size:11px;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:.5px;
-}
-
-.queue-type-badge::before{
-    content:"";
-    width:6px;
-    height:6px;
-    border-radius:50%;
-    background:currentColor;
-}
-
-.queue-type-badge--appointment{
-    background:var(--info-light);
-    color:var(--info);
-}
-
-.queue-type-badge--walkin{
-    background:var(--warning-light);
-    color:#8a5a09;
-}
-
-/* ==========================================================
-   END
-========================================================== */
