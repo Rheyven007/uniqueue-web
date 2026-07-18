@@ -48,31 +48,56 @@ include __DIR__ . '/../../includes/header.php';
 
 <link rel="stylesheet" href="/assets/css/staff.css">
 
-<div class="staff-wrap">
+<div class="staff-wrap"> 
 
     <div class="staff-header">
 
-        <div>
-            <h1>Staff Management</h1>
-            <p>Manage office staff accounts.</p>
+        <div class="staff-header__left">
+            <div class="staff-header__text">
+                <h1>
+                    Staff Management
+                    <span class="staff-count"><?= count($staff) ?></span>
+                </h1>
+                <p>Manage office staff accounts.</p>
+            </div>
         </div>
 
-        <a href="staff-add.php" class="btn btn-primary">
-            + Add Staff
-        </a>
+        <div class="staff-header__actions">
+            <a href="../queue/office-dashboard.php" class="back-btn" aria-label="Back to dashboard">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+                </svg>
+                Back
+            </a>
+
+            <a href="staff-add.php" class="btn btn-green">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 5v14"/><path d="M5 12h14"/>
+                </svg>
+                Add Staff
+            </a>
+        </div>
 
     </div>
 
     <form method="GET" class="staff-search">
 
-        <input
-            type="text"
-            name="search"
-            placeholder="Search staff..."
-            value="<?= htmlspecialchars($search) ?>"
-        >
+        <div class="staff-search__field">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input
+                type="text"
+                name="search"
+                placeholder="Search staff..."
+                value="<?= htmlspecialchars($search) ?>"
+            >
+        </div>
 
-        <button type="submit" class="btn btn-green">
+        <button type="submit" class="btn btn-danger">
             Search
         </button>
 
@@ -121,9 +146,12 @@ include __DIR__ . '/../../includes/header.php';
                 <tr>
 
                     <td>
-
-                        <?= htmlspecialchars($row['name']) ?>
-
+                        <div class="staff-name">
+                            <span class="staff-avatar">
+                                <?= strtoupper(substr($row['name'], 0, 1)) ?>
+                            </span>
+                            <?= htmlspecialchars($row['name']) ?>
+                        </div>
                     </td>
 
                     <td>
@@ -163,24 +191,24 @@ include __DIR__ . '/../../includes/header.php';
                     </td>
 
                     <td>
+                        <div class="action-cell">
+                            <a
+                                href="staff-edit.php?id=<?= $row['id'] ?>"
+                                class="btn btn-warning btn-sm">
 
-                        <a
-                            href="staff-edit.php?id=<?= $row['id'] ?>"
-                            class="btn btn-warning btn-sm">
+                                Edit
 
-                            Edit
+                            </a>
 
-                        </a>
+                            <a
+                                href="staff-delete.php?id=<?= $row['id'] ?>"
+                                class="btn btn-danger btn-sm"
+                                onclick="return confirm('Delete this staff?')">
 
-                        <a
-                            href="staff-delete.php?id=<?= $row['id'] ?>"
-                            class="btn btn-danger btn-sm"
-                            onclick="return confirm('Delete this staff?')">
+                                Delete
 
-                            Delete
-
-                        </a>
-
+                            </a>
+                        </div>
                     </td>
 
                 </tr>
