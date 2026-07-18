@@ -165,139 +165,124 @@ $csrf = generate_csrf_token();
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Uniqueue — Login</title>
-<link rel="stylesheet" href="/assets/css/auth.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uniqueue — Login</title>
+    <link rel="stylesheet" href="/assets/css/auth.css">
 </head>
 <body class="auth-body" data-role="<?= e($role) ?>">
 
-<div class="auth-ring auth-ring--1"></div>
-<div class="auth-ring auth-ring--2"></div>
-<div class="auth-card-wrap">
-<div class="auth-card">
-<div class="auth-brand-row">
+    <div class="auth-split">
 
-        <img 
-        src="/assets/img/logo.png"
-        alt="School Logo"
-        class="auth-brand-row__logo">
+        <!-- Left brand panel -->
+        <div class="auth-brand">
+            <div class="auth-brand__inner">
+                <img src="/assets/img/logo.png" alt="School Logo" class="auth-brand__logo">
+                <h1 class="auth-brand__title">Uniqueue</h1>
+                <p class="auth-brand__tagline">Queue smarter. Get served faster.</p>
 
-        <div class="auth-brand-row__text">
-        <span class="auth-brand-row__eyebrow">
-        Welcome to
-        </span>
-        <span class="auth-brand-row__name">
-        Uniqueue
-        </span>
-
+                <div class="auth-brand__stats">
+                    <div class="stat-chip">
+                        <span class="stat-chip__label">Walk-in &amp; Appointment</span>
+                    </div>
+                    <div class="stat-chip">
+                        <span class="stat-chip__label">Real-time Updates</span>
+                    </div>
+                    <div class="stat-chip">
+                        <span class="stat-chip__label">Smart Assignment</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
+        <!-- Right form panel -->
+        <div class="auth-form-panel">
+            <div class="auth-card">
+
+                <!-- Role switcher tabs -->
+                <div class="auth-tabs" role="tablist" aria-label="Login type">
+                    <a href="?role=student"
+                       class="auth-tab <?= $role === 'student' ? 'auth-tab--active' : '' ?>"
+                       role="tab" aria-selected="<?= $role === 'student' ? 'true' : 'false' ?>">
+                        Student
+                    </a>
+                    <a href="?role=admin"
+                       class="auth-tab <?= $role === 'admin' ? 'auth-tab--active' : '' ?>"
+                       role="tab" aria-selected="<?= $role === 'admin' ? 'true' : 'false' ?>">
+                        Staff / Admin
+                    </a>
+                </div>
+
+                <h2 class="auth-card__heading">
+                    <?= $role === 'student' ? 'Student Login' : 'Staff Login' ?>
+                </h2>
+
+                <?php if ($success !== ''): ?>
+                    <div class="alert alert--success" role="alert"><?= e($success) ?></div>
+                <?php endif; ?>
+
+                <?php if ($error !== ''): ?>
+                    <div class="alert alert--error" role="alert"><?= e($error) ?></div>
+                <?php endif; ?>
+
+                <form method="POST" action="?role=<?= e($role) ?>" novalidate id="login-form">
+                    <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+
+                    <div class="form-group">
+                        <label class="form-label" for="identifier">
+                            <?= $role === 'student' ? 'SR-Code' : 'Username' ?>
+                        </label>
+                        <input
+                            type="text"
+                            id="identifier"
+                            name="identifier"
+                            class="form-input"
+                            placeholder="<?= $role === 'student' ? 'e.g. 22-12345' : 'username' ?>"
+                            value="<?= e(post('identifier')) ?>"
+                            autocomplete="username"
+                            required
+                            autofocus>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-label-row">
+                            <label class="form-label" for="password">Password</label>
+                            <a href="/auth/forgot-password.php" class="forgot-link">Forgot?</a>
+                        </div>
+                        <div class="input-icon-wrap">
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                class="form-input"
+                                placeholder="••••••••"
+                                autocomplete="current-password"
+                                required>
+                            <button type="button" class="toggle-password" aria-label="Show password" data-target="password">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn--primary btn--full" id="login-btn">
+                        <span class="btn__text">Sign In</span>
+                        <span class="btn__spinner" aria-hidden="true"></span>
+                    </button>
+                </form>
+
+                <?php if ($role === 'student'): ?>
+                    <p class="auth-card__help">
+                        Don't have an account? Contact the Registrar's Office.
+                    </p>
+                <?php endif; ?>
+            </div>
         </div>
+    </div>
 
-        <div class="auth-tabs">
-        <a href="?role=student"
-        class="auth-tab <?= $role === 'student' ? 'auth-tab--active' : '' ?>">
-        Student
-        </a>
-        <a href="?role=admin"
-        class="auth-tab <?= $role === 'admin' ? 'auth-tab--active' : '' ?>">
-        Staff / Admin
-        </a>
-
-        </div>
-
-        <h2 class="auth-card__heading">
-
-        <?= $role === 'student' ? 'Student Login' : 'Staff Login' ?>
-
-        </h2>
-
-        <?php if ($success): ?>
-
-        <div class="alert alert--success">
-        <?= e($success) ?>
-        </div>
-
-        <?php endif; ?>
-
-        <?php if ($error): ?>
-
-        <div class="alert alert--error">
-        <?= e($error) ?>
-        </div>
-
-        <?php endif; ?>
-
-        <form method="POST" action="?role=<?= e($role) ?>">
-
-
-        <input type="hidden"
-        name="csrf_token"
-        value="<?= e($csrf) ?>">
-
-        <div class="form-group">
-
-        <label class="form-label">
-
-        <?= $role === 'student' ? 'SR-Code' : 'Username' ?>
-
-        </label>
-
-        <input
-
-        type="text"
-
-        name="identifier"
-
-        class="form-input"
-
-        placeholder="<?= $role === 'student'
-        ? 'e.g. 22-12345'
-        : 'username' ?>"
-
-        value="<?= e(post('identifier')) ?>"
-
-        required
-
-        >
-        </div>
-
-        <div class="form-group">
-
-        <label class="form-label">
-        Password
-        </label>
-        <input
-
-        type="password"
-
-        name="password"
-
-        class="form-input"
-
-        placeholder="••••••••"
-
-        required
-
-        >
-        </div>
-
-        <button type="submit"
-        class="btn btn--primary btn--full">
-
-        Sign In
-
-        </button>
-        </form>
-
-        </div>
-        </div>
-
-        <script src="/assets/js/auth.js"></script>
-
-        </body>
-
-        </html>
+    <script src="/assets/js/auth.js"></script>
+</body>
+</html>
