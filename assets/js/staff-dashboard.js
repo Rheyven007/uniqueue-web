@@ -329,11 +329,6 @@ function statusDotClass(status) {
 
 function renderDocumentTags(documents, queueType) {
 
-    // Appointment → don't show the Requested Documents section
-    if (String(queueType).toLowerCase() === "appointment") {
-        return "";
-    }
-
     const hasDocs = documents && documents.length;
 
     // A 2-column grid leaves an awkward empty cell for a single

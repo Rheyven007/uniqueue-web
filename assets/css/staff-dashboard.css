@@ -439,10 +439,13 @@ html,body{
     overflow:hidden;
 }
 
-/* LEFT — identity: ticket number, name, SR code, status */
+/* LEFT — identity: ticket number, name, SR code, status.
+   Narrower than a 50/50 split — this column only needs to fit a
+   short label, the ticket number, name and SR code, so giving it
+   half the card just starves the document grid on the right. */
 .ticket-col--main{
-    flex:1 1 50%;
-    min-width:0;
+    flex:0 1 36%;
+    min-width:150px;
     display:flex;
     flex-direction:column;
     justify-content:center;
@@ -450,19 +453,22 @@ html,body{
     transition:flex-basis .2s ease;
 }
 
-/* RIGHT — queue type + requested documents */
+/* RIGHT — queue type + requested documents. Gets the majority of
+   the card's width so the document grid has room to sit two tags
+   per row without cramming, matching the reference layout. */
 .ticket-col--side{
-    flex:0 0 50%;
+    flex:1 1 64%;
     width:auto;
-    min-width:140px;
-    max-width:50%;
+    min-width:220px;
+    max-width:64%;
     min-height:0;
     display:flex;
     flex-direction:column;
     justify-content:flex-start;
     align-items:flex-start;
     gap:10px;
-    padding-left:18px;
+    padding-left:20px;
+    margin-left:2px;
     border-left:1px solid var(--cream-dark);
     text-align:left;
     overflow:hidden;

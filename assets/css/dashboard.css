@@ -69,6 +69,15 @@
   --card-shadow:       0 8px 22px rgba(102,8,16,.05);
   --card-shadow-hover: 0 8px 22px rgba(102,8,16,.09);
   --radius-xl: 20px;
+
+  /* Queue-status modal palette — Deep Red / Stone / Dark Red / Grey Orange */
+  --modal-deep-red:    #660810;
+  --modal-dark-red:    #270707;
+  --modal-stone:       #f1ebeb;
+  --modal-clay:        #d6c0b1;
+  --modal-clay-soft:   rgba(214,192,177,0.35);
+  --modal-gold:        #e8b25c;
+  --modal-gold-soft:   rgba(232,178,92,0.16);
 }
 
 /* ── Base ───────────────────────────────────────────────────── */

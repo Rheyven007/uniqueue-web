@@ -128,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $reason   = null;
     }
 
-    if ($type === 'walkin' && empty($document_ids)) {
+    if (empty($document_ids)) {
         $_SESSION['error_message'] = "Please select at least one document.";
         header("Location: $redirect_back");
         exit;
@@ -193,14 +193,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         INSERT INTO queue_ticket_document (ticket_id, document_id, quantity)
         VALUES (?, ?, ?)
     ");
-    if ($type === 'walkin') {
-        foreach ($document_ids as $did) {
-            $doc_insert->execute([
-                $ticket_id,
-                $did,
-                $doc_quantities[$did]
-            ]);
-        }
+    foreach ($document_ids as $did) {
+        $doc_insert->execute([
+            $ticket_id,
+            $did,
+            $doc_quantities[$did]
+        ]);
     }
 
     header("Location: /student/dashboard.php");

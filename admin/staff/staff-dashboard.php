@@ -52,6 +52,8 @@ switch ($windowQueueType) {
 <?php include __DIR__ . '/../../includes/header.php'; ?>
 
 <link rel="stylesheet" href="../../assets/css/staff-dashboard.css">
+<link rel="stylesheet" href="/assets/css/footer.css">
+
 
 <div class="staff-dashboard">
 

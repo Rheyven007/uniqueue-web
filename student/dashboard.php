@@ -9,12 +9,7 @@ $student_id   = $_SESSION['student_id'];
 $student_name = $_SESSION['student_name'];
 $sr_code      = $_SESSION['sr_code'];
 
-/* ACTIVE TICKET
-   Appointment tickets no longer carry a future appointment_date (that
-   field isn't collected in the wizard anymore — verification happens via
-   the physical Appointment Slip instead), so both queue types are now
-   found the same way: any of this student's tickets that hasn't reached
-   a terminal status yet. */
+
 $stmt = $pdo->prepare("
     SELECT qt.*, o.name AS office_name
     FROM queue_tickets qt
@@ -68,7 +63,9 @@ $greeting = (int)date('H') < 12 ? 'Good morning' : ((int)date('H') < 17 ? 'Good 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Uniqueue &mdash; Dashboard</title>
     <link rel="stylesheet" href="/assets/css/dashboard.css">
+    <link rel="stylesheet" href="/assets/css/queue-status.css">
     <link rel="stylesheet" href="/assets/css/header.css">
+    <link rel="stylesheet" href="/assets/css/footer.css">
 </head>
 <body class="dashboard-body">
 
@@ -93,18 +90,6 @@ $greeting = (int)date('H') < 12 ? 'Good morning' : ((int)date('H') < 17 ? 'Good 
         <div class="dash-hero__stats">
 
             <div class="hero-stat">
-                <span class="hero-stat__value" id="stat-total-waiting"><?= $total_waiting ?></span>
-                <span class="hero-stat__label">In Queue Today</span>
-            </div>
-
-            <div class="hero-stat" title="Based on the average processing speed today; subject to change.">
-                <span class="hero-stat__value" id="stat-est-wait">
-                    <?= $est_wait_mins !== null ? $est_wait_mins : '&mdash;' ?><?php if ($est_wait_mins !== null): ?><span class="hero-stat__unit">min</span><?php endif; ?>
-                </span>
-                <span class="hero-stat__label">Est. Wait</span>
-            </div>
-
-            <div class="hero-stat">
                 <span class="hero-stat__value"><?= $open_offices ?></span>
                 <span class="hero-stat__label">Offices Open</span>
             </div>
@@ -126,9 +111,11 @@ $greeting = (int)date('H') < 12 ? 'Good morning' : ((int)date('H') < 17 ? 'Good 
                         Live
                     </span>
                     <?php if ($active_ticket): ?>
-                        <span class="ticket-status-badge ticket-status-badge--<?= e($active_ticket['status']) ?>">
-                            <?= ucfirst(str_replace('_', ' ', $active_ticket['status'])) ?>
-                        </span>
+                       <span 
+                        id="dashboard-status-badge"
+                        class="ticket-status-badge ticket-status-badge--<?= e($active_ticket['status']) ?>">
+                        <?= ucfirst(str_replace('_', ' ', $active_ticket['status'])) ?>
+                    </span>
                     <?php endif; ?>
                 </div>
             </div>
@@ -150,10 +137,13 @@ $greeting = (int)date('H') < 12 ? 'Good morning' : ((int)date('H') < 17 ? 'Good 
                             <?= e($active_ticket['office_name']) ?>
                         </div>
                         <div class="active-ticket-card__footer">
-                            <a class="btn btn--primary btn--sm"
-                               href="/student/queue-status.php?ticket_id=<?= (int)$active_ticket['id'] ?>">
+                            <button
+                                type="button"
+                                class="btn btn--primary btn--sm"
+                                id="trackQueueBtn"
+                                data-ticket-id="<?= (int)$active_ticket['id'] ?>">
                                 Track Queue
-                            </a>
+                            </button>
                             <a class="btn btn--outline btn--sm"
                                href="/student/cancel-ticket.php?ticket_id=<?= (int)$active_ticket['id'] ?>"
                                onclick="return confirm('Are you sure you want to cancel your queue?');">
@@ -231,6 +221,145 @@ $greeting = (int)date('H') < 12 ? 'Good morning' : ((int)date('H') < 17 ? 'Good 
     </div>
 
 </main>
+<!-- Queue Status Modal -->
+<div id="queueStatusModal" class="queue-modal">
+    <div class="queue-modal__backdrop"></div>
+
+    <div class="queue-modal__dialog">
+
+        <button
+            type="button"
+            class="queue-modal__close"
+            id="closeQueueModal">
+            &times;
+        </button>
+
+        <div
+            class="status-card"
+            id="queue-status-container">
+
+            <div class="status-card__header">
+                <h1 id="office-name">Loading Office...</h1>
+
+                <div
+                    id="status-badge"
+                    class="ticket-status-badge">
+                    ...
+                </div>
+            </div>
+
+            <div class="status-card__main">
+
+                <div class="queue-number-display">
+                    <small>Your Ticket Number</small>
+                    <strong id="queue-number">...</strong>
+                </div>
+
+                <div
+                    id="waiting-info"
+                    class="waiting-info">
+
+                    <div class="info-grid">
+
+                        <div class="info-item">
+                            <span class="info-label">
+                                People Ahead
+                            </span>
+
+                            <span
+                                class="info-value"
+                                id="people-ahead">
+                                ...
+                            </span>
+                        </div>
+
+                        <div class="info-item">
+                            <span class="info-label">
+                                Estimated Wait
+                            </span>
+
+                            <span class="info-value">
+                                <span id="ewt">...</span> mins
+                            </span>
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="info-item"
+                        style="margin-top:1rem;">
+
+                        <span class="info-label">
+                            Assigned Counter
+                        </span>
+
+                        <span
+                            class="info-value"
+                            id="assigned-window-name"
+                            style="font-size:1.3rem;">
+                            ...
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div
+                    id="called-info"
+                    class="called-info hidden">
+
+                    <div class="called-alert">
+
+                        <div class="called-alert__icon">
+                            🔔
+                        </div>
+
+                        <h2>Please proceed now!</h2>
+
+                        <p>
+                            Go to your assigned service window:
+                        </p>
+
+                        <div
+                            class="window-name"
+                            id="window-name">
+                            ...
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="status-card__footer">
+
+                <p class="text-muted">
+                    Last updated:
+                    <span id="last-updated">
+                        ...
+                    </span>
+                </p>
+
+                <div class="status-card__actions">
+
+                    <button
+                        id="refreshQueueStatus"
+                        class="btn btn--outline btn--sm">
+
+                        Refresh
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
 
