@@ -1,7 +1,8 @@
 /* ============================================================
    Uniqueue — dashboard.css
    Student Dashboard styles
-   Color palette: #C21010 (primary red), #FFFFFF (white)
+   Color palette: #C21010 (primary red), #660810 (deep maroon),
+   #FFFFFF (white)
    Fonts: Playfair Display (headings) + DM Sans (body)
    ============================================================ */
 
@@ -21,6 +22,7 @@
 
   --white:         #ffffff;
   --off-white:     #faf8f8;
+  --cream:         #f7f1ea;
   --mist:          #f3eeee;
   --smoke:         #ede8e8;
 
@@ -46,6 +48,7 @@
   --shadow-md: 0 6px 28px rgba(26,10,10,0.11);
   --shadow-lg: 0 16px 52px rgba(26,10,10,0.14);
   --shadow-red:0 4px 24px rgba(194,16,16,0.32);
+  --shadow-maroon: 0 10px 32px rgba(102,8,16,0.28);
 
   --radius:    16px;
   --radius-sm: 10px;
@@ -54,6 +57,18 @@
   --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
 
   --header-h: 66px;
+  --footer-h: 60px;
+
+  /* Deep maroon banner + card accent palette, matching the
+     staff dashboard's visual language. */
+  --card-brand:       #660810;
+  --card-brand-light: #8a2e35;
+  --card-brand-dark:  #450509;
+  --card-border:      rgba(102,8,16,0.10);
+  --card-border-soft: rgba(102,8,16,0.07);
+  --card-shadow:       0 8px 22px rgba(102,8,16,.05);
+  --card-shadow-hover: 0 8px 22px rgba(102,8,16,.09);
+  --radius-xl: 20px;
 }
 
 /* ── Base ───────────────────────────────────────────────────── */
@@ -90,8 +105,8 @@ img { display: block; max-width: 100%; }
 }
 
 .site-header__inner {
-  width: 100%;
-  max-width: 1200px;
+  width: 96vw;
+  max-width: 2000px;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -237,15 +252,20 @@ img { display: block; max-width: 100%; }
 
 /* ── Main layout ────────────────────────────────────────────── */
 .dashboard-main {
-  max-width: 1120px;
+  /* Fluid: scales with the actual window instead of stopping at a
+     fixed px value, so it fills wide monitors and shrinks cleanly
+     on smaller ones. 96vw keeps a small breathing margin; the
+     upper cap keeps line lengths sane on ultra-wide screens. */
+  width: 96vw;
+  max-width: 2000px;
   margin: 0 auto;
-  padding: 2.2rem 1.5rem 4rem;
+  padding: 2rem 0 calc(4rem + var(--footer-h));
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
-/* ── Section titles ─────────────────────────────────────────── */
+/* ── Section titles (kept for any leftover usages) ────────────── */
 .section-title {
   font-family: 'Playfair Display', serif;
   font-size: 1.18rem;
@@ -268,131 +288,123 @@ img { display: block; max-width: 100%; }
   flex-shrink: 0;
 }
 
-/* ── Hero section ───────────────────────────────────────────── */
+/* ── Banner (dash-hero) ─────────────────────────────────────────
+   Deep maroon banner matching the staff dashboard: small "live"
+   pill badge top-left, big name, code subtitle, and a row of
+   translucent stat pills on the right instead of blocky panels. */
 .dash-hero {
-  background: var(--red);
-  border-radius: var(--radius);
-  padding: 2rem 2.2rem;
+  background: linear-gradient(155deg, var(--card-brand) 0%, var(--card-brand-dark) 100%);
+  border-radius: var(--radius-xl);
+  padding: 1.1rem 1.6rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 1.4rem;
+  gap: 1rem;
   position: relative;
   overflow: hidden;
-  box-shadow: var(--shadow-red);
+  box-shadow: var(--shadow-maroon);
   animation: fadeUp 0.5s cubic-bezier(0.4,0,0.2,1) both;
 }
 
-/* Layered background effects */
 .dash-hero::before {
   content: '';
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 70% 80% at 90% 50%, rgba(255,255,255,0.08) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 60% at 10% 20%, rgba(0,0,0,0.14) 0%, transparent 60%);
+    radial-gradient(ellipse 70% 80% at 90% 50%, rgba(255,255,255,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 60% at 10% 20%, rgba(0,0,0,0.18) 0%, transparent 60%);
   pointer-events: none;
 }
 
-/* Decorative circle */
-.dash-hero::after {
-  content: '';
-  position: absolute;
-  width: 280px;
-  height: 280px;
-  border-radius: 50%;
-  border: 60px solid rgba(255,255,255,0.06);
-  right: -90px;
-  top: -90px;
-  pointer-events: none;
-}
+.dash-hero__left { position: relative; z-index: 1; }
 
-.dash-hero__text { position: relative; z-index: 1; }
-
-.dash-hero__greeting {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: rgba(255,255,255,0.65);
+/* Small "live" style badge — green dot + greeting label,
+   mirrors the "LIVE QUEUE" pill in the staff dashboard. */
+.dash-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.75);
   text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin-bottom: 0.25rem;
+  letter-spacing: 0.7px;
+  margin-bottom: 0.5rem;
 }
+
+.dash-hero__badge-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #35d07f;
+  box-shadow: 0 0 0 3px rgba(53,208,127,0.22);
+  flex-shrink: 0;
+}
+
+.dash-hero__greeting { display: none; } /* superseded by .dash-hero__badge */
 
 .dash-hero__name {
   font-family: 'Playfair Display', serif;
-  font-size: 2rem;
+  font-size: 1.85rem;
   font-weight: 800;
   color: var(--white);
-  line-height: 1.1;
-  letter-spacing: -0.4px;
+  line-height: 1.15;
+  letter-spacing: -0.3px;
 }
 
 .dash-hero__code {
   font-size: 0.88rem;
-  font-weight: 400;
-  color: rgba(255,255,255,0.65);
-  margin-top: 0.3rem;
-  letter-spacing: 0.6px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.85);
+  letter-spacing: 0.3px;
 }
 
-/* ── Hero layout ─────────────────────────────────────────────── */
-.dash-hero__left { position: relative; z-index: 1; }
-
-/* Hero stats panel */
+/* Stat pills, right side of banner */
 .dash-hero__stats {
   position: relative;
   z-index: 1;
   display: flex;
   align-items: center;
-  gap: 0;
-  background: rgba(255,255,255,0.10);
-  border: 1px solid rgba(255,255,255,0.18);
-  border-radius: var(--radius-sm);
-  backdrop-filter: blur(4px);
-  overflow: hidden;
-  flex-shrink: 0;
+  gap: 0.6rem;
+  flex-wrap: wrap;
 }
 
 .hero-stat {
-  padding: 1rem 1.6rem;
-  text-align: center;
-  min-width: 90px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 100px;
+  padding: 0.55rem 1.1rem;
+  backdrop-filter: blur(4px);
 }
 
 .hero-stat__value {
   font-family: 'Playfair Display', serif;
-  font-size: 2rem;
+  font-size: 1.15rem;
   font-weight: 800;
   color: var(--white);
   line-height: 1;
-  letter-spacing: -1px;
 }
 
 .hero-stat__unit {
   font-family: 'DM Sans', sans-serif;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 500;
-  margin-left: 2px;
-  letter-spacing: 0;
+  color: rgba(255,255,255,0.75);
 }
 
 .hero-stat__label {
   font-size: 0.72rem;
-  font-weight: 500;
-  color: rgba(255,255,255,0.62);
+  font-weight: 600;
+  color: rgba(255,255,255,0.68);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-top: 0.3rem;
+  letter-spacing: 0.4px;
   white-space: nowrap;
 }
 
-.hero-stat-divider {
-  width: 1px;
-  height: 44px;
-  background: rgba(255,255,255,0.2);
-  flex-shrink: 0;
-}
+.hero-stat-divider { display: none; } /* pills no longer need dividers */
 
 /* ── Nav queue ticker pill ───────────────────────────────────── */
 .nav-queue-pill {
@@ -444,32 +456,146 @@ img { display: block; max-width: 100%; }
   font-weight: 500;
 }
 
-/* ── Active ticket section ──────────────────────────────────── */
-.active-ticket-section {
+/* ── Two-column dashboard grid ─────────────────────────────────
+   Left: Your Current Queue. Right: Available Offices.
+   Mirrors the staff dashboard's "Current Serving" / "Waiting
+   Queue" two-panel arrangement. */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
   animation: fadeUp 0.5s 0.1s cubic-bezier(0.4,0,0.2,1) both;
 }
 
-.active-ticket-card {
+/* ── Panel card (shared shell for both columns) ────────────────── */
+.panel-card {
   background: var(--white);
-  border: 1.5px solid var(--red-border);
-  border-radius: var(--radius);
-  padding: 1.6rem 1.8rem 1.6rem 2.3rem;
-  box-shadow: var(--shadow-md);
+  border: 1.5px solid var(--card-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
-  position: relative;
-  overflow: hidden;
 }
 
-/* Left accent stripe */
-.active-ticket-card::before {
+.panel-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 1.1rem 1.4rem;
+  border-bottom: 1.5px solid var(--smoke);
+}
+
+.panel-card__title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.1px;
+}
+
+.panel-card__title::before {
   content: '';
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 5px;
-  background: var(--red);
-  border-radius: var(--radius) 0 0 var(--radius);
+  display: inline-block;
+  width: 4px;
+  height: 1.05em;
+  background: var(--card-brand);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* Small pill badge on the header's right side, e.g. office count */
+.panel-card__count {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--success);
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  padding: 0.28rem 0.7rem;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
+/* Heuristic 1 — Visibility of system status: a small live pulse +
+   timestamp so the person always knows the data on screen is
+   current, without having to guess or refresh. */
+.panel-card__live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--ink-light);
+}
+
+.panel-card__live-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pillPulse 1.8s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+/* Heuristic 5 — Error prevention: a disabled, explained state for
+   actions that shouldn't be taken right now (e.g. joining a second
+   queue while one is already active), instead of letting the
+   person hit an error after the fact. */
+.btn[disabled],
+.btn--disabled {
+  background: var(--smoke);
+  color: var(--ink-faint);
+  border-color: var(--smoke);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none !important;
+}
+.btn--disabled:hover { background: var(--smoke); box-shadow: none; }
+
+.office-row--disabled {
+  opacity: 0.6;
+}
+
+.office-row__note {
+  font-size: 0.72rem;
+  color: var(--ink-light);
+  font-style: italic;
+}
+
+.panel-card__body {
+  padding: 1.3rem 1.4rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Active ticket panel (left column) ─────────────────────────── */
+.active-ticket-section { display: contents; } /* legacy wrapper, layout now owned by .dashboard-grid */
+
+.ticket-box {
+  background: var(--cream);
+  border: 1.5px solid var(--card-border-soft);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.ticket-box--empty {
+  border-style: dashed;
+  border-color: var(--ink-faint);
+  align-items: center;
+  text-align: center;
+  color: var(--ink-light);
+  font-size: 0.9rem;
+  gap: 0.6rem;
 }
 
 .active-ticket-card__header {
@@ -481,11 +607,11 @@ img { display: block; max-width: 100%; }
 
 .active-ticket-card__number {
   font-family: 'Playfair Display', serif;
-  font-size: 3.2rem;
+  font-size: 2.6rem;
   font-weight: 800;
-  color: var(--red);
+  color: var(--card-brand);
   line-height: 1;
-  letter-spacing: -1.5px;
+  letter-spacing: -1.2px;
 }
 
 .active-ticket-card__office {
@@ -497,68 +623,96 @@ img { display: block; max-width: 100%; }
   gap: 0.35rem;
 }
 
-.active-ticket-card__footer { margin-top: 0.3rem; }
-
-/* ── Offices grid ───────────────────────────────────────────── */
-.offices-section {
-  animation: fadeUp 0.5s 0.15s cubic-bezier(0.4,0,0.2,1) both;
+.active-ticket-card__footer {
+  margin-top: 0.2rem;
+  display: flex;
+  gap: 0.6rem;
 }
 
-.offices-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
-  gap: 1rem;
-}
+/* ── Offices panel (right column) ───────────────────────────────
+   Vertical list of office rows instead of a separate card grid,
+   matching the "Waiting Queue" list treatment in the reference. */
+.offices-section { display: contents; } /* legacy wrapper */
 
-.office-card {
-  background: var(--white);
-  border: 1.5px solid var(--smoke);
-  border-radius: var(--radius);
-  padding: 1.3rem 1.4rem 1.4rem;
+.offices-list {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
-  box-shadow: var(--shadow-xs);
+  gap: 0.7rem;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 0.2rem;
 }
 
-.office-card:hover {
-  border-color: var(--red-border);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-3px);
+.office-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  background: var(--cream);
+  border: 1.5px solid var(--card-border-soft);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+  transition: border-color var(--transition), background var(--transition);
 }
 
-.office-card__name {
-  font-size: 0.97rem;
+.office-row:hover {
+  border-color: var(--card-brand-light);
+  background: var(--white);
+}
+
+.office-row__icon {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-xs);
+  background: var(--card-border-soft);
+  color: var(--card-brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.office-row__info { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+
+.office-row__name {
+  font-size: 0.93rem;
   font-weight: 600;
   color: var(--ink);
-  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.office-card__hours {
-  font-size: 0.8rem;
+.office-row__hours {
+  font-size: 0.78rem;
   font-weight: 400;
   color: var(--ink-light);
   display: flex;
   align-items: center;
   gap: 0.3rem;
+  white-space: nowrap;
 }
 
-.office-card__hours::before {
+.office-row__hours::before {
   content: '';
   display: inline-block;
-  width: 7px; height: 7px;
+  width: 6px; height: 6px;
   border-radius: 50%;
   background: var(--success);
   flex-shrink: 0;
 }
 
-.office-card__actions {
-  display: flex;
-  gap: 0.45rem;
-  margin-top: auto;
-  padding-top: 0.4rem;
+.offices-list__empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--ink-light);
+  font-size: 0.88rem;
 }
+
+/* Legacy classes kept so nothing else in the codebase breaks if
+   still referenced elsewhere */
+.offices-grid { display: none; }
+.office-card { display: none; }
 
 /* ── Badges ─────────────────────────────────────────────────── */
 .ticket-status-badge {
@@ -581,9 +735,9 @@ img { display: block; max-width: 100%; }
 
 .ticket-status-badge--called,
 .ticket-status-badge--in_progress {
-  background: var(--red-soft);
-  color: var(--red);
-  border: 1px solid var(--red-border);
+  background: var(--card-border-soft);
+  color: var(--card-brand);
+  border: 1px solid var(--card-border);
   animation: pulseBadge 1.8s ease-in-out infinite;
 }
 
@@ -614,9 +768,9 @@ img { display: block; max-width: 100%; }
   white-space: nowrap;
 }
 .ticket-type-badge--walkin {
-  background: var(--red-soft);
-  color: var(--red);
-  border: 1px solid var(--red-border);
+  background: var(--card-border-soft);
+  color: var(--card-brand);
+  border: 1px solid var(--card-border);
 }
 .ticket-type-badge--appointment {
   background: var(--info-bg);
@@ -683,38 +837,45 @@ img { display: block; max-width: 100%; }
 
 /* Variants */
 .btn--primary {
-  background: var(--red);
+  background: var(--card-brand);
   color: var(--white);
-  box-shadow: var(--shadow-red);
+  box-shadow: 0 4px 16px rgba(102,8,16,0.28);
 }
 .btn--primary:hover {
-  background: var(--red-deep);
-  box-shadow: 0 6px 24px rgba(194,16,16,0.42);
+  background: var(--card-brand-dark);
+  box-shadow: 0 6px 22px rgba(102,8,16,0.36);
   transform: translateY(-1px);
 }
-.btn--primary:active { transform: translateY(0); box-shadow: var(--shadow-red); }
+.btn--primary:active { transform: translateY(0); }
 
 .btn--outline {
   background: var(--white);
-  color: var(--red);
-  border: 1.5px solid var(--red);
+  color: var(--card-brand);
+  border: 1.5px solid var(--card-brand);
   box-shadow: var(--shadow-xs);
 }
 .btn--outline:hover {
-  background: var(--red-soft);
+  background: var(--card-border-soft);
   box-shadow: var(--shadow-sm);
   transform: translateY(-1px);
 }
 
 /* ── Footer ─────────────────────────────────────────────────── */
 .site-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 150;
   border-top: 1.5px solid var(--smoke);
   background: var(--white);
   padding: 1.2rem 2rem;
+  box-sizing: border-box;
 }
 
 .site-footer__inner {
-  max-width: 1120px;
+  width: 96vw;
+  max-width: 2000px;
   margin: 0 auto;
   text-align: center;
 }
@@ -736,28 +897,28 @@ img { display: block; max-width: 100%; }
 }
 
 /* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .dashboard-grid { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 860px) {
-  .dashboard-main { padding: 1.6rem 1rem 3rem; }
-  .dash-hero { padding: 1.6rem 1.5rem; flex-wrap: wrap; }
-  .dash-hero__name { font-size: 1.65rem; }
-  .hero-stat { padding: 0.85rem 1.2rem; min-width: 75px; }
-  .hero-stat__value { font-size: 1.65rem; }
+  .dashboard-main { padding: 1.6rem 1rem calc(3rem + var(--footer-h)); }
+  .dash-hero { padding: 1.5rem 1.6rem; flex-wrap: wrap; }
+  .dash-hero__name { font-size: 1.5rem; }
 }
 
 @media (max-width: 600px) {
   .site-header { padding: 0 1rem; }
   .site-header__user-name { display: none; }
-  .dashboard-main { padding: 1.2rem 0.8rem 2.5rem; }
+  .dashboard-main { padding: 1.2rem 0.8rem calc(2.5rem + var(--footer-h)); }
   .dash-hero { flex-direction: column; align-items: flex-start; }
-  .dash-hero::after { display: none; }
-  .dash-hero__stats { width: 100%; justify-content: space-around; }
-  .offices-grid { grid-template-columns: 1fr 1fr; }
-  .active-ticket-card__number { font-size: 2.5rem; }
+  .dash-hero__stats { width: 100%; }
+  .hero-stat { flex: 1; justify-content: center; }
+  .active-ticket-card__number { font-size: 2.2rem; }
+  .active-ticket-card__footer { flex-wrap: wrap; }
+  .active-ticket-card__footer .btn { flex: 1; }
 }
 
 @media (max-width: 380px) {
-  .offices-grid { grid-template-columns: 1fr; }
   .btn { font-size: 0.85rem; }
-  .hero-stat { padding: 0.75rem 0.8rem; }
-  .hero-stat__value { font-size: 1.4rem; }
 }

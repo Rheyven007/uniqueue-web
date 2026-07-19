@@ -1,0 +1,217 @@
+/* ============================================================
+   Uniqueue — profile.css
+   Student Profile page styles
+   Depends on dashboard.css for shared tokens (--card-brand,
+   --cream, --smoke, etc.), .panel-card, .btn, and .dash-hero —
+   load dashboard.css BEFORE this file.
+   ============================================================ */
+
+/* ── 1. Profile identity block ────────────────────────────────
+   Avatar + name + SR code, sits at the top of the Basic
+   Information panel. */
+
+.profile-identity {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 1.2rem;
+  margin-bottom: 1.2rem;
+  border-bottom: 1.5px solid var(--smoke);
+}
+
+.profile-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(155deg, var(--card-brand) 0%, var(--card-brand-dark) 100%);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.profile-identity__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.profile-identity__name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-identity__code {
+  font-size: 0.82rem;
+  color: var(--ink-light);
+}
+
+
+/* ── 2. Read-only info rows ───────────────────────────────────
+   Used for any label/value pair that isn't part of the editable
+   form (e.g. "Member Since" at the bottom of the form). */
+
+.info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.info-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--smoke);
+}
+
+.info-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.info-row__label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--ink-light);
+  white-space: nowrap;
+}
+
+.info-row__value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: right;
+}
+
+
+/* ── 3. Form shell ─────────────────────────────────────────────
+   Shared by the "edit basic info" form and the "change
+   password" form. */
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* Side-by-side fields (First Name / Last Name) on desktop,
+   collapses to one column on small screens — see §6. */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-label {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--ink-mid);
+}
+
+.form-hint {
+  font-size: 0.76rem;
+  color: var(--ink-light);
+}
+
+
+/* ── 4. Inputs & selects ──────────────────────────────────────
+   One shared .form-input class for <input> and <select> so
+   text fields and dropdowns look identical. */
+
+.form-input {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--ink);
+  background: var(--cream);
+  border: 1.5px solid var(--card-border-soft);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.9rem;
+  transition: border-color var(--transition), background var(--transition);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--card-brand-light);
+  background: var(--white);
+}
+
+.form-input:disabled {
+  background: var(--smoke);
+  color: var(--ink-light);
+  cursor: not-allowed;
+}
+
+/* Native <select> arrow, styled to match the rest of the field
+   instead of the browser default. */
+select.form-input {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238a7070' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.9rem center;
+  padding-right: 2.2rem;
+  cursor: pointer;
+}
+
+
+/* ── 5. Alerts (success / error feedback) ─────────────────────
+   Shown above the relevant form after a submit. */
+
+.form-alert {
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.7rem 1rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
+}
+
+.form-alert--error {
+  background: var(--warning-bg);
+  color: var(--warning);
+  border: 1px solid var(--warning-border);
+}
+
+.form-alert--success {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid var(--success-border);
+}
+
+
+/* ── 6. Responsive ─────────────────────────────────────────────
+   Below 600px, First Name / Last Name stack instead of
+   sitting side by side (matches dashboard.css's breakpoint). */
+
+@media (max-width: 600px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-identity {
+    gap: 0.8rem;
+  }
+
+  .profile-avatar {
+    width: 48px;
+    height: 48px;
+    font-size: 1.1rem;
+  }
+}
