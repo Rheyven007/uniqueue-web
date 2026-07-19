@@ -97,7 +97,7 @@ $greeting = (int)date('H') < 12 ? 'Good morning' : ((int)date('H') < 17 ? 'Good 
                 <span class="hero-stat__label">In Queue Today</span>
             </div>
 
-            <div class="hero-stat" title="Batay sa average na bilis ng pag-asikaso ngayong araw; maaaring magbago.">
+            <div class="hero-stat" title="Based on the average processing speed today; subject to change.">
                 <span class="hero-stat__value" id="stat-est-wait">
                     <?= $est_wait_mins !== null ? $est_wait_mins : '&mdash;' ?><?php if ($est_wait_mins !== null): ?><span class="hero-stat__unit">min</span><?php endif; ?>
                 </span>
@@ -156,7 +156,7 @@ $greeting = (int)date('H') < 12 ? 'Good morning' : ((int)date('H') < 17 ? 'Good 
                             </a>
                             <a class="btn btn--outline btn--sm"
                                href="/student/cancel-ticket.php?ticket_id=<?= (int)$active_ticket['id'] ?>"
-                               onclick="return confirm('Sigurado ka bang gusto mong kanselahin ang iyong queue?');">
+                               onclick="return confirm('Are you sure you want to cancel your queue?');">
                                 Cancel
                             </a>
                         </div>
@@ -169,7 +169,7 @@ $greeting = (int)date('H') < 12 ? 'Good morning' : ((int)date('H') < 17 ? 'Good 
                             <circle cx="12" cy="12" r="10"/>
                             <path d="M12 8v4l2.5 2.5"/>
                         </svg>
-                        <span>Wala ka pang naka-queue ngayon.</span>
+                        <span>You don't have an active queue right now.</span>
                     </div>
                 <?php endif; ?>
             </div>
@@ -198,7 +198,7 @@ $greeting = (int)date('H') < 12 ? 'Good morning' : ((int)date('H') < 17 ? 'Good 
                                 <div class="office-row__info">
                                     <span class="office-row__name"><?= e($office['name']) ?></span>
                                     <?php if ($active_ticket): ?>
-                                        <span class="office-row__note">May aktibo ka nang queue</span>
+                                        <span class="office-row__note">You already have an active queue</span>
                                     <?php else: ?>
                                         <span class="office-row__hours">
                                             <?= $office['start_time'] ? date('h:i A', strtotime($office['start_time'])) : '08:00 AM' ?>
@@ -210,7 +210,7 @@ $greeting = (int)date('H') < 12 ? 'Good morning' : ((int)date('H') < 17 ? 'Good 
                             </div>
                             <?php if ($active_ticket): ?>
                                 <button type="button" class="btn btn--xs btn--disabled" disabled
-                                        title="Tapusin o kanselahin muna ang kasalukuyang queue bago sumali sa panibago.">
+                                        title="Finish or cancel your current queue first before joining a new one.">
                                     Join Queue
                                 </button>
                             <?php else: ?>
