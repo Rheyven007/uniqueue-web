@@ -20,12 +20,11 @@ function setType() {
     const docsSection = document.querySelector('#docMultiList')?.closest('.form-group');
     const windowsBox = document.getElementById('possibleWindowsBox');
 
-    if (selectedType === 'appointment') {
-        if (docsSection) docsSection.style.display = 'none';
-        if (windowsBox) windowsBox.style.display = 'none';
-    } else {
-        if (docsSection) docsSection.style.display = '';
-    }
+    if (docsSection) docsSection.style.display = '';
+
+if (selectedType === 'appointment') {
+    loadPossibleWindows();
+} 
 }
 
 function showStep(step) {
@@ -67,35 +66,37 @@ function nextStep() {
 
     if (currentStep === 2) {
 
-        if (selectedType === 'walkin') {
+        const selectedDocs = getSelectedDocIds();
 
-            const selectedDocs = getSelectedDocIds();
-
-            if (selectedDocs.length === 0) {
-                document.getElementById('docSelectWarning').style.display = 'block';
-                showFieldError("Please select at least one document.");
-                return;
-            }
-
-            document.getElementById('docSelectWarning').style.display = 'none';
+        if (selectedDocs.length === 0) {
+            document.getElementById('docSelectWarning').style.display = 'block';
+            showFieldError("Please select at least one document.");
+            return;
         }
+
+        document.getElementById('docSelectWarning').style.display = 'none';
 
         return showStep(3);
     }
 
     if (currentStep === 3) {
-        if (selectedType === 'walkin') {
-            const checks = document.querySelectorAll('#requirementsBox input[type="checkbox"]');
-            if (checks.length === 0) {
-                showFieldError("Requirements could not be loaded.");
-                return;
-            }
-            const allChecked = [...checks].every(c => c.checked);
-            if (!allChecked) {
-                showFieldError("Please confirm all requirements are met.");
-                return;
-            }
+
+        // Document requirements are required for BOTH Walk-in and Appointment
+        const checks = document.querySelectorAll('#requirementsBox input[type="checkbox"]');
+
+        if (checks.length === 0) {
+            showFieldError("Requirements could not be loaded.");
+            return;
         }
+
+        const allChecked = [...checks].every(c => c.checked);
+
+        if (!allChecked) {
+            showFieldError("Please confirm all requirements are met.");
+            return;
+        }
+
+        // Appointment additionally requires the Appointment Slip
         if (selectedType === 'appointment') {
             const slip = document.getElementById('apptSlipCheck');
 
@@ -104,9 +105,10 @@ function nextStep() {
                 return;
             }
         }
+
         return showStep(4);
     }
-}
+}       
 
 function prevStep() {
     if (currentStep <= 1) return;
@@ -133,12 +135,6 @@ function onDocToggle(checkbox) {
 function loadPossibleWindows() {
     const box = document.getElementById('possibleWindowsBox');
     if (!box) return;
-
-    if (selectedType === 'appointment') {
-        box.style.display = 'none';
-        box.innerHTML = '';
-        return;
-    }
 
     const docIds = getSelectedDocIds();
     if (docIds.length === 0 || typeof OFFICE_ID === 'undefined') {
@@ -200,23 +196,19 @@ function enterRequirementsStep() {
     const reqBox = document.getElementById('requirementsBox');
     const apptBox = document.getElementById('apptRequirementBox');
 
-    if (selectedType === 'walkin') {
+    // Always show document requirements
+    if (reqBox) reqBox.style.display = 'block';
+    loadRequirements();
 
-        if (reqBox) reqBox.style.display = 'block';
-        if (apptBox) apptBox.style.display = 'none';
-
-        loadRequirements();
-
-    } else {
-
-        if (reqBox) reqBox.style.display = 'none';
+    // Appointment only adds the Appointment Slip requirement
+    if (selectedType === 'appointment') {
         if (apptBox) apptBox.style.display = 'block';
-
+    } else {
+        if (apptBox) apptBox.style.display = 'none';
     }
 }
 
 function loadRequirements() {
-    if (selectedType === 'appointment') return;
     const docIds = getSelectedDocIds();
     const box = document.getElementById('requirementsBox');
     if (!box) return;
@@ -263,17 +255,15 @@ function updateSummary() {
             const qty  = item.querySelector('.qty-input--sm')?.value || '1';
             return name + ' (x' + qty + ')';
         });
-    if (selectedType === 'walkin') {
-        setRowVisible('cDocList', true);
-        setText('cDocList', docLines.length ? docLines.join(', ') : 'N/A');
-    } else {
-        const row = document.querySelector('.confirm-row--docs');
-        if (row) row.style.display = 'none';
-    }
+    const row = document.querySelector('.confirm-row--docs');
 
-    const priority = document.getElementById('priorityChk')?.checked ? 'Yes' : 'No';
-    setText('cPriority', priority);
-}
+    if (row) row.style.display = '';
+
+    setText('cDocList', docLines.length ? docLines.join(', ') : 'N/A');
+
+        const priority = document.getElementById('priorityChk')?.checked ? 'Yes' : 'No';
+        setText('cPriority', priority);
+    }
 
 /* ── Utilities ───────────────────────────────────────────────── */
 

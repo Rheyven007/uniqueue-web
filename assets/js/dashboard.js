@@ -5,11 +5,16 @@
 
     /* ── DOM References ────────────────────────────────────────────────────── */
     const activeTicketWidget = document.getElementById('active-ticket-widget');
-    const totalWaitingEl = document.getElementById('stat-total-waiting');
-    const estWaitEl = document.getElementById('stat-est-wait');
+    const trackQueueBtn = document.getElementById('trackQueueBtn');
+    const queueModal = document.getElementById('queueStatusModal');
+    const closeQueueModal = document.getElementById('closeQueueModal');
+    const modalBackdrop = queueModal?.querySelector('.queue-modal__backdrop');
+    const refreshQueueBtn = document.getElementById('refreshQueueStatus');
+
+let modalPoller = null;
 
     /* ── Constants ─────────────────────────────────────────────────────────── */
-    const TICKET_POLL_INTERVAL_SECONDS = 10;
+    const TICKET_POLL_INTERVAL_SECONDS = 1;
     const STATS_POLL_INTERVAL_SECONDS = 15;
 
     /* ── Active Ticket Polling ─────────────────────────────────────────────── */
@@ -27,7 +32,12 @@
         setInterval(() => pollTicketStatus(ticketId), TICKET_POLL_INTERVAL_SECONDS * 1000);
     }
     function pollTicketStatus(ticketId) {
-        fetch(`/api/get-queue-status.php?ticket_id=${encodeURIComponent(ticketId)}`)
+
+        console.log("Polling...", new Date().toLocaleTimeString());
+
+        fetch(`/api/get-queue-status.php?ticket_id=${encodeURIComponent(ticketId)}&_=${Date.now()}`, {
+            cache: "no-store"
+        })
             .then(res => {
                 if (!res.ok) {
                     throw new Error(`HTTP error! status: ${res.status}`);
@@ -35,6 +45,7 @@
                 return res.json();
             })
             .then(data => {
+                console.log("Queue Status:", data);
                 if (!data.success) {
                     // If the ticket is not found, it might have been cleared. Remove the widget.
                     removeActiveTicketSection();
@@ -48,7 +59,8 @@
                 }
 
                 // Update the status badge on the dashboard
-                const statusBadge = activeTicketWidget.querySelector('.ticket-status-badge');
+                const statusBadge = document.getElementById('dashboard-status-badge');
+                console.log("Status badge:", statusBadge);
                 if (statusBadge) {
                     const formattedStatus = (data.status || '').replace('_', ' ');
                     statusBadge.textContent = formattedStatus.charAt(0).toUpperCase() + formattedStatus.slice(1);
@@ -80,17 +92,6 @@
             })
             .then(data => {
                 if (!data.success) return;
-
-                updateStat(totalWaitingEl, data.total_waiting);
-
-                if (estWaitEl) {
-                    if (data.est_wait_mins !== null) {
-                        estWaitEl.innerHTML = `${data.est_wait_mins}<span class="hero-stat__unit">min</span>`;
-                    } else {
-                        estWaitEl.innerHTML = '&mdash;';
-                    }
-                    updateStat(estWaitEl, data.est_wait_mins, true); // Pass true to skip number check
-                }
             })
             .catch(err => console.error('Failed to poll dashboard stats:', err));
     }
@@ -108,6 +109,142 @@
         }
     }
 
+    /* ─────────────────────────────────────────────────────────────
+   Queue Status Modal
+───────────────────────────────────────────────────────────── */
+
+function openQueueModal(ticketId) {
+
+    if (!queueModal) return;
+
+    queueModal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+
+    loadQueueStatus(ticketId);
+
+    if (modalPoller) {
+        clearInterval(modalPoller);
+    }
+
+    modalPoller = setInterval(() => {
+        loadQueueStatus(ticketId);
+    }, 1000);
+}
+
+function closeQueueStatusModal() {
+
+    if (!queueModal) return;
+
+    queueModal.classList.remove('show');
+    document.body.style.overflow = '';
+
+    if (modalPoller) {
+        clearInterval(modalPoller);
+        modalPoller = null;
+    }
+}
+
+function loadQueueStatus(ticketId) {
+
+    fetch(`/api/get-queue-status.php?ticket_id=${encodeURIComponent(ticketId)}`)
+        .then(r => r.json())
+        .then(data => {
+
+            if (!data.success) {
+                closeQueueStatusModal();
+                return;
+            }
+
+            document.getElementById('office-name').textContent =
+                data.office_name || '';
+
+            document.getElementById('queue-number').textContent =
+                data.queue_number || '';
+
+            document.getElementById('people-ahead').textContent =
+                data.people_ahead ?? 0;
+
+            document.getElementById('ewt').textContent =
+                data.estimated_wait ?? '--';
+
+            document.getElementById('assigned-window-name').textContent =
+                data.window_name || 'Pending';
+
+            document.getElementById('window-name').textContent =
+                data.window_name || '';
+
+            document.getElementById('last-updated').textContent =
+                new Date().toLocaleTimeString();
+
+            const badge = document.getElementById('status-badge');
+
+            badge.textContent =
+                (data.status || '')
+                    .replace('_', ' ')
+                    .replace(/\b\w/g, c => c.toUpperCase());
+
+            badge.className =
+                'ticket-status-badge ticket-status-badge--' + data.status;
+
+            const waiting =
+                document.getElementById('waiting-info');
+
+            const called =
+                document.getElementById('called-info');
+
+            if (
+                data.status === 'called' ||
+                data.status === 'in_progress'
+            ) {
+
+                waiting.classList.add('hidden');
+                called.classList.remove('hidden');
+
+            } else {
+
+                waiting.classList.remove('hidden');
+                called.classList.add('hidden');
+            }
+
+            if (
+                data.status === 'done' ||
+                data.status === 'completed' ||
+                data.status === 'cancelled'
+            ) {
+
+                closeQueueStatusModal();
+
+                location.reload();
+            }
+
+        })
+        .catch(console.error);
+}
+
+        if (trackQueueBtn) {
+            trackQueueBtn.addEventListener('click', function () {
+                openQueueModal(this.dataset.ticketId);
+            });
+        }
+        if (closeQueueModal) {
+            closeQueueModal.addEventListener('click', closeQueueStatusModal);
+        }
+        if (modalBackdrop) {
+            modalBackdrop.addEventListener('click', closeQueueStatusModal);
+        }
+        if (refreshQueueBtn) {
+            refreshQueueBtn.addEventListener('click', function () {
+                if (trackQueueBtn) {
+                    loadQueueStatus(trackQueueBtn.dataset.ticketId);
+                }
+            });
+        }
+        document.addEventListener('keydown', function(e){
+            if(e.key === 'Escape'){
+                closeQueueStatusModal();
+            }
+
+        });
     // Initialize all polling
     initializeTicketPolling();
     pollDashboardStats(); // Initial call

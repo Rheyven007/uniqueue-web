@@ -6,6 +6,9 @@ require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php'; // For get_speed_multiplier
 
 header('Content-Type: application/json');
+header('Cache-Control: no-cache, no-store, must-revalidate');
+header('Pragma: no-cache');
+header('Expires: 0');
 
 $ticket_id = get_param('ticket_id');
 $student_id = $_SESSION['student_id'] ?? null;
@@ -34,16 +37,17 @@ try {
     }
 
     $response_data = [
-        'success' => true,
-        'id' => $ticket['id'],
-        'queue_number' => $ticket['queue_number'],
-        'type' => $ticket['type'],
-        'status' => $ticket['status'],
-        'office_name' => $ticket['office_name'],
-        'window_name' => $ticket['window_name'],
-        'last_updated' => date('Y-m-d H:i:s'),
-        'people_ahead' => 0,
-        'ewt' => 'N/A'
+        'success'        => true,
+        'id'             => (int)$ticket['id'],
+        'queue_number'   => $ticket['queue_number'],
+        'type'           => $ticket['type'],
+        'status'         => $ticket['status'],
+        'office_name'    => $ticket['office_name'],
+        'window_name'    => $ticket['window_name'],
+        'last_updated'   => date('Y-m-d H:i:s'),
+        'people_ahead'   => 0,
+        'ewt'            => 'N/A',
+        'estimated_wait' => 'N/A'
     ];
 
     // Only calculate people ahead and EWT if the ticket is still waiting or called
@@ -94,7 +98,7 @@ try {
         $estimated_wait_time = round($response_data['people_ahead'] * $average_ticket_processing_time * $speed_multiplier);
         
         $response_data['ewt'] = $estimated_wait_time > 0 ? $estimated_wait_time : '< 1';
-    }
+        $response_data['estimated_wait'] = $response_data['ewt'];    }
 
     json_response($response_data);
 

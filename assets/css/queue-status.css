@@ -1,8 +1,19 @@
 /* ============================================================
    Uniqueue — queue-status.css
-   Real-Time Queue Status page styles
-   Extends student.css — same #C21010 / white design system
+   Real-Time Queue Status page + modal styles
+   Palette: Deep Red #660810 · Stone #f1ebeb ·
+            Dark Red #270707 · Grey Orange (clay) #d6c0b1
    ============================================================ */
+
+:root {
+  --qs-deep-red:  #660810;
+  --qs-dark-red:  #270707;
+  --qs-stone:     #f1ebeb;
+  --qs-clay:      #d6c0b1;
+  --qs-clay-soft: rgba(214,192,177,0.32);
+  --qs-gold:      #e8b25c;
+  --qs-gold-soft: rgba(232,178,92,0.15);
+}
 
 /* ── Page layout ───────────────────────────────────────────── */
 .container {
@@ -18,11 +29,11 @@
 
 /* ── Status card ───────────────────────────────────────────── */
 .status-card {
-  background: var(--white);
-  border: 1.5px solid var(--red-border);
-  border-radius: var(--radius);
+  background: var(--qs-stone);
+  border: 1.5px solid var(--qs-clay-soft);
+  border-radius: var(--radius-xl, 20px);
   overflow: hidden;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 20px 56px rgba(39,7,7,0.16), 0 4px 14px rgba(39,7,7,0.08);
   animation: cardEntry 0.5s cubic-bezier(0.34,1.1,0.64,1) both;
 }
 
@@ -33,15 +44,25 @@
 
 /* ── Card header ───────────────────────────────────────────── */
 .status-card__header {
-  background: var(--red);
-  padding: 1.4rem 1.8rem 1.3rem;
+  position: relative;
+  background: linear-gradient(155deg, var(--qs-deep-red) 0%, var(--qs-dark-red) 100%);
+  padding: 1.6rem 1.8rem 1.4rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 0.6rem;
-  position: relative;
   overflow: hidden;
+}
+
+.status-card__header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 80% at 100% 0%, rgba(214,192,177,0.14) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 60% at 0% 110%, rgba(0,0,0,0.28) 0%, transparent 60%);
+  pointer-events: none;
 }
 
 .status-card__header::after {
@@ -50,31 +71,60 @@
   width: 180px;
   height: 180px;
   border-radius: 50%;
-  border: 42px solid rgba(255,255,255,0.07);
+  border: 42px solid rgba(255,255,255,0.055);
   right: -55px;
   top: -55px;
   pointer-events: none;
 }
 
 .status-card__header h1 {
+  position: relative;
+  z-index: 1;
   font-family: 'Playfair Display', serif;
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--white);
+  color: #ffffff;
   letter-spacing: -0.2px;
   line-height: 1.2;
-  position: relative;
-  z-index: 1;
+  padding-right: 2rem;
 }
 
-/* Override status badge colours inside red header */
+/* Status badge inside the deep-red header */
 .status-card__header .ticket-status-badge {
   position: relative;
   z-index: 1;
-  background: rgba(255,255,255,0.18);
-  color: var(--white);
-  border-color: rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.16);
+  color: #ffffff;
+  border: 1px solid rgba(255,255,255,0.32);
   font-size: 0.78rem;
+  backdrop-filter: blur(3px);
+}
+.status-card__header .ticket-status-badge--waiting {
+  background: var(--qs-gold-soft);
+  color: var(--qs-gold);
+  border-color: rgba(232,178,92,0.42);
+}
+.status-card__header .ticket-status-badge--called,
+.status-card__header .ticket-status-badge--in_progress {
+  background: #ffffff;
+  color: var(--qs-deep-red);
+  border-color: transparent;
+  animation: pulseBadge 1.6s ease-in-out infinite;
+}
+.status-card__header .ticket-status-badge--done {
+  background: rgba(255,255,255,0.9);
+  color: #1a8c4e;
+  border-color: transparent;
+}
+.status-card__header .ticket-status-badge--cancelled {
+  background: rgba(255,255,255,0.16);
+  color: rgba(255,255,255,0.75);
+  border-color: rgba(255,255,255,0.28);
+}
+
+@keyframes pulseBadge {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
 }
 
 /* ── Card main ─────────────────────────────────────────────── */
@@ -91,17 +141,18 @@
   flex-direction: column;
   align-items: center;
   gap: 0.3rem;
-  padding: 1.5rem 1rem;
-  background: var(--red-soft);
-  border: 1.5px solid var(--red-border);
-  border-radius: var(--radius);
+  padding: 1.6rem 1rem 1.7rem;
+  background: #ffffff;
+  border: 1.5px solid var(--qs-clay-soft);
+  border-radius: var(--radius, 16px);
   text-align: center;
+  box-shadow: 0 6px 20px rgba(102,8,16,0.06);
 }
 
 .queue-number-display small {
   font-size: 0.78rem;
   font-weight: 700;
-  color: var(--ink-mid);
+  color: var(--ink-light, #8a7070);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -109,8 +160,8 @@
 .queue-number-display strong {
   font-family: 'Playfair Display', serif;
   font-size: 3.8rem;
-  font-weight: 700;
-  color: var(--red);
+  font-weight: 800;
+  color: var(--qs-deep-red);
   letter-spacing: -2px;
   line-height: 1;
   animation: numberPop 0.4s cubic-bezier(0.34,1.4,0.64,1) both;
@@ -122,7 +173,7 @@
 }
 
 /* ── Waiting info grid ─────────────────────────────────────── */
-.waiting-info { transition: opacity var(--transition); }
+.waiting-info { transition: opacity var(--transition, 0.22s); }
 .waiting-info.hidden { display: none; }
 
 .info-grid {
@@ -132,23 +183,26 @@
 }
 
 .info-item {
-  background: var(--off-white);
-  border: 1.5px solid var(--smoke);
-  border-radius: var(--radius-sm);
+  background: #ffffff;
+  border: 1.5px solid var(--qs-clay-soft);
+  border-radius: var(--radius-sm, 10px);
   padding: 1.1rem 1.2rem;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
   text-align: center;
-  transition: border-color var(--transition);
+  transition: border-color var(--transition, 0.22s), transform var(--transition, 0.22s);
 }
 
-.info-item:hover { border-color: var(--red-border); }
+.info-item:hover {
+  border-color: var(--qs-clay);
+  transform: translateY(-1px);
+}
 
 .info-label {
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--ink-light);
+  color: var(--ink-light, #8a7070);
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
@@ -156,19 +210,28 @@
 .info-value {
   font-family: 'Playfair Display', serif;
   font-size: 2rem;
-  font-weight: 700;
-  color: var(--ink);
+  font-weight: 800;
+  color: var(--qs-dark-red);
   letter-spacing: -0.5px;
   line-height: 1;
 }
 
+/* "Assigned Counter" row — spans full width, slightly emphasized */
+.waiting-info > .info-item {
+  background: linear-gradient(135deg, var(--qs-clay-soft) 0%, #ffffff 100%);
+  border-color: var(--qs-clay);
+}
+.waiting-info > .info-item .info-value {
+  color: var(--qs-deep-red);
+}
+
 /* ── Called alert ──────────────────────────────────────────── */
-.called-info { transition: opacity var(--transition); }
+.called-info { transition: opacity var(--transition, 0.22s); }
 .called-info.hidden { display: none; }
 
 .called-alert {
-  background: var(--red);
-  border-radius: var(--radius);
+  background: linear-gradient(155deg, var(--qs-deep-red) 0%, var(--qs-dark-red) 100%);
+  border-radius: var(--radius, 16px);
   padding: 2rem 1.5rem;
   text-align: center;
   display: flex;
@@ -177,14 +240,14 @@
   gap: 0.6rem;
   position: relative;
   overflow: hidden;
-  animation: calledPulse 0.5s cubic-bezier(0.34,1.2,0.64,1) both;
+  animation: calledPulse 0.5s cubic-bezier(0.34,1.2,0.64,1) both, calledGlow 2s ease-in-out 0.5s infinite;
 }
 
 .called-alert::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,255,255,0.1) 0%, transparent 70%);
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(214,192,177,0.16) 0%, transparent 70%);
   pointer-events: none;
 }
 
@@ -193,9 +256,15 @@
   to   { opacity: 1; transform: scale(1); }
 }
 
+@keyframes calledGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232,178,92,0.28); }
+  50%       { box-shadow: 0 0 0 12px rgba(232,178,92,0); }
+}
+
 .called-alert__icon {
   font-size: 2.4rem;
   animation: bellRing 0.8s cubic-bezier(0.4,0,0.2,1) 0.3s both;
+  transform-origin: 50% 0%;
 }
 
 @keyframes bellRing {
@@ -211,7 +280,7 @@
   font-family: 'Playfair Display', serif;
   font-size: 1.45rem;
   font-weight: 700;
-  color: var(--white);
+  color: #ffffff;
   position: relative;
   z-index: 1;
 }
@@ -226,16 +295,17 @@
 .window-name {
   font-family: 'Playfair Display', serif;
   font-size: 1.7rem;
-  font-weight: 700;
-  color: var(--white);
-  background: rgba(255,255,255,0.15);
-  border: 1.5px solid rgba(255,255,255,0.3);
-  border-radius: var(--radius-sm);
-  padding: 0.5rem 1.4rem;
+  font-weight: 800;
+  color: var(--qs-deep-red);
+  background: #ffffff;
+  border: 1.5px solid rgba(255,255,255,0.6);
+  border-radius: 100px;
+  padding: 0.5rem 1.6rem;
   position: relative;
   z-index: 1;
   margin-top: 0.2rem;
   letter-spacing: -0.3px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.18);
 }
 
 /* ── Card footer ───────────────────────────────────────────── */
@@ -244,25 +314,36 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.9rem 1.8rem;
-  border-top: 1px solid var(--smoke);
-  background: var(--mist);
+  border-top: 1.5px solid var(--qs-clay-soft);
+  background: var(--qs-stone);
   gap: 0.75rem;
   flex-wrap: wrap;
 }
 
 .text-muted {
   font-size: 0.8rem;
-  color: var(--ink-light);
+  color: var(--ink-light, #8a7070);
 }
 
 .text-muted span {
-  font-weight: 500;
-  color: var(--ink-mid);
+  font-weight: 600;
+  color: var(--ink-mid, #4a3333);
 }
 
 .status-card__actions {
   display: flex;
   gap: 0.5rem;
+}
+
+.status-card__actions .btn--outline {
+  color: var(--qs-deep-red);
+  border-color: var(--qs-deep-red);
+  background: #ffffff;
+}
+.status-card__actions .btn--outline:hover {
+  background: var(--qs-deep-red);
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(102,8,16,0.28);
 }
 
 /* ── Responsive ────────────────────────────────────────────── */
@@ -276,4 +357,125 @@
   .called-alert { padding: 1.5rem 1.1rem; }
   .called-alert h2 { font-size: 1.2rem; }
   .status-card__footer { padding: 0.8rem 1.1rem; }
+}
+
+/* ============================================================
+   Queue Status Modal
+   ============================================================ */
+
+.queue-modal{
+    position:fixed;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:99999;
+    padding: 1.5rem;
+
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+
+    transition:.25s ease;
+}
+
+.queue-modal.show{
+    opacity:1;
+    visibility:visible;
+    pointer-events:auto;
+}
+
+.queue-modal__backdrop{
+    position:absolute;
+    inset:0;
+    background: rgba(255,255,255,0.55);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+}
+
+.queue-modal__dialog{
+    position:relative;
+    z-index:2;
+    width:min(460px,92vw);
+    max-height:90vh;
+    overflow:auto;
+    animation:queueModalIn .28s cubic-bezier(0.34,1.4,0.64,1);
+}
+
+@keyframes queueModalIn{
+    from{
+        opacity:0;
+        transform:translateY(18px) scale(.96);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0) scale(1);
+    }
+}
+
+.queue-modal__close{
+    position:absolute;
+    top:50%;
+    right:14px;
+    transform: translateY(-50%);
+    width:36px;
+    height:36px;
+    border:none;
+    border-radius:50%;
+    background:rgba(255,255,255,.18);
+    color:#fff;
+    font-size:24px;
+    line-height: 1;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    transition:.2s;
+    z-index:5;
+}
+.queue-modal__close:hover{
+    background:#fff;
+    color:var(--qs-deep-red);
+    transform: translateY(-50%) rotate(90deg);
+}
+.queue-modal .status-card{
+    margin:0;
+    border-radius:20px;
+    max-height:90vh;
+    overflow:auto;
+    box-shadow: 0 24px 70px rgba(39,7,7,0.45), 0 4px 16px rgba(39,7,7,0.2);
+}
+.queue-modal .status-card__header{
+    position:sticky;
+    top:0;
+    z-index:2;
+    padding-right: 3.6rem;
+}
+.queue-modal .status-card__footer{
+    position:sticky;
+    bottom:0;
+    background: var(--qs-stone);
+}
+body.modal-open{
+    overflow:hidden;
+}
+@media(max-width:640px){
+    .queue-modal{
+        padding: 0;
+        align-items: flex-end;
+    }
+    .queue-modal__dialog{
+        width:100%;
+        max-height:92vh;
+        animation: queueModalInMobile .28s cubic-bezier(0.34,1.2,0.64,1);
+    }
+    .queue-modal .status-card{
+        border-radius:20px 20px 0 0;
+    }
+}
+
+@keyframes queueModalInMobile {
+    from { opacity: 0; transform: translateY(40px); }
+    to   { opacity: 1; transform: translateY(0); }
 }

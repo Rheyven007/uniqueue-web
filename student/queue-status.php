@@ -71,7 +71,6 @@ include __DIR__ . '/../includes/header.php';
 </div>
 <link rel="stylesheet" href="/assets/css/dashboard.css">
 <link rel="stylesheet" href="/assets/css/queue-status.css">
-<script src="/assets/js/queue-monitor.js"></script>
 <link rel="stylesheet" href="student.css">
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>
