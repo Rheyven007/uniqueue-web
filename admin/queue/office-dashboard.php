@@ -162,48 +162,19 @@ $pageTitle = "Dashboard — " . $office['name'];
 include __DIR__ . '/../../includes/header.php';
 ?>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
+<link rel="stylesheet" href="/assets/css/admin-bootstrap-theme.css">
 <link rel="stylesheet" href="/assets/css/office-dashboard.css">
 
 <div class="app-shell">
 
-    <!-- ── Sidebar nav ──────────────────────────────────────────────────────── -->
-    <aside class="od-sidebar" aria-label="Office admin navigation">
-        <div class="od-sidebar__label">Office</div>
-
-        <a href="/admin/queue/office-dashboard.php" class="od-sidebar__link active">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-            Dashboard
-        </a>
-
-        <a href="/admin/queue/queue-list.php?office_id=<?= $oid ?>" class="od-sidebar__link">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-            Queue List
-        </a>
-
-        <a href="/admin/document/document-list.php" class="od-sidebar__link">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
-            Documents
-        </a>
-
-        <a href="/admin/counter/counter-list.php" class="od-sidebar__link">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="18" x2="12" y2="21"/></svg>
-            Manage Windows
-        </a>
-
-        <a href="/admin/staff/staff-list.php" class="od-sidebar__link">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Manage Staff
-        </a>
-
-        <div class="od-sidebar__divider"></div>
-
-        <a href="/admin/capacity/capacity-settings.php?office_id=<?= $oid ?>" class="od-sidebar__link">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            Settings
-        </a>
-    </aside>
+    <!-- ── Sidebar nav (centralized) ──────────────────────────────────────── -->
+    <?php include __DIR__ . '/../../includes/office-sidebar.php'; ?>
 
     <div class="od-wrap">
+
+    <div class="sr-only" role="status" aria-live="polite" id="dashboard-status-region"
+         style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;"></div>
 
     <!-- ── Top bar ──────────────────────────────────────────────────────────── -->
     <div class="od-topbar">
@@ -297,9 +268,10 @@ include __DIR__ . '/../../includes/header.php';
                 </div>
 
                 <button
-                    class="btn btn-ghost window-card__toggle btn-toggle-counter"
+                    class="btn btn-sm <?= $w['status'] === 'open' ? 'btn-outline-danger' : 'btn-outline-success' ?> window-card__toggle btn-toggle-counter"
                     data-id="<?= (int)$w['id'] ?>"
                     data-status="<?= htmlspecialchars($w['status']) ?>"
+                    title="<?= $w['status'] === 'open' ? 'Stop serving on this window' : 'Start serving on this window' ?>"
                     aria-label="<?= $w['status'] === 'open' ? 'Close' : 'Open' ?> <?= htmlspecialchars($w['name']) ?>">
                     <?= $w['status'] === 'open' ? 'Close Window' : 'Open Window' ?>
                 </button>
@@ -367,24 +339,31 @@ include __DIR__ . '/../../includes/header.php';
         </div><!-- /.queue-col -->
 
     </div><!-- /.od-grid -->
+
+    <!-- Kept INSIDE #od-wrap on purpose: spa-nav.js only swaps/re-runs
+         markup and scripts that live inside #od-wrap. If these tags sit
+         outside it (as they used to), navigating back to this page via
+         AJAX never re-executes them, so the charts stay blank until a
+         full manual reload. -->
+    <script src="/assets/js/vendor/chart.umd.min.js"></script>
+
+    <script>
+    const CURRENT_OFFICE_ID = <?= (int)$target_office_id ?>;
+    const REFRESH_MS = 15000;
+    const queueStatus = <?= json_encode($queueStatus) ?>;
+    const queueTypes = <?= json_encode($queueTypes) ?>;
+    const hourlyLabels = <?= json_encode($hours) ?>;
+    const hourlyData = <?= json_encode($hourTotals) ?>;
+    const windowLabels = <?= json_encode($windowNames) ?>;
+    const windowData = <?= json_encode($windowTotals) ?>;
+    const documentLabels = <?= json_encode($docNames) ?>;
+    const documentData = <?= json_encode($docTotals) ?>;
+    </script>
+
+    <script src="/assets/js/office-dashboard.js"></script>
+    <script src="/assets/js/smart-assign.js"></script>
+
     </div><!-- /.od-wrap -->
 </div><!-- /.app-shell -->
-
-<script src="/assets/js/vendor/chart.umd.min.js"></script>
-
-<script>
-const CURRENT_OFFICE_ID = <?= (int)$target_office_id ?>;
-const queueStatus = <?= json_encode($queueStatus) ?>;
-const queueTypes = <?= json_encode($queueTypes) ?>;
-const hourlyLabels = <?= json_encode($hours) ?>;
-const hourlyData = <?= json_encode($hourTotals) ?>;
-const windowLabels = <?= json_encode($windowNames) ?>;
-const windowData = <?= json_encode($windowTotals) ?>;
-const documentLabels = <?= json_encode($docNames) ?>;
-const documentData = <?= json_encode($docTotals) ?>;
-</script>
-
-<script src="/assets/js/office-dashboard.js" defer></script>
-<script src="/assets/js/smart-assign.js" defer></script>
 
 <?php include __DIR__ . '/../../includes/footer.php'; ?>
