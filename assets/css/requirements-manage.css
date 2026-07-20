@@ -3,41 +3,96 @@
    Document Requirements · List / Add / Edit
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
 
 /* ── Variables (mirror office-dashboard palette) ──────────── */
 :root {
-  --red:           #C21010;
-  --red-deep:      #9a0c0c;
-  --red-soft:      rgba(194,16,16,0.07);
-  --red-border:    rgba(194,16,16,0.15);
+  /* Brand (from staff-dashboard.css) */
+  --brand-primary:#660810;
+  --brand-primary-light:#8a2e35;
+  --brand-primary-dark:#450509;
+  --brand-secondary:#270707;
 
-  --white:         #ffffff;
-  --off-white:     #faf8f8;
-  --mist:          #f3eeee;
-  --smoke:         #ede8e8;
+  /* Neutrals */
+  --bg:#f1ebeb;
+  --accent:#d6c0b1;
+  --white:#ffffff;
+  --text:#1f1f1f;
+  --gray:#7a7a7a;
+  --light-gray:#f2f2f2;
+  --border:rgba(102,8,16,0.08);
+  --overlay:rgba(39,7,7,0.55);
 
-  --ink:           #1a0a0a;
-  --ink-mid:       #4a3333;
-  --ink-light:     #8a7070;
-  --ink-faint:     #c4b4b4;
+  /* Cream surfaces */
+  --cream:#faf6f3;
+  --cream-dark:#efe4dc;
+  --accent-soft:rgba(214,192,177,0.35);
+  --primary-soft:rgba(102,8,16,0.06);
+  --primary-tint:rgba(102,8,16,0.10);
 
-  --green:         #1a8c4e;
-  --green-soft:    rgba(26,140,78,0.08);
-  --green-border:  rgba(26,140,78,0.22);
+  /* Status */
+  --success:#2e7d32;
+  --success-light:#dff6dd;
+  --warning:#f39c12;
+  --warning-light:#fceed8;
+  --info:#1976d2;
+  --info-light:#dcebfb;
+  --purple:#7b1fa2;
+  --purple-light:#f0e0f6;
+  --danger:#c62828;
+  --danger-light:#fbe0e0;
+  --danger-dark:#d32f2f;
 
-  --warning:       #b45309;
-  --warning-bg:    #fffbeb;
-  --warning-border:#fcd34d;
+  /* Radius */
+  --radius-sm:8px;
+  --radius-md:12px;
+  --radius-lg:16px;
+  --radius-xl:20px;
+  --radius-xxl:24px;
+  --radius-full:999px;
 
-  --shadow-xs: 0 1px 4px  rgba(26,10,10,0.06);
-  --shadow-sm: 0 2px 10px rgba(26,10,10,0.08);
-  --shadow-md: 0 6px 24px rgba(26,10,10,0.10);
-  --shadow-red:0 4px 20px rgba(194,16,16,0.30);
+  /* ── Aliases so existing selectors below keep working ── */
+  --red:            var(--brand-primary-light);
+  --red-deep:       var(--brand-primary);
+  --red-light:      #a8434b;
+  --red-glow:       rgba(102,8,16,0.16);
+  --red-soft:       var(--primary-soft);
+  --red-border:     rgba(102,8,16,0.18);
 
-  --radius:    14px;
-  --radius-sm: 9px;
-  --radius-xs: 6px;
+  --off-white:      var(--bg);
+  --mist:           var(--cream-dark);
+  --smoke:          var(--border);
+  --smoke-dark:     rgba(102,8,16,0.16);
+
+  --ink:            var(--text);
+  --ink-mid:        var(--brand-secondary);
+  --ink-light:      var(--gray);
+  --ink-faint:      var(--accent);
+  --muted:          var(--gray);
+  --dim:            var(--gray);
+
+  --success-bg:     var(--success-light);
+  --success-border: rgba(46,125,50,0.25);
+
+  --warning-bg:     var(--warning-light);
+  --warning-border: rgba(243,156,18,0.35);
+
+  --info-bg:        var(--info-light);
+  --info-border:    rgba(25,118,210,0.3);
+  --info-text:      var(--info);
+
+  --green:          var(--success);
+  --green-soft:     var(--success-light);
+  --green-border:   rgba(46,125,50,0.25);
+
+  --shadow-xs:  0 1px 4px  rgba(102,8,16,0.05);
+  --shadow-sm:  0 2px 12px rgba(102,8,16,0.06);
+  --shadow-md:  0 8px 24px rgba(102,8,16,0.08);
+  --shadow-lg:  0 14px 34px rgba(102,8,16,0.14);
+  --shadow-red: 0 4px 20px rgba(102,8,16,0.22);
+
+  --radius:    var(--radius-lg);
+  --radius-sm: var(--radius-md);
+  --radius-xs: var(--radius-sm);
 
   --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
 }
@@ -46,11 +101,12 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
-  font-family: 'DM Sans', sans-serif;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   font-size: 15px;
   background: var(--off-white);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
+  line-height: 1.55;
 }
 
 a      { color: inherit; text-decoration: none; }
@@ -58,42 +114,64 @@ button { font-family: inherit; }
 
 /* ── Page wrapper ─────────────────────────────────────────── */
 .req-wrap {
-  max-width: 1100px;
+  width: 100%;
   margin: 0 auto;
-  padding: 2.2rem 1.8rem 4rem;
+  padding: 2.2rem 2.4rem 4rem;
   display: flex;
   flex-direction: column;
-  gap: 1.6rem;
+  gap: 1.8rem;
   animation: fadeUp 0.4s cubic-bezier(0.4,0,0.2,1) both;
 }
 
 /* ── Top bar ──────────────────────────────────────────────── */
 .req-topbar {
-  background: var(--white);
-  border: 1.5px solid var(--smoke);
-  border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--red-light, #a8434b) 0%, var(--red-deep) 100%);
+  border: 1px solid rgba(102,8,16,0.08);
+  border-radius: 20px;
   padding: 1.1rem 1.6rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 1rem;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 14px 34px rgba(102,8,16,0.22);
+  position: relative;
+  overflow: hidden;
+}
+
+.req-topbar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(255,255,255,.08), transparent 55%);
+  pointer-events: none;
 }
 
 .req-topbar h1 {
-  font-family: 'Playfair Display', serif;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   font-size: 1.4rem;
   font-weight: 700;
-  color: var(--ink);
+  color: var(--white);
   letter-spacing: -0.3px;
   line-height: 1.1;
+  position: relative;
+  z-index: 1;
+}
+
+.req-topbar__actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
 }
 
 .req-topbar p {
   font-size: 0.84rem;
-  color: var(--ink-light);
+  color: rgba(255,255,255,.85);
   margin-top: 0.2rem;
+  position: relative;
+  z-index: 1;
 }
 
 /* ── Alert ────────────────────────────────────────────────── */
@@ -139,7 +217,7 @@ button { font-family: inherit; }
 }
 
 .req-table th {
-  padding: 0.75rem 1.2rem;
+  padding: 0.85rem 1.3rem;
   font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -160,7 +238,7 @@ button { font-family: inherit; }
 .req-table tbody tr:hover       { background: var(--off-white); }
 
 .req-table td {
-  padding: 0.85rem 1.2rem;
+  padding: 0.95rem 1.3rem;
   vertical-align: middle;
 }
 
@@ -243,7 +321,7 @@ label {
 .form-control {
   width: 100%;
   padding: 0.6rem 0.85rem;
-  font-family: 'DM Sans', sans-serif;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   font-size: 0.92rem;
   color: var(--ink);
   background: var(--white);
@@ -366,7 +444,7 @@ select.form-control { cursor: pointer; }
 .btn-primary:hover {
   background: var(--red-deep);
   border-color: var(--red-deep);
-  box-shadow: 0 6px 24px rgba(194,16,16,0.40);
+  box-shadow: 0 6px 24px rgba(102,8,16,0.40);
   transform: translateY(-1px);
 }
 
@@ -399,9 +477,133 @@ select.form-control { cursor: pointer; }
   height: 32px;
 }
 
+.btn-green {
+  background: var(--green);
+  color: var(--white);
+  box-shadow: 0 4px 16px rgba(26,140,78,0.25);
+}
+.btn-green:hover {
+  background: #157a43;
+  box-shadow: 0 6px 20px rgba(26,140,78,0.32);
+}
+
+.btn-warning {
+  background: var(--warning-bg);
+  color: var(--warning);
+  border-color: var(--warning-border);
+}
+.btn-warning:hover { background: #fef0c7; }
+
+/* ── Back button (ghost-button style) — same shape on every list page ── */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border: 1.5px solid var(--smoke);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  padding: 0.5rem 1.1rem;
+  height: 38px;
+  background: var(--white);
+  color: var(--ink-mid);
+  transition: background var(--transition), border-color var(--transition),
+              color var(--transition), transform var(--transition);
+}
+.back-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+.back-btn:hover { background: var(--mist); border-color: var(--ink-faint); transform: translateY(-1px); }
+.back-btn:active { transform: scale(0.98); }
+
+/* ── Generic status badges (Active/Inactive, Yes/No, etc.) ──
+   Kept alongside the semantic req-table badges so any page can
+   reuse the same success/danger vocabulary. ── */
+.badge-success {
+  background: var(--green-soft);
+  color: var(--green);
+  border: 1.5px solid var(--green-border);
+}
+.badge-danger {
+  background: var(--red-soft);
+  color: var(--red);
+  border: 1.5px solid var(--red-border);
+}
+.badge::before { content: ''; }
+
+/* ── Search bar — identical shape on Staff, Documents, Counters ── */
+.search-bar {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 1.2rem;
+  background: var(--white);
+  border: 1.5px solid var(--smoke);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.search-bar__field { position: relative; flex: 1; }
+.search-bar__field svg {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 17px;
+  height: 17px;
+  color: var(--ink-faint);
+  pointer-events: none;
+}
+.search-bar input[type="text"] {
+  width: 100%;
+  height: 42px;
+  padding: 0 1rem 0 2.7rem;
+  font-family: inherit;
+  font-size: 0.88rem;
+  color: var(--ink);
+  background: var(--off-white);
+  border: 1.5px solid var(--smoke);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+}
+.search-bar input[type="text"]::placeholder { color: var(--ink-faint); }
+.search-bar input[type="text"]:hover { border-color: var(--ink-faint); background: var(--white); }
+.search-bar input[type="text"]:focus {
+  border-color: var(--red);
+  background: var(--white);
+  box-shadow: 0 0 0 3px var(--red-soft);
+}
+
+/* ── Screen-reader-only live region: lets a page announce status
+   changes (saved, deleted, filtered) to assistive tech without
+   a visible layout shift — visibility of system status. ── */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Focus visibility — every interactive control gets the same
+   ring, so keyboard users always see where they are ── */
+.btn:focus-visible,
+.back-btn:focus-visible,
+.btn-sm:focus-visible,
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--red-soft);
+}
+
 /* ── Animation ────────────────────────────────────────────── */
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(14px); }
+  from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -414,7 +616,7 @@ select.form-control { cursor: pointer; }
   border-radius: var(--radius-sm);
   padding: 0.5rem 0;
   background: var(--off-white);
-  box-shadow: inset 0 -10px 12px -10px rgba(26,10,10,0.05);
+  box-shadow: inset 0 -10px 12px -10px rgba(102,8,16,0.05);
   scrollbar-width: thin;
   scrollbar-color: var(--smoke) transparent;
 }

@@ -7,7 +7,7 @@
 
     // Theme palette (kept in sync with office-dashboard.css)
     const COLORS = {
-        red:    "#C21010",
+        red:    "#8a2e35",
         green:  "#1a8c4e",
         teal:   "#0d9488",
         amber:  "#d97706",
@@ -17,12 +17,12 @@
         grid:   "#ede8e8"
     };
 
-    Chart.defaults.font.family = "'DM Sans', sans-serif";
+    Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
     Chart.defaults.font.size = 12;
-    Chart.defaults.color = "#4a3333";
+    Chart.defaults.color = "#270707";
     Chart.defaults.plugins.tooltip.padding = 10;
     Chart.defaults.plugins.tooltip.cornerRadius = 8;
-    Chart.defaults.plugins.tooltip.backgroundColor = "#1a0a0a";
+    Chart.defaults.plugins.tooltip.backgroundColor = "#450509";
 
     const charts = {
         queueStatus: null,

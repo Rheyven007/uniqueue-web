@@ -1,62 +1,103 @@
 /* ============================================================
    Uniqueue — office-dashboard.css
    Office Admin · Queue Dashboard
-   Palette : #C21010 (red) · #FFFFFF (white)
-   Fonts   : Playfair Display (headings) + DM Sans (body)
+   Palette : Brand maroon (matches staff-dashboard.css)
+   Fonts   : System font stack (matches staff-dashboard.css)
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
 
 /* ── Reset ────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 /* ── Variables ────────────────────────────────────────────── */
 :root {
-  --red:           #C21010;
-  --red-deep:      #9a0c0c;
-  --red-light:     #e84040;
-  --red-glow:      rgba(194,16,16,0.16);
-  --red-soft:      rgba(194,16,16,0.07);
-  --red-border:    rgba(194,16,16,0.18);
+  /* Brand (from staff-dashboard.css) */
+  --brand-primary:#660810;
+  --brand-primary-light:#8a2e35;
+  --brand-primary-dark:#450509;
+  --brand-secondary:#270707;
 
-  --white:         #ffffff;
-  --off-white:     #faf8f8;
-  --mist:          #f5f0f0;
-  --smoke:         #ede8e8;
-  --smoke-dark:    #e0d8d8;
+  /* Neutrals */
+  --bg:#f1ebeb;
+  --accent:#d6c0b1;
+  --white:#ffffff;
+  --text:#1f1f1f;
+  --gray:#7a7a7a;
+  --light-gray:#f2f2f2;
+  --border:rgba(102,8,16,0.08);
+  --overlay:rgba(39,7,7,0.55);
 
-  --ink:           #1a0a0a;
-  --ink-mid:       #4a3333;
-  --ink-light:     #8a7070;
-  --ink-faint:     #c4b4b4;
-  --muted:         #8a7070;
-  --dim:           #b8a8a8;
+  /* Cream surfaces */
+  --cream:#faf6f3;
+  --cream-dark:#efe4dc;
+  --accent-soft:rgba(214,192,177,0.35);
+  --primary-soft:rgba(102,8,16,0.06);
+  --primary-tint:rgba(102,8,16,0.10);
 
-  --success:       #1a8c4e;
-  --success-bg:    #f0faf5;
-  --success-border:#b2dfcc;
+  /* Status */
+  --success:#2e7d32;
+  --success-light:#dff6dd;
+  --warning:#f39c12;
+  --warning-light:#fceed8;
+  --info:#1976d2;
+  --info-light:#dcebfb;
+  --purple:#7b1fa2;
+  --purple-light:#f0e0f6;
+  --danger:#c62828;
+  --danger-light:#fbe0e0;
+  --danger-dark:#d32f2f;
 
-  --warning:       #b45309;
-  --warning-bg:    #fffbeb;
-  --warning-border:#fcd34d;
+  /* Radius */
+  --radius-sm:8px;
+  --radius-md:12px;
+  --radius-lg:16px;
+  --radius-xl:20px;
+  --radius-xxl:24px;
+  --radius-full:999px;
 
-  --info-bg:       #f0f6ff;
-  --info-border:   #bfdbfe;
-  --info-text:     #1e4faf;
+  /* ── Aliases so existing selectors below keep working ── */
+  --red:            var(--brand-primary-light);
+  --red-deep:       var(--brand-primary);
+  --red-light:      #a8434b;
+  --red-glow:       rgba(102,8,16,0.16);
+  --red-soft:       var(--primary-soft);
+  --red-border:     rgba(102,8,16,0.18);
 
-  --green:         #1a8c4e;
-  --green-soft:    rgba(26,140,78,0.08);
-  --green-border:  rgba(26,140,78,0.22);
+  --off-white:      var(--bg);
+  --mist:           var(--cream-dark);
+  --smoke:          var(--border);
+  --smoke-dark:     rgba(102,8,16,0.16);
 
-  --shadow-xs:  0 1px 4px  rgba(26,10,10,0.06);
-  --shadow-sm:  0 2px 12px rgba(26,10,10,0.08);
-  --shadow-md:  0 6px 28px rgba(26,10,10,0.10);
-  --shadow-lg:  0 16px 48px rgba(26,10,10,0.13);
-  --shadow-red: 0 4px 20px rgba(194,16,16,0.28);
+  --ink:            var(--text);
+  --ink-mid:        var(--brand-secondary);
+  --ink-light:      var(--gray);
+  --ink-faint:      var(--accent);
+  --muted:          var(--gray);
+  --dim:            var(--gray);
 
-  --radius:    14px;
-  --radius-sm: 10px;
-  --radius-xs: 6px;
+  --success-bg:     var(--success-light);
+  --success-border: rgba(46,125,50,0.25);
+
+  --warning-bg:     var(--warning-light);
+  --warning-border: rgba(243,156,18,0.35);
+
+  --info-bg:        var(--info-light);
+  --info-border:    rgba(25,118,210,0.3);
+  --info-text:      var(--info);
+
+  --green:          var(--success);
+  --green-soft:     var(--success-light);
+  --green-border:   rgba(46,125,50,0.25);
+
+  --shadow-xs:  0 1px 4px  rgba(102,8,16,0.05);
+  --shadow-sm:  0 2px 12px rgba(102,8,16,0.06);
+  --shadow-md:  0 8px 24px rgba(102,8,16,0.08);
+  --shadow-lg:  0 14px 34px rgba(102,8,16,0.14);
+  --shadow-red: 0 4px 20px rgba(102,8,16,0.22);
+
+  --radius:    var(--radius-lg);
+  --radius-sm: var(--radius-md);
+  --radius-xs: var(--radius-sm);
 
   --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
 }
@@ -64,12 +105,13 @@
 /* ── Base ─────────────────────────────────────────────────── */
 html, body {
   height: 100%;
-  font-family: 'DM Sans', sans-serif;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   font-size: 15px;
   font-weight: 400;
   background: var(--off-white);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
+  line-height: 1.55;
 }
 
 /* Column layout so the footer always sits at the bottom of the
@@ -121,7 +163,7 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 .site-header__name {
-  font-family: 'Playfair Display', serif;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   font-size: 1.2rem;
   font-weight: 700;
   color: var(--red);
@@ -358,7 +400,7 @@ button { font-family: inherit; cursor: pointer; }
   padding: 2rem 2.5rem 4rem;
   display: flex;
   flex-direction: column;
-  gap: 1.4rem;
+  gap: 1.8rem;
   animation: fadeUp 0.45s cubic-bezier(0.4,0,0.2,1) both;
 }
 
@@ -386,16 +428,16 @@ button { font-family: inherit; cursor: pointer; }
 
 /* ── Top bar ──────────────────────────────────────────────── */
 .od-topbar {
-  background: var(--white);
-  border: 1.5px solid var(--smoke);
-  border-radius: var(--radius);
+  background: var(--red-deep);
+  border: 1px solid rgba(102,8,16,0.08);
+  border-radius: 20px;
   padding: 1.15rem 1.6rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 1rem;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 14px 34px rgba(102,8,16,0.22);
   position: relative;
   overflow: hidden;
 }
@@ -403,27 +445,31 @@ button { font-family: inherit; cursor: pointer; }
 .od-topbar::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--red) 0%, var(--red-light) 60%, transparent 100%);
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(255,255,255,.08), transparent 55%);
+  pointer-events: none;
 }
 
 .od-topbar__left h1 {
-  font-family: 'Playfair Display', serif;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--ink);
+  color: var(--white);
   letter-spacing: -0.4px;
   line-height: 1.1;
+  position: relative;
+  z-index: 1;
 }
 
 .od-topbar__left p {
   font-size: 0.82rem;
-  color: var(--ink-light);
+  color: rgba(255,255,255,.85);
   margin-top: 0.25rem;
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  position: relative;
+  z-index: 1;
 }
 
 .od-topbar__left p::before {
@@ -453,13 +499,13 @@ button { font-family: inherit; cursor: pointer; }
 
 .stat-box {
   background: var(--white);
-  border: 1.5px solid var(--smoke);
-  border-radius: var(--radius);
+  border: 1px solid rgba(102,8,16,0.08);
+  border-radius: 16px;
   padding: 1.1rem 1.15rem 1.2rem;
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
-  box-shadow: var(--shadow-xs);
+  box-shadow: 0 8px 22px rgba(102,8,16,.05);
   position: relative;
   overflow: hidden;
   transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
@@ -489,7 +535,7 @@ button { font-family: inherit; cursor: pointer; }
 
 .stat-box:hover {
   transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 14px 30px rgba(102,8,16,.1);
   border-color: var(--_accent, var(--red-border));
 }
 
@@ -502,7 +548,7 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 .stat-box__val {
-  font-family: 'Playfair Display', serif;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   font-size: 2.1rem;
   font-weight: 700;
   line-height: 1;
@@ -521,7 +567,7 @@ button { font-family: inherit; cursor: pointer; }
 .od-grid {
   display: grid;
   grid-template-columns: 275px 1fr;
-  gap: 1.4rem;
+  gap: 1.8rem;
   align-items: start;
 }
 
@@ -614,7 +660,7 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 .ticket-num {
-  font-family: 'Playfair Display', serif;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   font-size: 1.55rem;
   font-weight: 700;
   color: var(--red);
@@ -667,7 +713,7 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 .queue-section__head h2 {
-  font-family: 'Playfair Display', serif;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   font-size: 1rem;
   font-weight: 700;
   color: var(--ink);
@@ -681,7 +727,7 @@ button { font-family: inherit; cursor: pointer; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: 'DM Sans', sans-serif;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   font-size: 0.7rem;
   font-weight: 700;
   min-width: 22px;
@@ -735,7 +781,7 @@ button { font-family: inherit; cursor: pointer; }
 .queue-row--serving:hover { background: rgba(13,148,136,0.07); }
 
 .queue-row__num {
-  font-family: 'Playfair Display', serif;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   font-size: 1.15rem;
   font-weight: 700;
   color: var(--ink-mid);
@@ -858,7 +904,7 @@ button { font-family: inherit; cursor: pointer; }
 .btn-primary:hover {
   background: var(--red-deep);
   border-color: var(--red-deep);
-  box-shadow: 0 6px 24px rgba(194,16,16,0.40);
+  box-shadow: 0 6px 24px rgba(102,8,16,0.40);
   transform: translateY(-1px);
 }
 
@@ -878,7 +924,7 @@ button { font-family: inherit; cursor: pointer; }
   background: var(--green);
   color: var(--white);
   border-color: var(--green);
-  box-shadow: 0 4px 14px rgba(26,140,78,0.28);
+  box-shadow: 0 4px 16px rgba(26,140,78,0.28);
 }
 .btn-green:hover {
   background: #157040;
@@ -1085,20 +1131,76 @@ button { font-family: inherit; cursor: pointer; }
 
 @media (max-width: 900px) {
   .app-shell { flex-direction: column; }
+
+  /* Sidebar becomes an off-canvas drawer, hidden by default */
   .od-sidebar {
-    width: 100%;
-    min-height: auto;
-    flex-direction: row;
-    align-items: center;
-    overflow-x: auto;
-    border-right: none;
-    border-bottom: 1.5px solid var(--smoke);
-    padding: 0.65rem 1rem;
-    gap: 0.4rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 78vw;
+    max-width: 280px;
+    min-height: 0;
+    flex-direction: column;
+    align-items: stretch;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border-right: 1.5px solid var(--smoke);
+    border-bottom: none;
+    padding: 1.6rem 1rem 2rem;
+    gap: 0.2rem;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: var(--shadow-lg);
   }
+
+  .od-sidebar.is-open { transform: translateX(0); }
+
   .od-sidebar__label,
-  .od-sidebar__divider { display: none; }
-  .od-sidebar__link { flex-shrink: 0; }
+  .od-sidebar__divider { display: flex; }
+  .od-sidebar__link { flex-shrink: 1; }
+
+  /* Backdrop shown behind the open drawer */
+  .od-sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--overlay, rgba(39,7,7,0.45));
+    opacity: 0;
+    pointer-events: none;
+    z-index: 999;
+    transition: opacity 0.28s ease;
+  }
+  .od-sidebar-overlay.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Hamburger trigger, only shown on mobile */
+  .od-sidebar-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    height: 44px;
+    margin-bottom: 0.4rem;
+    border: 1.5px solid var(--smoke);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    color: var(--ink-mid);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-xs);
+  }
+  .od-sidebar-toggle:hover { background: var(--mist); }
+  .od-sidebar-toggle svg { width: 18px; height: 18px; flex-shrink: 0; }
+}
+
+@media (min-width: 901px) {
+  .od-sidebar-toggle,
+  .od-sidebar-overlay { display: none; }
 }
 
 @media (max-width: 860px) {
@@ -1169,7 +1271,7 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 .chart-card__head h3 {
-  font-family: 'Playfair Display', serif;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   font-size: 1rem;
   font-weight: 700;
   color: var(--ink);

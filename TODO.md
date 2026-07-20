@@ -1,5 +1,6 @@
-- [ ] Add dedicated CSS file(s) under assets/css/ for each interface/page (no shared CSS among interfaces)
-- [ ] Ensure red + off-white theme in each CSS file
-- [ ] Update the corresponding PHP/HTML pages to link only their dedicated CSS file
-- [ ] Verify existing pages still render correctly (no missing styles)
+# TODO
+- [ ] Remove extra `req-wrap` container wrapper from `admin/document/document-list.php` so document list uses the same effective container spacing as `admin/queue/queue-list.php`.
+- [ ] Adjust `assets/css/document-list.css` if `.req-wrap` styles break layout after wrapper removal (neutralize padding/margins or ensure page still looks correct).
+- [x] Quick manual test: open Document List and Queue List and compare side gaps / container width.
+
 
