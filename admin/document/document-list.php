@@ -62,30 +62,30 @@ include __DIR__ . '/../../includes/header.php';
 
     <div class="od-wrap">
 
-        <div class="staff-wrap">
-
-            <div class="req-topbar">
-                <div>
-                    <h1>Document Types</h1>
-                    <p>Manage document types and their requirements checklist.</p>
-                </div>
-                <div class="req-topbar__actions">
-                    <button class="btn btn-ghost btn-sm" onclick="window.location.reload()" aria-label="Refresh list" style="background: var(--white); color: var(--ink-mid); border-color: var(--smoke);">
+        <div class="od-topbar">
+            <div class="od-topbar__left">
+                <h1>Document Types</h1>
+                <p>Manage document types and their requirements checklist.</p>
+            </div>
+            <div class="od-topbar__actions">
+                <button class="btn btn-outline-light btn-sm" onclick="window.location.reload()" aria-label="Refresh list">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21.5 2v6h-6"/>
                             <path d="M21.34 15.57a10 10 0 1 1-.4-4.57"/>
                         </svg>
                         Refresh
                     </button>
-                    <a href="document-add.php" class="btn btn-primary">
+                <a href="document-add.php" class="btn btn-green">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                             <line x1="12" y1="5" x2="12" y2="19"/>
                             <line x1="5" y1="12" x2="19" y2="12"/>
                         </svg>
-                        Add Document Type
+                        Add Document
                     </a>
                 </div>
-            </div>
+        </div>
+
+        <div class="staff-wrap" style="padding: 0; margin: 0; animation: none; gap: 1.8rem; width: 100%; max-width: none;">
 
             <!-- Live region: announces save/delete/filter results to assistive tech
                  without a visible layout jump (visibility of system status). -->

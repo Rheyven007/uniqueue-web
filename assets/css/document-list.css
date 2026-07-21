@@ -887,11 +887,7 @@ button { font-family: inherit; cursor: pointer; }
 
 .btn-primary::before,
 .btn-green::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.16) 0%, transparent 55%);
-  pointer-events: none;
+  display: none;
 }
 
 .btn-primary {
@@ -920,14 +916,14 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 .btn-green {
-  background: var(--green);
+  background: #28A745;
   color: var(--white);
-  border-color: var(--green);
+  border-color: #28A745;
   box-shadow: 0 4px 16px rgba(26,140,78,0.28);
 }
 .btn-green:hover {
-  background: #157040;
-  border-color: #157040;
+  background: #218838;
+  border-color: #1e7e34;
   box-shadow: 0 6px 20px rgba(26,140,78,0.38);
   transform: translateY(-1px);
 }
@@ -1794,13 +1790,15 @@ select.form-control { cursor: pointer; }
 }
 
 .btn-green {
-  background: var(--green);
+  background: #28A745;
   color: var(--white);
-  box-shadow: 0 4px 16px rgba(26,140,78,0.25);
+  border-color: #28A745;
+  box-shadow: none;
 }
 .btn-green:hover {
-  background: #157a43;
-  box-shadow: 0 6px 20px rgba(26,140,78,0.32);
+  background: #218838;
+  border-color: #1e7e34;
+  box-shadow: none;
 }
 
 .btn-warning {

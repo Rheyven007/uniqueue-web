@@ -417,12 +417,13 @@ button { font-family: inherit; }
 }
 
 .btn-green {
-  background-color: var(--success);
+  background-color: #28A745;
   color: var(--white);
+  border-color: #28A745;
   box-shadow: 0 4px 16px rgba(26,140,78,0.25);
 }
 .btn-green:hover {
-  background-color: #1a824d; /* Darker green */
+  background-color: #218838; /* Darker green */
   box-shadow: 0 6px 20px rgba(26,140,78,0.32);
 }
 
