@@ -1,0 +1,557 @@
+/* ============================================================
+   Uniqueue — student-transaction.css
+   Student Transaction History styles
+   Reuses CSS variables + shared classes (.dash-hero, .panel-card,
+   .ticket-status-badge, .ticket-type-badge, .btn, etc.) already
+   defined in dashboard.css — this file only adds what's new for
+   this page: the filter bar, transaction cards, pagination, and
+   the read-only transaction detail modal.
+   ============================================================ */
+
+/* ── Filter bar ─────────────────────────────────────────────── */
+.txn-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.txn-filter-bar__search {
+  flex: 1 1 220px;
+  min-width: 180px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--cream);
+  border: 1.5px solid var(--card-border-soft);
+  border-radius: var(--radius-sm);
+  padding: 0 0.85rem;
+  height: 40px;
+  color: var(--ink-light);
+  transition: border-color var(--transition);
+}
+
+.txn-filter-bar__search:focus-within {
+  border-color: var(--card-brand-light);
+}
+
+.txn-filter-bar__search svg {
+  flex-shrink: 0;
+}
+
+.txn-filter-bar__input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font: inherit;
+  font-size: 0.88rem;
+  color: var(--ink);
+  height: 100%;
+}
+
+.txn-filter-bar__input::placeholder {
+  color: var(--ink-faint);
+}
+
+.txn-filter-bar__status {
+  flex: 0 0 auto;
+}
+
+.txn-filter-bar__select {
+  height: 40px;
+  padding: 0 2rem 0 0.9rem;
+  border: 1.5px solid var(--card-border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--cream);
+  color: var(--ink-mid);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 500;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238a7070' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  transition: border-color var(--transition);
+}
+
+.txn-filter-bar__select:focus {
+  outline: none;
+  border-color: var(--card-brand-light);
+}
+
+/* ── Priority type badge (extends .ticket-type-badge from dashboard.css) ── */
+.ticket-type-badge--priority {
+  background: var(--warning-bg);
+  color: var(--warning);
+  border: 1px solid var(--warning-border);
+}
+
+/* ── Transaction list ───────────────────────────────────────── */
+.txn-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.transaction-card {
+  background: var(--cream);
+  border: 1.5px solid var(--card-border-soft);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  transition: border-color var(--transition), background var(--transition), box-shadow var(--transition);
+}
+
+.transaction-card:hover {
+  border-color: var(--card-brand-light);
+  background: var(--white);
+}
+
+/* Clickable affordance — the card opens a read-only detail view.
+   Footer action links carry [data-no-modal] so they keep their own
+   click behavior instead of triggering the card. */
+.transaction-card--clickable {
+  cursor: pointer;
+}
+
+.transaction-card--clickable:hover {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.transaction-card--clickable:focus-visible {
+  outline: 2px solid var(--card-brand-light);
+  outline-offset: 2px;
+}
+
+.transaction-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.transaction-card__id {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.transaction-card__number {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--card-brand);
+  letter-spacing: -0.2px;
+}
+
+.transaction-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.transaction-card__row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.87rem;
+  font-weight: 500;
+  color: var(--ink-mid);
+}
+
+.transaction-card__row svg {
+  flex-shrink: 0;
+  color: var(--card-brand);
+  opacity: 0.75;
+}
+
+.transaction-card__dim {
+  color: var(--ink-light);
+  font-weight: 400;
+}
+
+.transaction-card__dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1rem;
+  font-size: 0.78rem;
+  color: var(--ink-light);
+  margin-top: 0.1rem;
+}
+
+.transaction-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.transaction-card__rating {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--warning);
+  letter-spacing: 0.5px;
+}
+
+/* ── Empty state ────────────────────────────────────────────── 
+   Given an explicit dashed-border frame (matching .ticket-box--empty
+   from dashboard.css) instead of bare centered text — so an empty
+   result still reads as an intentional, designed state rather than
+   a blank/broken-looking page. */
+.txn-empty {
+  background: var(--cream);
+  border: 1.5px dashed var(--ink-faint);
+  border-radius: var(--radius);
+  padding: 2.6rem 1.5rem;
+  min-height: 200px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  color: var(--ink-light);
+  font-size: 0.9rem;
+}
+
+.txn-empty svg {
+  color: var(--ink-faint);
+}
+
+/* ── Pagination ─────────────────────────────────────────────── */
+.txn-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  margin-top: 1.3rem;
+  padding-top: 1.1rem;
+  border-top: 1.5px solid var(--smoke);
+}
+
+.txn-pagination__link {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--card-brand);
+  padding: 0.4rem 0.9rem;
+  border-radius: var(--radius-xs);
+  background: var(--card-border-soft);
+  transition: background var(--transition), color var(--transition);
+}
+
+.txn-pagination__link:hover {
+  background: var(--card-brand);
+  color: var(--white);
+}
+
+.txn-pagination__link--disabled {
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+.txn-pagination__current {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--ink-light);
+  white-space: nowrap;
+}
+
+/* ── Transaction detail modal (read-only) ─────────────────────
+   Pure display surface — no inputs, no form, no edit affordance.
+   Opened by student-transaction.js when a card is clicked. */
+.txn-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.2rem;
+}
+
+.txn-modal[hidden] {
+  display: none;
+}
+
+.txn-modal__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 15, 12, 0.5);
+  backdrop-filter: blur(2px);
+  animation: txnFadeIn 0.16s ease-out;
+}
+
+.txn-modal__panel {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  max-height: calc(100vh - 2.4rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--white);
+  border-radius: var(--radius-lg, 18px);
+  border: 1.5px solid var(--card-border-soft);
+  box-shadow: 0 20px 50px rgba(20, 15, 12, 0.22);
+  animation: txnPanelIn 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes txnFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes txnPanelIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .txn-modal__overlay,
+  .txn-modal__panel {
+    animation: none;
+  }
+}
+
+.txn-modal__close {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  z-index: 2;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 50%;
+  color: var(--ink-mid);
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background var(--transition), color var(--transition), transform var(--transition);
+}
+
+.txn-modal__close:hover {
+  background: var(--white);
+  color: var(--ink);
+  transform: rotate(90deg);
+}
+
+/* Banner — tinted with the brand color so the header reads as a
+   distinct block rather than sitting flush with the body content. */
+.txn-modal__banner {
+  padding: 1.5rem 3rem 1.35rem 1.6rem;
+  background:
+    radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--card-brand) 14%, transparent), transparent 60%),
+    color-mix(in srgb, var(--card-brand) 6%, var(--cream));
+  border-bottom: 1.5px solid var(--card-border-soft);
+}
+
+.txn-modal__eyebrow {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--card-brand);
+  opacity: 0.75;
+  margin-bottom: 0.35rem;
+}
+
+.txn-modal__banner-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.txn-modal__number {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--card-brand);
+  letter-spacing: -0.4px;
+  line-height: 1.1;
+}
+
+.txn-modal__badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.7rem;
+}
+
+/* Body + sections */
+.txn-modal__body {
+  padding: 1.5rem 1.6rem 1.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
+.txn-modal__section-title {
+  margin: 0 0 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--ink-mid);
+}
+
+/* Details — icon-led rows */
+.txn-modal__details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin: 0;
+}
+
+.txn-modal__field {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.txn-modal__field svg {
+  flex-shrink: 0;
+  color: var(--card-brand);
+  opacity: 0.7;
+  margin-top: 0.15rem;
+}
+
+.txn-modal__field dt {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--ink-mid);
+  margin-bottom: 0.1rem;
+}
+
+.txn-modal__field dd {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.35;
+}
+
+/* Timeline — connected dots instead of flat label/value pairs, so
+   progression through the queue reads at a glance. */
+.txn-modal__timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.txn-modal__timeline-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding-left: 0.1rem;
+}
+
+.txn-modal__timeline-item::before {
+  content: '';
+  position: absolute;
+  left: 4.5px;
+  top: 15px;
+  bottom: -26px;
+  width: 1.5px;
+  background: var(--card-border-soft);
+}
+
+.txn-modal__timeline-item:last-child::before {
+  display: none;
+}
+
+.txn-modal__dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  margin-top: 3px;
+  border-radius: 50%;
+  background: var(--card-brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--card-brand) 18%, transparent);
+}
+
+.txn-modal__timeline-item--cancelled .txn-modal__dot {
+  background: var(--danger, #c0392b);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger, #c0392b) 18%, transparent);
+}
+
+.txn-modal__timeline-item dt {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--ink-mid);
+  margin-bottom: 0.1rem;
+}
+
+.txn-modal__timeline-item dd {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.txn-modal__timeline-item--cancelled dd {
+  color: var(--danger, #c0392b);
+}
+
+/* Feedback — set apart as a highlighted card rather than plain rows,
+   since a rating + comment is qualitatively different from a fact. */
+.txn-modal__section--feedback {
+  padding-top: 0.2rem;
+  border-top: 1px dashed var(--smoke);
+}
+
+.txn-modal__feedback-card {
+  background: var(--cream);
+  border: 1.5px solid var(--card-border-soft);
+  border-radius: var(--radius-sm);
+  padding: 0.95rem 1.05rem;
+}
+
+.txn-modal__feedback-stars {
+  display: block;
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+  color: var(--warning);
+}
+
+.txn-modal__feedback-comment {
+  margin: 0.6rem 0 0;
+  padding-left: 0.7rem;
+  border-left: 2px solid var(--card-brand-light);
+  font-size: 0.87rem;
+  font-style: italic;
+  color: var(--ink-mid);
+  line-height: 1.5;
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .txn-filter-bar { flex-direction: column; align-items: stretch; }
+  .txn-filter-bar__search,
+  .txn-filter-bar__status,
+  .txn-filter-bar button,
+  .txn-filter-bar a { width: 100%; }
+  .txn-filter-bar__select { width: 100%; }
+
+  .transaction-card__footer { justify-content: stretch; }
+  .transaction-card__footer .btn { flex: 1; }
+
+  .txn-pagination { gap: 0.7rem; }
+
+  .txn-modal__banner { padding: 1.3rem 2.6rem 1.15rem 1.3rem; }
+  .txn-modal__body { padding: 1.3rem 1.3rem 1.4rem; }
+}
