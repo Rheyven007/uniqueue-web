@@ -23,7 +23,8 @@ try {
         SELECT
             w.id,
             w.name,
-            w.status
+            w.status,
+            w.is_paused
         FROM windows w
         WHERE w.id = ?
         LIMIT 1
@@ -38,6 +39,7 @@ try {
         'window_id'     => $window['id'] ?? null,
         'window_name'   => $window['name'] ?? null,
         'window_status' => $window['status'] ?? null,
+        'is_paused'     => (bool)($window['is_paused'] ?? 0),
     ];
 
     /*
@@ -163,6 +165,7 @@ unset($ticket);
 
     echo json_encode([
         "success"   => true,
+        "is_paused" => (bool)($window['is_paused'] ?? 0),
         "office_id" => $office_id,
         "window_id" => $window_id,
         "staff"     => $staffInfo,

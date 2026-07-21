@@ -52,7 +52,9 @@ switch ($windowQueueType) {
 <?php include __DIR__ . '/../../includes/header.php'; ?>
 
 <link rel="stylesheet" href="../../assets/css/staff-dashboard.css">
+<link rel="stylesheet" href="/assets/css/header.css">
 <link rel="stylesheet" href="/assets/css/footer.css">
+
 
 
 <div class="staff-dashboard">
@@ -63,11 +65,6 @@ switch ($windowQueueType) {
     <div class="staff-dashboard__header">
 
         <div class="staff-dashboard__heading">
-
-            <div class="staff-dashboard__eyebrow">
-                <span class="live-dot" aria-hidden="true"></span>
-                Live Queue
-            </div>
 
             <h2>Staff Queue Dashboard</h2>
 
@@ -117,6 +114,11 @@ switch ($windowQueueType) {
                     <?= htmlspecialchars($windowQueueTypeLabel) ?>
                 </span>
 
+            </div>
+
+            <div class="staff-dashboard__eyebrow">
+                <span class="live-dot" aria-hidden="true"></span>
+                Live Queue
             </div>
 
         </div>
@@ -201,7 +203,7 @@ switch ($windowQueueType) {
 
                         </svg>
 
-                        Call Next
+                        Skip Next
 
                     </button>
 

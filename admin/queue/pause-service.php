@@ -8,24 +8,19 @@ require_staff();
 header('Content-Type: application/json');
 
 $window_id = $_SESSION['window_id'];
-$office_id = $_SESSION['office_id'];
 
 try {
 
-    // Hanapin ang current ticket na nasa in_progress
+    // Siguraduhing may active transaction bago mag-pause
     $stmt = $pdo->prepare("
         SELECT id
         FROM queue_tickets
-        WHERE office_id = ?
-        AND window_id = ?
+        WHERE window_id = ?
         AND status = 'in_progress'
         LIMIT 1
     ");
 
-    $stmt->execute([
-        $office_id,
-        $window_id
-    ]);
+    $stmt->execute([$window_id]);
 
     $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -37,18 +32,14 @@ try {
         exit;
     }
 
-    // Ibalik sa waiting
+    // I-mark lang ang window bilang paused
     $stmt = $pdo->prepare("
-        UPDATE queue_tickets
-        SET
-            status = 'waiting',
-            called_at = NULL
+        UPDATE windows
+        SET is_paused = 1
         WHERE id = ?
     ");
 
-    $stmt->execute([
-        $ticket['id']
-    ]);
+    $stmt->execute([$window_id]);
 
     echo json_encode([
         'success' => true,

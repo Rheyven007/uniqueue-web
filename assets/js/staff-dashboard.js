@@ -79,9 +79,10 @@ async function loadQueue() {
     lastQueueData = currentState;
 
     renderStaffInfo(data.staff);
-    renderCurrent(data.current);
-    updateStartButton(data.current);
-    renderNext(data.next);
+    renderCurrent(data.current, data.is_paused);
+    updateStartButton(data.current, data.is_paused);
+    updateDoneButton(data.current, data.is_paused);
+    renderNext(data.next, data.is_paused);
     renderWaiting(data.waiting);
     updateGridBalance(data.current, data.next);
 
@@ -198,7 +199,7 @@ function updateGridBalance(currentTicket, nextTicket) {
 
 
 
-function renderCurrent(ticket) {
+function renderCurrent(ticket, isPaused) {
 
     if (!ticket) {
 
@@ -225,7 +226,7 @@ function renderCurrent(ticket) {
 
     currentDiv.innerHTML = `
 
-        <div class="current-ticket-card${docSpaceClassCurrent}">
+        <div class="current-ticket-card${docSpaceClassCurrent}${isPaused ? " paused" : ""}">
 
             <div class="ticket-col ticket-col--main">
 
@@ -244,8 +245,8 @@ function renderCurrent(ticket) {
                 </p>
 
                 <small>
-                    <span class="status-dot ${statusDotClass(ticket.status)}"></span>
-                    Status: ${ticket.status}
+                    <span class="status-dot ${statusDotClass(isPaused ? "waiting" : ticket.status)}"></span>
+                    Status: ${isPaused ? "waiting" : ticket.status}
                 </small>
 
             </div>
@@ -357,7 +358,7 @@ function renderDocumentTags(documents, queueType) {
 
 //UPDATE BUTTON TO PAUSE
 
-function updateStartButton(ticket) {
+function updateStartButton(ticket, isPaused) {
 
     if (!btnStart) return;
 
@@ -387,8 +388,30 @@ function updateStartButton(ticket) {
 
         return;
     }
+if (isPaused) {
 
-    if (ticket.status === "in_progress") {
+    startMode = "resume";
+
+    btnStart.innerHTML = `
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2">
+
+            <polygon points="5 3 19 12 5 21"/>
+
+        </svg>
+
+        Resume Service
+    `;
+
+    btnStart.classList.remove("btn-warning");
+    btnStart.classList.add("btn-success");
+
+    } else if (ticket.status === "in_progress") {
 
         startMode = "pause";
 
@@ -439,10 +462,44 @@ function updateStartButton(ticket) {
 }
 
 /* ==========================================================
+   COMPLETE BUTTON STATE
+========================================================== */
+
+function updateDoneButton(ticket, isPaused) {
+
+    if (!btnDone) return;
+
+    // Enabled lang kapag may active transaction at hindi paused
+    const enabled =
+        ticket &&
+        ticket.status === "in_progress" &&
+        !isPaused;
+
+    btnDone.disabled = !enabled;
+
+    btnDone.classList.remove(
+        "btn-success",
+        "btn-danger",
+        "btn-secondary"
+    );
+
+    if (enabled) {
+
+        btnDone.classList.add("btn-success");
+
+    } else {
+
+        btnDone.classList.add("btn-secondary");
+
+    }
+
+}
+
+/* ==========================================================
    NEXT CUSTOMER
 ========================================================== */
 
-function renderNext(ticket) {
+function renderNext(ticket, isPaused) {
 
     if (!nextDiv) return;
 
@@ -469,7 +526,7 @@ function renderNext(ticket) {
     const docSpaceClassNext = getDocSpaceClass(ticket.documents, ticket.queue_type);
 
     nextDiv.innerHTML = `
-        <div class="current-ticket-card${docSpaceClassNext}">
+        <div class="current-ticket-card${docSpaceClassNext}${isPaused ? " paused" : ""}">
 
             <div class="ticket-col ticket-col--main">
 
@@ -483,8 +540,10 @@ function renderNext(ticket) {
 
                 <p>SR Code: ${ticket.sr_code}</p>
 
-                <small><span class="status-dot ${statusDotClass(ticket.status)}"></span>Status: ${ticket.status}</small>
-
+                <small>
+                    <span class="status-dot ${statusDotClass(isPaused ? "waiting" : ticket.status)}"></span>
+                    Status: ${isPaused ? "waiting" : ticket.status}
+                </small>
             </div>
 
             <div class="ticket-col ticket-col--side${sideContentNext.trim() ? "" : " is-empty"}">
@@ -664,6 +723,62 @@ function setButtons(disabled) {
 }
 
 /* ==========================================================
+   TOAST NOTIFICATION
+   Small auto-dismissing popup — no OK button needed, disappears
+   on its own after a few seconds.
+========================================================== */
+
+function showToast(message, type = "success", duration = 5000) {
+
+    let container = document.getElementById("toastContainer");
+
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "toastContainer";
+        container.className = "toast-container";
+        document.body.appendChild(container);
+    }
+
+    const backdrop = document.createElement("div");
+    backdrop.className = "toast-backdrop";
+    document.body.appendChild(backdrop);
+
+    const toast = document.createElement("div");
+    toast.className = `toast toast--${type}`;
+
+    toast.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span>${message}</span>
+    `;
+
+    container.appendChild(toast);
+
+    // Auto-dismiss
+    const removeToast = () => {
+        toast.classList.add("toast--out");
+        backdrop.classList.add("toast-backdrop--out");
+        toast.addEventListener("animationend", () => toast.remove(), { once: true });
+        backdrop.addEventListener("animationend", () => backdrop.remove(), { once: true });
+    };
+
+    const timer = setTimeout(removeToast, duration);
+
+    // Allow tapping the toast or backdrop to dismiss it early
+    toast.addEventListener("click", () => {
+        clearTimeout(timer);
+        removeToast();
+    });
+
+    backdrop.addEventListener("click", () => {
+        clearTimeout(timer);
+        removeToast();
+    });
+
+}
+
+/* ==========================================================
    ACTIONS
 ========================================================== */
 
@@ -689,6 +804,17 @@ async function queueAction(file) {
             return;
         }
 
+        // Update agad ang Complete button bago pa mag-refresh
+        if (file === "pause-service.php") {
+            updateDoneButton(null);
+        }
+
+        if (file === "start-service.php") {
+            updateDoneButton({
+                status: "in_progress"
+            });
+        }
+
         if (file === "queue-done.php") {
 
             servedToday++;
@@ -696,6 +822,8 @@ async function queueAction(file) {
             if (servedCount) {
                 servedCount.textContent = servedToday;
             }
+
+            showToast("Transaction Successfully Completed!", "success");
 
         }
 
@@ -726,13 +854,14 @@ btnCallNext?.addEventListener("click", () => {
 
 btnStart?.addEventListener("click", () => {
 
-    if (startMode === "start") {
+    if (startMode === "pause") {
 
-        queueAction("start-service.php");
+        queueAction("pause-service.php");
 
     } else {
 
-        queueAction("pause-service.php");
+        // start at resume pareho nang gumagamit ng start-service.php
+        queueAction("start-service.php");
 
     }
 

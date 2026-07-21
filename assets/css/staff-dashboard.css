@@ -115,7 +115,8 @@ html,body{
     display:inline-flex;
     align-items:center;
     gap:6px;
-    margin-bottom:5px;
+    margin-top:4px;
+    margin-right:7px;
     font-size:10.5px;
     font-weight:700;
     text-transform:uppercase;
@@ -236,10 +237,11 @@ html,body{
     position:relative;
     z-index:1;
     display:flex;
-    align-items:center;
-    gap:10px;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:2px;
     flex-wrap:wrap;
-    justify-content:flex-end;
+    justify-content:center;
     flex:1 1 260px;
     min-width:0;
 }
@@ -437,6 +439,58 @@ html,body{
     flex:1;
     box-shadow:0 10px 22px rgba(102,8,16,.07);
     overflow:hidden;
+    position:relative;
+}
+
+/* CURRENT SERVING — HIGHLIGHT
+   When there's an active (non-paused) transaction, the "Current
+   Serving" card should stand out immediately from the rest of the
+   dashboard — brighter border, glowing shadow, subtle pulse — so
+   staff can tell at a glance who's being served right now. */
+#current-ticket .current-ticket-card:not(.paused):not(:has(> .empty:only-child)){
+    border:1px solid var(--brand-primary-light);
+    border-top:5px solid var(--brand-primary);
+    background:var(--white);
+    box-shadow:0 0 0 3px var(--primary-soft),0 16px 34px rgba(102,8,16,.20);
+    animation:current-serving-glow 2.4s ease-in-out infinite;
+}
+
+@keyframes current-serving-glow{
+    0%,100%{
+        box-shadow:0 0 0 3px var(--primary-soft),0 16px 34px rgba(102,8,16,.20);
+    }
+    50%{
+        box-shadow:0 0 0 6px var(--primary-tint),0 20px 40px rgba(102,8,16,.28);
+    }
+}
+
+/* PAUSED STATE — instead of a blocking "Transaction Paused" banner,
+   the card itself just reads as disabled: washed out, desaturated,
+   and non-interactive, the same way a disabled button/field would
+   look elsewhere in the app. */
+.current-ticket-card.paused{
+    background:var(--light-gray);
+    border-top-color:var(--gray);
+    box-shadow:none;
+    filter:grayscale(65%);
+    opacity:.6;
+    pointer-events:none;
+    user-select:none;
+}
+
+.current-ticket-card.paused::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:repeating-linear-gradient(
+        135deg,
+        rgba(122,122,122,0.06),
+        rgba(122,122,122,0.06) 10px,
+        rgba(122,122,122,0.12) 10px,
+        rgba(122,122,122,0.12) 20px
+    );
+    border-radius:inherit;
+    pointer-events:none;
 }
 
 /* LEFT — identity: ticket number, name, SR code, status.
@@ -590,7 +644,7 @@ html,body{
     border-style:dashed;
     border-top:4px dashed var(--accent);
     box-shadow:0 6px 16px rgba(102,8,16,.05);
-    padding:13px 20px;
+    padding:16px 20px;
 }
 
 #next-ticket .current-ticket-card h2{
@@ -710,13 +764,13 @@ html,body{
 .ticket-label{
     display:inline-flex;
     align-items:center;
-    padding:4px 13px;
+    padding:3px 8px;
     border-radius:var(--radius-full);
     background:var(--primary-tint);
     font-size:11px;
     font-weight:700;
     text-transform:uppercase;
-    letter-spacing:.6px;
+    letter-spacing:.10px;
     color:var(--brand-primary-light);
     margin-bottom:6px;
 }
@@ -780,6 +834,14 @@ html,body{
 .btn-success{
     background:var(--success);
     color:var(--white);
+}
+.btn-secondary{
+    background:#9ca3af;
+    color:#fff;
+}
+
+.btn-secondary:hover{
+    background:#9ca3af;
 }
 
 .btn-success:hover{
@@ -1187,10 +1249,11 @@ button:focus,
 ========================================================== */
 
 .btn:disabled{
-    opacity:.55;
+    opacity:.6;
     cursor:not-allowed;
     transform:none;
     box-shadow:none;
+    filter:none;
 }
 
 /* ==========================================================
@@ -1442,7 +1505,11 @@ button:focus,
         gap:8px;
         width:100%;
     }
+    .btn-secondary:hover{
+        background:#9ca3af;
+    }
 }
+
 
 /* ==========================================================
    SMALL PHONES
@@ -1496,5 +1563,119 @@ button:focus,
     .btn{
         height:42px;
         font-size:13px;
+    }
+}
+/* ==========================================================
+   TOAST NOTIFICATION
+   Auto-dismissing popup (e.g. "Transaction Successfully
+   Completed!") — no OK button, disappears on its own.
+========================================================== */
+
+.toast-container{
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    z-index:9999;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    pointer-events:none;
+}
+
+.toast-backdrop{
+    position:fixed;
+    inset:0;
+    background:rgba(31,31,31,.35);
+    z-index:9998;
+    animation:toast-backdrop-in .25s ease forwards;
+    pointer-events:auto;
+    cursor:pointer;
+}
+
+.toast-backdrop--out{
+    animation:toast-backdrop-out .25s ease forwards;
+}
+
+.toast{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    gap:12px;
+    padding:32px 40px;
+    border-radius:var(--radius-lg);
+    background:var(--white);
+    color:var(--text);
+    box-shadow:0 20px 50px rgba(39,7,7,.28);
+    border-top:5px solid var(--success);
+    font-size:18px;
+    font-weight:700;
+    max-width:380px;
+    pointer-events:auto;
+    cursor:pointer;
+    animation:toast-in .25s ease forwards;
+}
+
+.toast--success{
+    background:var(--white);
+    color:var(--brand-secondary);
+}
+
+.toast--success svg{
+    flex:0 0 auto;
+    width:44px;
+    height:44px;
+    padding:10px;
+    border-radius:50%;
+    background:var(--success-light);
+    color:var(--success);
+}
+
+.toast--out{
+    animation:toast-out .25s ease forwards;
+}
+
+@keyframes toast-in{
+    from{
+        opacity:0;
+        transform:scale(.85);
+    }
+    to{
+        opacity:1;
+        transform:scale(1);
+    }
+}
+
+@keyframes toast-out{
+    from{
+        opacity:1;
+        transform:scale(1);
+    }
+    to{
+        opacity:0;
+        transform:scale(.85);
+    }
+}
+
+@keyframes toast-backdrop-in{
+    from{ opacity:0; }
+    to{ opacity:1; }
+}
+
+@keyframes toast-backdrop-out{
+    from{ opacity:1; }
+    to{ opacity:0; }
+}
+
+@media (max-width:520px){
+    .toast-container{
+        width:calc(100% - 40px);
+    }
+    .toast{
+        max-width:100%;
+        padding:26px 24px;
+        font-size:16px;
     }
 }

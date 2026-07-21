@@ -165,6 +165,8 @@ include __DIR__ . '/../../includes/header.php';
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
 <link rel="stylesheet" href="/assets/css/admin-bootstrap-theme.css">
 <link rel="stylesheet" href="/assets/css/office-dashboard.css">
+<link rel="stylesheet" href="/assets/css/header.css">
+
 
 <div class="app-shell">
 
@@ -362,6 +364,7 @@ include __DIR__ . '/../../includes/header.php';
 
     <script src="/assets/js/office-dashboard.js"></script>
     <script src="/assets/js/smart-assign.js"></script>
+
 
     </div><!-- /.od-wrap -->
 </div><!-- /.app-shell -->

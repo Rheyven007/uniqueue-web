@@ -11,6 +11,26 @@ $window_id = $_SESSION['window_id'];
 $office_id = $_SESSION['office_id'];
 
 try {
+    // Check kung naka-pause ang window
+    $stmt = $pdo->prepare("
+        SELECT is_paused
+        FROM windows
+        WHERE id = ?
+    ");
+
+    $stmt->execute([$window_id]);
+
+    $window = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!empty($window['is_paused'])) {
+
+        echo json_encode([
+            'success' => false,
+            'message' => 'Cannot complete a paused transaction.'
+        ]);
+
+        exit;
+    }
 
     // Hanapin ang kasalukuyang nasa service
     $stmt = $pdo->prepare("

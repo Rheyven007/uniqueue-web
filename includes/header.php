@@ -17,7 +17,7 @@ $isThemedHeader =
         if (is_student_logged_in()) {
             $brandHref = '/student/dashboard.php';
         } elseif (is_staff_logged_in()) {
-            $brandHref = '/admin/queue/staff-dashboard.php';
+            $brandHref = '/admin/staff/staff-dashboard.php';
         }
         ?>
         <a href="<?= $brandHref ?>"
@@ -136,6 +136,22 @@ $isThemedHeader =
         </div>
 
         <?php elseif (is_staff_logged_in()): ?>
+        <!-- Staff nav — Dashboard / Transactions rendered as pill buttons,
+             anchored to the left, right next to the Uniqueue brand. -->
+        <?php $staffCurrentPage = basename($_SERVER['SCRIPT_NAME']); ?>
+        <nav class="site-nav site-nav--staff" aria-label="Staff navigation">
+            <a href="/admin/staff/staff-dashboard.php"
+               class="site-nav__button<?= $staffCurrentPage === 'staff-dashboard.php' ? ' is-active' : '' ?>"
+               <?= $staffCurrentPage === 'staff-dashboard.php' ? 'aria-current="page"' : '' ?>>
+                Dashboard
+            </a>
+            <a href="/admin/queue/queue-transaction.php"
+               class="site-nav__button<?= $staffCurrentPage === 'queue-transaction.php' ? ' is-active' : '' ?>"
+               <?= $staffCurrentPage === 'queue-transaction.php' ? 'aria-current="page"' : '' ?>>
+                Transactions
+            </a>
+        </nav>
+
         <!-- Staff header: live date/time readout sitting directly
              beside the logout button on the right. -->
         <div class="site-header__right">
@@ -168,186 +184,6 @@ $isThemedHeader =
     </div><!-- /.site-header__inner -->
 
     <?php if ($isThemedHeader): ?>
-    <style>
-        /* Themed header (Deep Red / Stone), shared across staff,
-           student, and admin — solid-color treatment, edge-to-edge
-           width, no gradients. */
-        .site-header--themed{
-            background:var(--bg, #f1ebeb) !important;
-            width:100% !important;
-            margin:0;
-            border-radius:0 !important;
-            border-bottom:1px solid rgba(102,8,16,.10);
-        }
-        .site-header--themed .site-header__inner{
-            max-width:none;
-            width:100%;
-            padding:14px 24px;
-            box-sizing:border-box;
-        }
-        .site-header--themed .site-header__name,
-        .site-header--themed .site-header__brand{
-            color:var(--brand-primary, #660810);
-        }
-
-        .site-header__right{
-            display:flex;
-            align-items:center;
-            gap:12px;
-            margin-left:auto;
-        }
-
-        /* Name + arrow dropdown trigger */
-        .profile-menu{
-            position:relative;
-        }
-        .profile-menu__trigger{
-            display:inline-flex;
-            align-items:center;
-            gap:6px;
-            background:none;
-            border:none;
-            cursor:pointer;
-            padding:6px 8px;
-            border-radius:999px;
-            font:inherit;
-            color:var(--brand-primary, #660810);
-            transition:background .2s ease;
-        }
-        .profile-menu__trigger:hover{
-            background:rgba(102,8,16,.06);
-        }
-        .profile-menu__chevron{
-            flex-shrink:0;
-            transition:transform .2s ease;
-        }
-        .profile-menu__trigger[aria-expanded="true"] .profile-menu__chevron{
-            transform:rotate(180deg);
-        }
-        .profile-menu__dropdown{
-            position:absolute;
-            top:calc(100% + 8px);
-            right:0;
-            min-width:180px;
-            background:#fff;
-            border:1.5px solid rgba(102,8,16,.10);
-            border-radius:12px;
-            box-shadow:0 16px 40px rgba(26,10,10,.14);
-            overflow:hidden;
-            z-index:300;
-        }
-        .profile-menu__item{
-            display:flex;
-            align-items:center;
-            gap:10px;
-            padding:11px 14px;
-            font-size:14px;
-            font-weight:600;
-            color:var(--brand-primary, #660810);
-            text-decoration:none;
-            transition:background .2s ease;
-        }
-        .profile-menu__item:hover{
-            background:rgba(102,8,16,.06);
-        }
-        .profile-menu__item svg{ flex-shrink:0; opacity:.75; }
-
-        .site-header__datetime{
-            display:inline-flex;
-            align-items:center;
-            justify-content:center;
-            gap:8px;
-            min-width:200px;
-            height:38px;
-            padding:0 14px;
-            border-radius:999px;
-            background:rgba(102,8,16,.06);
-            border:1px solid rgba(102,8,16,.16);
-            color:var(--brand-primary, #660810);
-            font-weight:600;
-            line-height:1.1;
-            white-space:nowrap;
-            box-sizing:border-box;
-        }
-        .site-header__datetime-icon{
-            flex:0 0 auto;
-            color:rgba(102,8,16,.6);
-        }
-        .site-header__time{
-            font-size:14px;
-            font-weight:800;
-            letter-spacing:.3px;
-            font-variant-numeric:tabular-nums;
-        }
-        .site-header__date{
-            font-size:12px;
-            font-weight:600;
-            color:rgba(102,8,16,.55);
-            padding-left:8px;
-            border-left:1px solid rgba(102,8,16,.16);
-        }
-
-        .site-header__logout{
-            display:inline-flex;
-            align-items:center;
-            justify-content:center;
-            gap:8px;
-            min-width:80px;
-            height:38px;
-            padding:0 18px;
-            border-radius:999px;
-            background:rgba(102,8,16,.08);
-            border:1px solid rgba(102,8,16,.20);
-            color:var(--brand-primary, #660810);
-            font-weight:700;
-            font-size:13px;
-            text-decoration:none;
-            white-space:nowrap;
-            box-sizing:border-box;
-            transition:background .2s ease,color .2s ease,transform .2s ease,box-shadow .2s ease;
-        }
-        .site-header__logout:hover{
-            background:var(--brand-primary, #660810);
-            color:#fff;
-            transform:translateY(-2px);
-            box-shadow:0 10px 20px rgba(102,8,16,.25);
-        }
-        .site-header__logout:active{
-            transform:translateY(0);
-            box-shadow:none;
-        }
-        .site-header__logout svg{
-            flex:0 0 auto;
-        }
-
-        /* Notification bell + user-name read fine against the light
-           stone bg already (dark ink/red on light bg), but nudge the
-           bell's resting color to match the themed palette instead
-           of whatever the page's own header CSS assumes. */
-        .site-header--themed .notif-bell{
-            color:rgba(102,8,16,.6);
-        }
-        .site-header--themed .notif-bell:hover{
-            background:rgba(102,8,16,.08);
-            color:var(--brand-primary, #660810);
-        }
-        .site-header--themed .site-header__user-name{
-            color:var(--brand-primary, #660810);
-            font-weight:600;
-        }
-
-        @media (max-width:640px){
-            .site-header__date{ display:none; }
-            .site-header__logout span{ display:none; }
-            .site-header__datetime,
-            .site-header__logout{
-                min-width:0;
-            }
-            .site-header__logout{ padding:0 12px; }
-            .profile-menu__trigger .site-header__user-name{ display:none; }
-        }
-    </style>
-
     <script>
         (function () {
             var timeEl = document.getElementById('siteHeaderTime');
