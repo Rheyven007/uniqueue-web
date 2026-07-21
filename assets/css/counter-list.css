@@ -888,11 +888,7 @@ button { font-family: inherit; cursor: pointer; }
 
 .btn-primary::before,
 .btn-green::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.16) 0%, transparent 55%);
-  pointer-events: none;
+  display: none;
 }
 
 .btn-primary {
@@ -921,14 +917,14 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 .btn-green {
-  background: var(--green);
+  background: #28A745;
   color: var(--white);
-  border-color: var(--green);
+  border-color: #28A745;
   box-shadow: 0 4px 16px rgba(26,140,78,0.28);
 }
 .btn-green:hover {
-  background: #157040;
-  border-color: #157040;
+  background: #218838;
+  border-color: #1e7e34;
   box-shadow: 0 6px 20px rgba(26,140,78,0.38);
   transform: translateY(-1px);
 }
@@ -1795,13 +1791,15 @@ select.form-control { cursor: pointer; }
 }
 
 .btn-green {
-  background: var(--green);
+  background: #28A745;
   color: var(--white);
-  box-shadow: 0 4px 16px rgba(26,140,78,0.25);
+  border-color: #28A745;
+  box-shadow: none;
 }
 .btn-green:hover {
-  background: #157a43;
-  box-shadow: 0 6px 20px rgba(26,140,78,0.32);
+  background: #218838;
+  border-color: #1e7e34;
+  box-shadow: none;
 }
 
 .btn-warning {
@@ -2844,6 +2842,116 @@ button { font-family: inherit; }
   /* Hide office column on small screens — info moves into counter-name cell */
   .col-office { display: none; }
 }
+
+/* Window Monitor Grid (from office-dashboard.css) */
+.queue-section {
+  background: var(--white);
+  border: 1.5px solid var(--smoke);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin-top: 1.8rem;
+}
+
+.queue-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1.3rem;
+  background: var(--mist);
+  border-bottom: 1.5px solid var(--smoke);
+}
+
+.queue-section__head h2 {
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.windows-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.85rem;
+  padding: 1.1rem 1.3rem 1.3rem;
+}
+
+.window-card {
+  background: var(--off-white);
+  border: 1.5px solid var(--smoke);
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+}
+
+.window-card:hover {
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-2px);
+}
+
+.window-card.is-open   { border-color: rgba(46,125,50,0.3); background: var(--white); }
+.window-card.is-closed { opacity: 0.72; }
+
+.window-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.window-card__name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.window-card__current {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.window-card__ticket {
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0d9488;
+  flex-shrink: 0;
+}
+
+.window-card__student {
+  font-size: 0.8rem;
+  color: var(--ink-mid);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.window-card__idle {
+  font-size: 0.78rem;
+  color: var(--ink-light);
+  font-style: italic;
+}
+
+.window-card__staff {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--ink-light);
+  padding-top: 0.35rem;
+  border-top: 1px dashed var(--smoke);
+}
+
+.badge-open     { background: var(--success-bg);   color: var(--success);    border: 1px solid var(--success-border); }
+.badge-closed   { background: var(--light-gray);   color: var(--ink-light);  border: 1px solid var(--smoke-dark); }
 
 /* ── Header left stack ────────────────────────────────────── */
 .header-actions__left {

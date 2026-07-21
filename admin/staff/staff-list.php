@@ -56,22 +56,13 @@ include __DIR__ . '/../../includes/header.php';
 
         <div class="staff-wrap" style="padding:0;margin:0;animation:none;">
 
-
-
-    <div class="staff-header">
-
-        <div class="staff-header__left">
-            <div class="staff-header__text">
-                <h1>
-                    Staff Management
-                    <span class="staff-count"><?= count($staff) ?></span>
-                </h1>
+    <div class="od-topbar">
+        <div class="od-topbar__left">
+            <h1>Staff Management</h1>
                 <p>Manage office staff accounts.</p>
             </div>
-        </div>
-
-        <div class="staff-header__actions">
-            <button class="btn btn-ghost btn-sm" onclick="window.location.reload()" aria-label="Refresh list">
+        <div class="od-topbar__actions">
+            <button class="btn btn-outline-light btn-sm" onclick="window.location.reload()" aria-label="Refresh list">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21.5 2v6h-6"/>
                     <path d="M21.34 15.57a10 10 0 1 1-.4-4.57"/>
@@ -86,7 +77,6 @@ include __DIR__ . '/../../includes/header.php';
                 Add Staff
             </a>
         </div>
-
     </div>
 
     <form method="GET" class="search-bar" role="search">
