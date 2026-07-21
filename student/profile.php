@@ -168,7 +168,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
                     <div class="form-alert form-alert--success"><?= e($profileSuccess) ?></div>
                 <?php endif; ?>
 
-                <form method="POST" action="/student/profile.php" class="profile-form">
+                <form method="POST" action="/student/profile.php" class="profile-form" id="profile_info_form">
 
                     <div class="form-group">
                         <label class="form-label">SR Code</label>
@@ -234,7 +234,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
                         <span class="info-row__value"><?= date('M d, Y', strtotime($profile['created_at'])) ?></span>
                     </div>
 
-                    <button type="submit" name="update_profile" value="1" class="btn btn--primary btn--sm">
+                    <button type="submit" name="update_profile" value="1" class="btn btn--primary btn--sm" id="save_profile_btn" disabled>
                         Save Changes
                     </button>
 
@@ -319,6 +319,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
 
     collegeSelect.addEventListener('change', filterPrograms);
     filterPrograms(); // run once on load so it respects the saved value
+})();
+
+// ── Disable "Save Changes" unless something actually changed ──
+(function () {
+    var form = document.getElementById('profile_info_form');
+    var saveBtn = document.getElementById('save_profile_btn');
+    if (!form || !saveBtn) return;
+
+    var fields = form.querySelectorAll('input:not([disabled]), select');
+    var initialValues = {};
+
+    fields.forEach(function (field) {
+        initialValues[field.name] = field.value;
+    });
+
+    function checkChanges() {
+        var changed = false;
+        fields.forEach(function (field) {
+            if (field.value !== initialValues[field.name]) changed = true;
+        });
+        saveBtn.disabled = !changed;
+    }
+
+    fields.forEach(function (field) {
+        field.addEventListener('input', checkChanges);
+        field.addEventListener('change', checkChanges);
+    });
 })();
 </script>
 </body>
