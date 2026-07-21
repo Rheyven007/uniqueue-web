@@ -48,29 +48,27 @@ include __DIR__ . '/../../includes/header.php';
 
 <link rel="stylesheet" href="/assets/css/staff.css">
 
-<div class="staff-wrap"> 
+<div class="app-shell">
 
-    <div class="staff-header">
+    <?php include __DIR__ . '/../../includes/office-sidebar.php'; ?>
 
-        <div class="staff-header__left">
-            <div class="staff-header__text">
-                <h1>
-                    Staff Management
-                    <span class="staff-count"><?= count($staff) ?></span>
-                </h1>
+    <div class="od-wrap">
+
+        <div class="staff-wrap" style="padding:0;margin:0;animation:none;">
+
+    <div class="od-topbar">
+        <div class="od-topbar__left">
+            <h1>Staff Management</h1>
                 <p>Manage office staff accounts.</p>
             </div>
-        </div>
-
-        <div class="staff-header__actions">
-            <a href="../queue/office-dashboard.php" class="back-btn" aria-label="Back to dashboard">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+        <div class="od-topbar__actions">
+            <button class="btn btn-outline-light btn-sm" onclick="window.location.reload()" aria-label="Refresh list">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.5 2v6h-6"/>
+                    <path d="M21.34 15.57a10 10 0 1 1-.4-4.57"/>
                 </svg>
-                Back
-            </a>
-
+                Refresh
+            </button>
             <a href="staff-add.php" class="btn btn-green">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -79,33 +77,35 @@ include __DIR__ . '/../../includes/header.php';
                 Add Staff
             </a>
         </div>
-
     </div>
 
-    <form method="GET" class="staff-search">
+    <form method="GET" class="search-bar" role="search">
 
-        <div class="staff-search__field">
+        <div class="search-bar__field">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
             </svg>
+           
             <input
+                id="staff-search"
                 type="text"
                 name="search"
-                placeholder="Search staff..."
+                placeholder="Search by name, username, or position..."
                 value="<?= htmlspecialchars($search) ?>"
             >
         </div>
 
-        <button type="submit" class="btn btn-danger">
-            Search
-        </button>
+        <button type="submit" class="btn btn-primary btn-search" aria-label="Search">Search</button>
 
     </form>
 
-    <div class="table-card">
+    <!-- Live region: announces search/save/delete results for assistive tech -->
+    <div class="sr-only" role="status" aria-live="polite" id="staff-status-region"></div>
 
-        <table class="staff-table">
+    <div class="ql-table-wrap">
+
+        <table class="ql-table">
 
             <thead>
 
@@ -121,7 +121,7 @@ include __DIR__ . '/../../includes/header.php';
 
                 <th>Status</th>
 
-                <th width="180">Action</th>
+                <th class="td-actions" width="180">Actions</th>
 
             </tr>
 
@@ -134,7 +134,11 @@ include __DIR__ . '/../../includes/header.php';
                 <tr>
 
                     <td colspan="6" class="empty">
-                        No staff found.
+                        <?php if ($search !== ''): ?>
+                            No staff match "<?= htmlspecialchars($search) ?>". <a href="staff-list.php">Clear search</a>
+                        <?php else: ?>
+                            No staff found. <a href="staff-add.php">Add the first one.</a>
+                        <?php endif; ?>
                     </td>
 
                 </tr>
@@ -191,10 +195,11 @@ include __DIR__ . '/../../includes/header.php';
                     </td>
 
                     <td>
-                        <div class="action-cell">
+                        <div class="td-actions">
                             <a
                                 href="staff-edit.php?id=<?= $row['id'] ?>"
-                                class="btn btn-warning btn-sm">
+                                class="btn btn-warning btn-sm"
+                                title="Edit <?= htmlspecialchars($row['name']) ?>">
 
                                 Edit
 
@@ -203,7 +208,8 @@ include __DIR__ . '/../../includes/header.php';
                             <a
                                 href="staff-delete.php?id=<?= $row['id'] ?>"
                                 class="btn btn-danger btn-sm"
-                                onclick="return confirm('Delete this staff?')">
+                                title="Delete <?= htmlspecialchars($row['name']) ?>"
+                                onclick="return confirm('Delete this staff account? This action cannot be undone.')">
 
                                 Delete
 
@@ -221,6 +227,9 @@ include __DIR__ . '/../../includes/header.php';
 
     </div>
 
-</div>
+</div><!-- /.staff-wrap -->
+
+    </div><!-- /.od-wrap -->
+</div><!-- /.app-shell -->
 
 <?php include __DIR__ . '/../../includes/footer.php'; ?>
