@@ -35,6 +35,7 @@
         college: null
     };
 
+
     // Both datasets are kept in memory so the Status/Type toggle can swap
     // the single donut instantly without a re-fetch.
     const overviewData = {
@@ -43,6 +44,10 @@
         type:   { labels: ["Walk-in", "Appointment"], colors: [VIVID[0], VIVID[4]], values: [], subtitle: "Walk-in vs Appointment" }
     };
     let overviewView = "all";
+
+    // Mutable state for date range, updated by slicer
+    let currentRange = typeof CURRENT_RANGE !== 'undefined' ? CURRENT_RANGE : 'today';
+    let isToday = typeof IS_TODAY !== 'undefined' ? IS_TODAY : true;
 
     // ── Initial paint from data already embedded by PHP (instant, no round-trip) ──
     function renderInitial() {
@@ -59,10 +64,10 @@
     function refreshDashboard() {
         const params = new URLSearchParams({
             office_id: CURRENT_OFFICE_ID,
-            range: CURRENT_RANGE,
-            from: CURRENT_FROM,
-            to: CURRENT_TO
+            range: 'today', // Live refresh is always for today
         });
+
+        if (!isToday) return; // Don't auto-refresh historical views
 
         fetch(`/api/dashboard-stats.php?${params.toString()}`)
             .then(res => res.json())
@@ -70,12 +75,7 @@
                 if (!data || !data.success) return;
 
                 setOverviewData(data.queueAll, data.queueStatus, data.queueTypes);
-                drawQueueOverview();
-                drawHourly(data.hourlyLabels, data.hourlyData);
-                drawWindows(data.windowLabels, data.windowData);
-                drawDocuments(data.documentLabels, data.documentData);
-                drawFeedback(data.feedbackRatings);
-                drawColleges(data.collegeLabels, data.collegeData);
+                renderAllCharts(data);
             })
             .catch(() => {
                 // Live-refresh endpoint unavailable — keep showing the last
@@ -83,6 +83,24 @@
             });
     }
 
+    function renderAllCharts(data) {
+        drawQueueOverview(); // Uses internal overviewData
+        drawHourly(data.hourlyLabels, data.hourlyData);
+        drawWindows(data.windowLabels, data.windowData);
+        drawDocuments(data.documentLabels, data.documentData);
+        drawFeedback(data.feedbackRatings);
+        drawColleges(data.collegeLabels, data.collegeData);
+    }
+
+    function updateStats(stats, isToday) {
+        document.querySelector('[data-stat="total"]').textContent = stats.total;
+        document.querySelector('[data-stat="waiting"]').textContent = stats.waiting;
+        document.querySelector('[data-stat="serving"]').textContent = stats.serving;
+        document.querySelector('[data-stat="completed"]').textContent = stats.completed;
+        document.querySelector('[data-stat="appointments"]').textContent = stats.appointments;
+        document.querySelector('[data-stat="priority_count"]').textContent = stats.priority_count;
+        document.querySelector('[data-stat="avg_service_min"]').innerHTML = stats.avg_service_min !== null ? `${stats.avg_service_min}<small>m</small>` : 'N/A';
+    }
     function hasData(values) {
         return Array.isArray(values) && values.some(v => Number(v) > 0);
     }
@@ -99,7 +117,6 @@
                 msg.className = "chart-empty";
                 wrap.appendChild(msg);
             }
-            const isToday = (typeof IS_TODAY === "undefined") || IS_TODAY;
             msg.textContent = isToday ? "No data yet today" : "No data for this date range";
         } else {
             container.style.display = "";
@@ -144,7 +161,6 @@
 
         const subtitleEl = document.getElementById("queueOverviewSubtitle");
         if (subtitleEl) {
-            const isToday = (typeof IS_TODAY === "undefined") || IS_TODAY;
             subtitleEl.textContent = (isToday ? "Today's " : "") + view.subtitle;
         }
 
@@ -422,21 +438,21 @@
                 formatter: (p) => `${p.marker} ${p.name}: <b>${p.value}</b> (${p.percent}%)`
             },
             legend: {
-                orient: 'vertical',
-                left: 'left',
-                top: 'center',
+                orient: 'horizontal',
+                left: 'center',
+                top: 'top',
                 icon: 'circle',
                 itemWidth: 9,
                 itemHeight: 9,
-                itemGap: 12,
+                itemGap: 16,
                 textStyle: { color: COLORS.ink, fontFamily: FONT, fontSize: 12, fontWeight: 500 }
             },
             color: VIVID,
             series: [{
                 name: 'Tickets by College',
                 type: 'pie',
-                radius: ['48%', '75%'],
-                center: ['68%', '50%'],
+                radius: ['50%', '78%'],
+                center: ['50%', '58%'],
                 avoidLabelOverlap: false,
                 itemStyle: {
                     borderRadius: 8,
@@ -476,20 +492,61 @@
         const applyBtn = form ? form.querySelector(".dashboard-slicer__apply") : null;
         if (!form || !select) return;
 
-        function goTo(range, from, to) {
-            const url = new URL(window.location.href);
-            url.searchParams.set("range", range);
+        function goTo(range, from, to, pushState = true) {
+            const fetchUrl = new URL(window.location.href);
+            fetchUrl.searchParams.set("range", range);
             if (range === "custom") {
-                url.searchParams.set("from", from || "");
-                url.searchParams.set("to", to || "");
+                fetchUrl.searchParams.set("from", from || "");
+                fetchUrl.searchParams.set("to", to || "");
             } else {
-                url.searchParams.delete("from");
-                url.searchParams.delete("to");
+                fetchUrl.searchParams.delete("from");
+                fetchUrl.searchParams.delete("to");
             }
-            window.location.href = url.toString();
+
+            // Show loading state
+            document.body.classList.add('is-loading');
+
+            fetch(fetchUrl.toString(), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) return;
+
+                // Update state
+                currentRange = range;
+                isToday = data.isToday;
+
+                // Update UI elements
+                document.title = data.pageTitle;
+                document.getElementById('od-header-date').innerHTML = `Queue Dashboard &nbsp;·&nbsp; ${data.headerDate}`;
+                document.querySelector('[data-title="hourly"]').textContent = data.isToday ? 'Transactions Per Hour' : 'Transactions Per Day';
+                document.querySelector('[data-subtitle="hourly"]').textContent = data.trendLabel;
+                document.querySelector('[data-subtitle="documents"]').textContent = data.isToday ? "Today's Requests" : 'Document Requests';
+
+                const liveIndicator = document.querySelector('.dashboard-slicer__live');
+                if (liveIndicator) liveIndicator.style.display = data.isToday ? 'inline-flex' : 'none';
+
+                // Update data and re-render charts
+                updateStats(data.stats, data.isToday);
+                setOverviewData(data.queueAll, data.queueStatus, data.queueTypes);
+                renderAllCharts(data);
+
+                // Update URL in address bar
+                if (pushState) {
+                    history.pushState({ range, from, to }, data.pageTitle, fetchUrl.toString());
+                }
+            })
+            .catch(console.error)
+            .finally(() => {
+                document.body.classList.remove('is-loading');
+            });
         }
 
         select.addEventListener("change", (e) => {
+            // Prevent form submission which would cause a reload
+            e.preventDefault();
+
             if (select.value === "custom") {
                 custom.classList.add("is-visible");
                 // Wait for the user to pick both dates and hit Apply
@@ -499,13 +556,6 @@
             goTo(select.value, null, null);
         });
 
-        if (applyBtn) {
-            applyBtn.addEventListener("click", (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                goTo("custom", fromEl ? fromEl.value : "", toEl ? toEl.value : "");
-            });
-        }
 
         // Belt-and-suspenders: if anything still triggers a native submit
         // (e.g. pressing Enter inside a date field), handle it the same way
@@ -514,6 +564,11 @@
             e.preventDefault();
             e.stopPropagation();
             goTo(select.value, fromEl ? fromEl.value : "", toEl ? toEl.value : "");
+        });
+
+        // Handle back/forward navigation
+        window.addEventListener('popstate', (e) => {
+            if (e.state) goTo(e.state.range, e.state.from, e.state.to, false);
         });
     }
 
@@ -553,15 +608,9 @@
                 if (chart) chart.resize();
             });
         });
-        // Live AJAX refresh only applies to "Today". Historical ranges
-        // are static and must not be re-fetched/overwritten — the
-        // /api/dashboard-stats.php endpoint currently has no concept of
-        // range/from/to, so calling it here would silently snap every
-        // chart back to today's numbers regardless of what's selected.
-        if (typeof IS_TODAY === "undefined" || IS_TODAY) {
-            refreshDashboard();
-            setInterval(refreshDashboard, REFRESH_MS);
-        }
+
+        // Start live refresh polling
+        setInterval(refreshDashboard, REFRESH_MS);
 
     });
 

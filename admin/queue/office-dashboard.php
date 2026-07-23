@@ -225,6 +225,44 @@ while($r = $collegeStmt->fetch()) {
     $collegeTotals[] = (int)$r['total'];
 }
 
+// ── AJAX Response ──────────────────────────────────────────────────────────
+// If this is an AJAX request (from the date slicer), send back only the
+// data needed to re-render the dashboard, then exit.
+if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success' => true,
+        'stats' => [
+            'total' => (int)$ts['total'],
+            'waiting' => (int)$ts['waiting'],
+            'serving' => (int)$ts['serving'],
+            'completed' => (int)$ts['completed'],
+            'appointments' => (int)$ts['appointments'],
+            'priority_count' => (int)$ts['priority_count'],
+            'avg_service_min' => $ts['avg_service_min'] !== null ? round($ts['avg_service_min']) : null,
+        ],
+        'queueAll' => $queueAll,
+        'queueStatus' => $queueStatus,
+        'queueTypes' => $queueTypes,
+        'hourlyLabels' => $hours,
+        'hourlyData' => $hourTotals,
+        'windowLabels' => $windowNames,
+        'windowData' => $windowTotals,
+        'documentLabels' => $docNames,
+        'documentData' => $docTotals,
+        'feedbackRatings' => $feedbackRatings,
+        'collegeLabels' => $collegeLabels,
+        'collegeData' => $collegeTotals,
+        'isToday' => $isToday,
+        'trendLabel' => $trendLabel,
+        'pageTitle' => "Dashboard — " . $office['name'],
+        'headerDate' => $isSingleDay
+            ? date('l, F j, Y', strtotime($dateFrom))
+            : date('M j', strtotime($dateFrom)) . ' – ' . date('M j, Y', strtotime($dateTo)),
+    ]);
+    exit;
+}
+
 // ── Windows for this office ───────────────────────────────────────────────
 $win_stmt = $pdo->prepare("
     SELECT
@@ -301,7 +339,7 @@ include __DIR__ . '/../../includes/header.php';
         <div class="od-topbar__left">
             <span class="od-topbar__eyebrow">Office Administration</span>
             <h1><?= htmlspecialchars($office['name']) ?></h1>
-            <p>Queue Dashboard &nbsp;·&nbsp;
+            <p id="od-header-date">Queue Dashboard &nbsp;·&nbsp;
                 <?= $isSingleDay
                     ? date('l, F j, Y', strtotime($dateFrom))
                     : date('M j', strtotime($dateFrom)) . ' – ' . date('M j, Y', strtotime($dateTo)) ?>
@@ -324,7 +362,7 @@ include __DIR__ . '/../../includes/header.php';
                     <input type="date" name="from" id="slicer-from" value="<?= htmlspecialchars($dateFrom) ?>" max="<?= date('Y-m-d') ?>">
                     <span class="dashboard-slicer__sep">to</span>
                     <input type="date" name="to" id="slicer-to" value="<?= htmlspecialchars($dateTo) ?>" max="<?= date('Y-m-d') ?>">
-                    <button type="button" class="dashboard-slicer__apply">Apply</button>
+                    <button type="submit" class="dashboard-slicer__apply">Apply</button>
                 </div>
                 <?php if ($isToday): ?>
                     <span class="dashboard-slicer__live" title="Auto-refreshing every 15s">
@@ -345,7 +383,7 @@ include __DIR__ . '/../../includes/header.php';
             </div>
             <div class="stat-box__body">
                 <span class="stat-box__lbl"><?= $isToday ? 'Total Today' : 'Total' ?></span>
-                <span class="stat-box__val"><?= (int)$ts['total'] ?></span>
+                <span class="stat-box__val" data-stat="total"><?= (int)$ts['total'] ?></span>
             </div>
         </div>
         <div class="stat-box s-amber">
@@ -356,7 +394,7 @@ include __DIR__ . '/../../includes/header.php';
             </div>
             <div class="stat-box__body">
                 <span class="stat-box__lbl">Waiting</span>
-                <span class="stat-box__val"><?= (int)$ts['waiting'] ?></span>
+                <span class="stat-box__val" data-stat="waiting"><?= (int)$ts['waiting'] ?></span>
             </div>
         </div>
         <div class="stat-box s-teal">
@@ -367,7 +405,7 @@ include __DIR__ . '/../../includes/header.php';
             </div>
             <div class="stat-box__body">
                 <span class="stat-box__lbl">Serving</span>
-                <span class="stat-box__val"><?= (int)$ts['serving'] ?></span>
+                <span class="stat-box__val" data-stat="serving"><?= (int)$ts['serving'] ?></span>
             </div>
         </div>
         <div class="stat-box s-green">
@@ -378,7 +416,7 @@ include __DIR__ . '/../../includes/header.php';
             </div>
             <div class="stat-box__body">
                 <span class="stat-box__lbl">Completed</span>
-                <span class="stat-box__val"><?= (int)$ts['completed'] ?></span>
+                <span class="stat-box__val" data-stat="completed"><?= (int)$ts['completed'] ?></span>
             </div>
         </div>
         <div class="stat-box s-blue">
@@ -389,7 +427,7 @@ include __DIR__ . '/../../includes/header.php';
             </div>
             <div class="stat-box__body">
                 <span class="stat-box__lbl">Appointments</span>
-                <span class="stat-box__val"><?= (int)$ts['appointments'] ?></span>
+                <span class="stat-box__val" data-stat="appointments"><?= (int)$ts['appointments'] ?></span>
             </div>
         </div>
         <div class="stat-box s-violet">
@@ -400,7 +438,7 @@ include __DIR__ . '/../../includes/header.php';
             </div>
             <div class="stat-box__body">
                 <span class="stat-box__lbl">Priority</span>
-                <span class="stat-box__val"><?= (int)$ts['priority_count'] ?></span>
+                <span class="stat-box__val" data-stat="priority_count"><?= (int)$ts['priority_count'] ?></span>
             </div>
         </div>
         <div class="stat-box s-teal">
@@ -422,7 +460,7 @@ include __DIR__ . '/../../includes/header.php';
             </div>
             <div class="stat-box__body">
                 <span class="stat-box__lbl">Avg. Service Time</span>
-                <span class="stat-box__val"><?= $ts['avg_service_min'] !== null ? round($ts['avg_service_min']) . '<small>m</small>' : 'N/A' ?></span>
+                <span class="stat-box__val" data-stat="avg_service_min"><?= $ts['avg_service_min'] !== null ? round($ts['avg_service_min']) . '<small>m</small>' : 'N/A' ?></span>
             </div>
         </div>
     </div>
@@ -442,8 +480,8 @@ include __DIR__ . '/../../includes/header.php';
                                 </svg>
                             </div>
                             <div>
-                                <h3><?= $isSingleDay ? 'Transactions Per Hour' : 'Transactions Per Day' ?></h3>
-                                <span><?= htmlspecialchars($trendLabel) ?></span>
+                                <h3 data-title="hourly"><?= $isSingleDay ? 'Transactions Per Hour' : 'Transactions Per Day' ?></h3>
+                                <span data-subtitle="hourly"><?= htmlspecialchars($trendLabel) ?></span>
                             </div>
                         </div>
                     </div>
@@ -461,8 +499,8 @@ include __DIR__ . '/../../includes/header.php';
                                 </svg>
                             </div>
                             <div>
-                                <h3>Most Requested Documents</h3>
-                                <span><?= $isToday ? "Today's Requests" : 'Document Requests' ?></span>
+                                <h3 data-title="documents">Most Requested Documents</h3>
+                                <span data-subtitle="documents"><?= $isToday ? "Today's Requests" : 'Document Requests' ?></span>
                             </div>
                         </div>
                     </div>

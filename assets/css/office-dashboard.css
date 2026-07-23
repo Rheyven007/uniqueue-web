@@ -37,8 +37,8 @@
   /* Status */
   --success:#2e7d32;
   --success-light:#dff6dd;
-  --warning:#f39c12;
-  --warning-light:#fceed8;
+  --warning:#b3791a;
+  --warning-light:#f3e3d1;
   --info:#1976d2;
   --info-light:#dcebfb;
   --purple:#7b1fa2;
@@ -79,7 +79,7 @@
   --success-border: rgba(46,125,50,0.25);
 
   --warning-bg:     var(--warning-light);
-  --warning-border: rgba(243,156,18,0.35);
+  --warning-border: rgba(179,121,26,0.35);
 
   --info-bg:        var(--info-light);
   --info-border:    rgba(25,118,210,0.3);
