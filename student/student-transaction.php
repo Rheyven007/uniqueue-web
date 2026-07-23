@@ -152,7 +152,7 @@ $statusLabels = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Uniqueue &mdash; Transaction History</title>
-    <link rel="stylesheet" href="/assets/css/dashboard.css">
+    <link rel="stylesheet" href="/assets/css/student-dashboard.css">
     <link rel="stylesheet" href="/assets/css/queue-status.css">
     <link rel="stylesheet" href="/assets/css/student-transaction.css">
     <link rel="stylesheet" href="/assets/css/header.css">
@@ -310,7 +310,7 @@ $statusLabels = [
 
                             <div class="transaction-card__footer">
                                 <?php if (in_array($txn['status'], ['waiting', 'called', 'in_progress'], true)): ?>
-                                    <a href="/student/dashboard.php" class="btn btn--outline btn--xs" data-no-modal>
+                                    <a href="/student/student-dashboard.php" class="btn btn--outline btn--xs" data-no-modal>
                                         Track Queue
                                     </a>
                                 <?php elseif ($txn['status'] === 'done'): ?>
@@ -359,7 +359,7 @@ $statusLabels = [
                         <a href="/student/student-transaction.php" class="btn btn--outline btn--sm">Clear Filters</a>
                     <?php else: ?>
                         <span>You don't have any queue transactions yet.</span>
-                        <a href="/student/dashboard.php" class="btn btn--outline btn--sm">Join a Queue</a>
+                        <a href="/student/student-dashboard.php" class="btn btn--outline btn--sm">Join a Queue</a>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>

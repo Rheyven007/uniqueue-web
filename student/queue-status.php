@@ -7,14 +7,14 @@ $ticket_id = get_param('ticket_id');
 $student_id = $_SESSION['student_id'];
 
 if (!$ticket_id) {
-    redirect('/student/dashboard.php');
+    redirect('/student/student-dashboard.php');
 }
 
 // Ensure the student only monitors their own ticket
 $stmt = $pdo->prepare("SELECT id FROM queue_tickets WHERE id = ? AND student_id = ?");
 $stmt->execute([$ticket_id, $student_id]);
 if (!$stmt->fetch()) {
-    redirect('/student/dashboard.php');
+    redirect('/student/student-dashboard.php');
 }
 
 $pageTitle = "Real-Time Queue Status";
@@ -69,7 +69,7 @@ include __DIR__ . '/../includes/header.php';
         </div>
     </div>
 </div>
-<link rel="stylesheet" href="/assets/css/dashboard.css">
+<link rel="stylesheet" href="/assets/css/student-dashboard.css">
 <link rel="stylesheet" href="/assets/css/queue-status.css">
 <link rel="stylesheet" href="student.css">
 

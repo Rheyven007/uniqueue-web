@@ -124,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Uniqueue &mdash; Profile</title>
-    <link rel="stylesheet" href="/assets/css/dashboard.css">
+    <link rel="stylesheet" href="/assets/css/student-dashboard.css">
     <link rel="stylesheet" href="/assets/css/profile.css">
     <link rel="stylesheet" href="/assets/css/header.css">
 </head>

@@ -76,6 +76,13 @@ if ($q !== '') {
     $params[':q3'] = '%' . $q . '%';
 }
 $whereSql = 'WHERE ' . implode(' AND ', $where);
+/* ---------------------------------------------------------
+   Detect AJAX request
+--------------------------------------------------------- */
+$isAjax = (
+    !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+    strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest'
+);
 
 /* ---------------------------------------------------------
    Stats (unfiltered by status/type/date, scoped to window)
@@ -140,7 +147,13 @@ $listSql = "
 
     FROM queue_tickets qt
     LEFT JOIN students st ON st.id = qt.student_id
-    LEFT JOIN staff sf ON sf.window_id = qt.window_id
+    LEFT JOIN staff sf 
+    ON sf.id = (
+        SELECT s.id
+        FROM staff s
+        WHERE s.window_id = qt.window_id
+        LIMIT 1
+    )
     $whereSql
     ORDER BY qt.joined_at DESC
     LIMIT :limit OFFSET :offset
@@ -198,6 +211,7 @@ function qt_query(array $overrides = []): string
 }
 
 ?>
+
 
 <?php include __DIR__ . '/../../includes/header.php'; ?>
 
@@ -411,6 +425,7 @@ function qt_query(array $overrides = []): string
         </div>
     </div>
     <?php endif; ?>
+
 
 </div>
 

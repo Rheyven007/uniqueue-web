@@ -1,35 +1,200 @@
-// admin/queue/queue-transaction.php — filter interactions
 (function () {
-    var form   = document.getElementById('qtFilterForm');
-    var search = document.getElementById('qtSearch');
-    var status = document.getElementById('qtStatus');
-    var type   = document.getElementById('qtType');
-    var from   = document.getElementById('qtFrom');
-    var to     = document.getElementById('qtTo');
+
+    const form = document.getElementById("qtFilterForm");
 
     if (!form) return;
 
-    // Auto-submit immediately when a dropdown/date changes.
-    [status, type, from, to].forEach(function (el) {
-        if (el) el.addEventListener('change', function () { form.submit(); });
-    });
 
-    // Debounce the free-text search so it doesn't reload on every keystroke.
-    if (search) {
-        var debounceTimer;
-        search.addEventListener('input', function () {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(function () { form.submit(); }, 500);
+    const tableWrapper = document.querySelector(".qt-table-wrap");
+
+
+    let timer = null;
+
+
+    function loadTransactions(page = 1) {
+
+
+        const formData = new FormData(form);
+
+        const params = new URLSearchParams();
+
+
+        formData.forEach((value, key) => {
+
+            if (value !== "") {
+                params.append(key, value);
+            }
+
         });
+
+
+        params.set("page", page);
+
+
+
+        fetch(
+            "queue-transaction-data.php?" + params.toString(),
+            {
+                method: "GET",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            }
+        )
+
+        .then(response => response.text())
+
+        .then(html => {
+
+
+            if (tableWrapper) {
+
+                tableWrapper.innerHTML = html;
+
+            }
+
+
+            bindPagination();
+
+
+        })
+
+        .catch(error => {
+
+            console.error(
+                "Queue transaction error:",
+                error
+            );
+
+        });
+
+
     }
 
-    // Expand/collapse extra document tags per row.
-    document.addEventListener('click', function (e) {
-        var btn = e.target.closest('.qt-doc-toggle');
-        if (!btn) return;
 
-        var list = btn.closest('.qt-doc-list');
-        var expanded = list.classList.toggle('is-expanded');
-        btn.textContent = expanded ? btn.dataset.less : btn.dataset.more;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Search typing
+    |--------------------------------------------------------------------------
+    */
+
+    const search = document.getElementById("qtSearch");
+
+
+    if(search){
+
+        search.addEventListener(
+            "input",
+            function(){
+
+                clearTimeout(timer);
+
+
+                timer = setTimeout(
+                    function(){
+
+                        loadTransactions();
+
+                    },
+                    300
+                );
+
+
+            }
+        );
+
+    }
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dropdown / Date filters
+    |--------------------------------------------------------------------------
+    */
+
+    [
+        "qtStatus",
+        "qtType",
+        "qtFrom",
+        "qtTo"
+
+    ].forEach(function(id){
+
+
+        const element =
+            document.getElementById(id);
+
+
+        if(element){
+
+
+            element.addEventListener(
+                "change",
+                function(){
+
+                    loadTransactions();
+
+                }
+            );
+
+
+        }
+
+
     });
+
+
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pagination
+    |--------------------------------------------------------------------------
+    */
+
+    function bindPagination(){
+
+
+        document
+        .querySelectorAll(".qt-pagination a")
+        .forEach(function(link){
+
+
+            link.addEventListener(
+                "click",
+                function(e){
+
+
+                    e.preventDefault();
+
+
+                    const url =
+                        new URL(
+                            this.href
+                        );
+
+
+                    loadTransactions(
+                        url.searchParams.get("page")
+                    );
+
+
+                }
+            );
+
+
+        });
+
+
+    }
+
+
+
+    bindPagination();
+
+
+
 })();

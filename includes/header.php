@@ -15,7 +15,7 @@ $isThemedHeader =
         <?php
         $brandHref = '/admin/queue/office-dashboard.php';
         if (is_student_logged_in()) {
-            $brandHref = '/student/dashboard.php';
+            $brandHref = '/student/student-dashboard.php';
         } elseif (is_staff_logged_in()) {
             $brandHref = '/admin/staff/staff-dashboard.php';
         }
@@ -29,7 +29,7 @@ $isThemedHeader =
         <?php if (is_student_logged_in()): ?>
         <!-- Student nav -->
         <nav class="site-nav" aria-label="Student navigation">
-            <a href="/student/dashboard.php"            class="site-nav__link">Dashboard</a>
+            <a href="/student/student-dashboard.php"            class="site-nav__link">Dashboard</a>
             <a href="/student/student-transaction.php"  class="site-nav__link">Transactions</a>
         </nav>
 

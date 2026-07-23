@@ -55,7 +55,7 @@
         .then(data => {
             if (data.success) {
                 alert('Thank you for your feedback!');
-                window.location.href = '/student/dashboard.php';
+                window.location.href = '/student/student-dashboard.php';
             } else {
                 alert(data.message || 'Failed to submit feedback. Please try again.');
             }

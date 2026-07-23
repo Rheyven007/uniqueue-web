@@ -10,7 +10,7 @@ $student_id = $_SESSION['student_id'];
 $error = '';
 
 if (!$ticket_id) {
-    redirect('/student/dashboard.php');
+    redirect('/student/student-dashboard.php');
 }
 
 // Verify ticket belongs to student, is 'done', and has no existing feedback
@@ -25,7 +25,7 @@ $stmt->execute([$ticket_id, $student_id]);
 $ticket = $stmt->fetch();
 
 if (!$ticket) {
-    redirect('/student/dashboard.php'); // Ticket not found, not done, or already has feedback
+    redirect('/student/student-dashboard.php'); // Ticket not found, not done, or already has feedback
 }
 
 $pageTitle = "Submit Feedback";
@@ -64,7 +64,7 @@ include __DIR__ . '/../includes/header.php';
 
             <div class="form-actions">
                 <button type="submit" class="btn btn--primary btn--block">Submit Feedback</button>
-                <a href="/student/dashboard.php" class="btn btn--ghost btn--block">Skip for now</a>
+                <a href="/student/student-dashboard.php" class="btn btn--ghost btn--block">Skip for now</a>
             </div>
         </form>
     </div>

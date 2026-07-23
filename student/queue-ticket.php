@@ -18,7 +18,7 @@ $stmt->execute([$ticket_id, $student_id]);
 $ticket = $stmt->fetch();
 
 if (!$ticket) {
-    redirect('/student/dashboard.php');
+    redirect('/student/student-dashboard.php');
 }
 
 // Fetch requested documents and their requirements
@@ -79,7 +79,7 @@ include __DIR__ . '/../includes/header.php';
         <?php endif; ?>
     </div>
 </div>
-<link rel="stylesheet" href="/assets/css/dashboard.css">
+<link rel="stylesheet" href="/assets/css/student-dashboard.css">
 <link rel="stylesheet" href="/assets/css/queue-ticket.css">
 <link rel="stylesheet" href="/assets/css/student.css">
 

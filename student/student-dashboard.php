@@ -62,7 +62,7 @@ $greeting = (int)date('H') < 12 ? 'Good morning' : ((int)date('H') < 17 ? 'Good 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Uniqueue &mdash; Dashboard</title>
-    <link rel="stylesheet" href="/assets/css/dashboard.css">
+    <link rel="stylesheet" href="/assets/css/student-dashboard.css">
     <link rel="stylesheet" href="/assets/css/queue-status.css">
     <link rel="stylesheet" href="/assets/css/header.css">
     <link rel="stylesheet" href="/assets/css/footer.css">

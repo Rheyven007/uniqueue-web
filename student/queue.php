@@ -20,7 +20,7 @@ $office_slug = $_GET['office'] ?? $_POST['office'] ?? null;
 
 if (!$office_slug) {
     $_SESSION['error_message'] = "No office selected.";
-    header("Location: /student/dashboard.php");
+    header("Location: /student/student-dashboard.php");
     exit;
 }
 
@@ -37,7 +37,7 @@ $office = $stmt->fetch();
 
 if (!$office) {
     $_SESSION['error_message'] = "That office is not available.";
-    header("Location: /student/dashboard.php");
+    header("Location: /student/student-dashboard.php");
     exit;
 }
 
@@ -201,7 +201,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
     }
 
-    header("Location: /student/dashboard.php");
+    header("Location: /student/student-dashboard.php");
     exit;
 }
 ?>
@@ -211,7 +211,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Uniqueue &mdash; <?= e($office['name']) ?> Queue</title>
-    <link rel="stylesheet" href="/assets/css/dashboard.css">
+    <link rel="stylesheet" href="/assets/css/student-dashboard.css">
     <link rel="stylesheet" href="/assets/css/header.css">
     <link rel="stylesheet" href="/assets/css/queue.css">
 </head>
@@ -223,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- PAGE TITLE -->
     <div class="page-title-row">
-        <a href="/student/dashboard.php" class="back-link">
+        <a href="/student/student-dashboard.php" class="back-link">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                  fill="none" stroke="currentColor" stroke-width="2.5"
                  stroke-linecap="round" stroke-linejoin="round">

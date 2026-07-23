@@ -32,12 +32,12 @@ if ($ticket_id > 0) {
         ");
         $update->execute([$ticket_id, $student_id]);
 
-        header('Location: /student/dashboard.php?cancelled=1');
+        header('Location: /student/student-dashboard.php?cancelled=1');
         exit;
     }
 }
 
 // Ticket missing, not owned by this student, or already in a
 // terminal status — nothing to cancel, just bounce back.
-header('Location: /student/dashboard.php');
+header('Location: /student/student-dashboard.php');
 exit;

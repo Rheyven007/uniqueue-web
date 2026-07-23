@@ -44,7 +44,7 @@
                     }
                 } else if (data.status === 'done' || data.status === 'cancelled') {
                     // Auto-redirect to dashboard when transaction ends
-                    window.location.href = '/student/dashboard.php';
+                    window.location.href = '/student/student-dashboard.php';
                 }
             })
             .catch(err => console.error('Status monitoring failed:', err));

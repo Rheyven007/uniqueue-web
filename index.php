@@ -11,7 +11,7 @@ if (is_admin_logged_in()) {
     if (!empty($_SESSION['is_super_admin'])) redirect('/admin/dashboard.php');
     else redirect('/admin/queue/office-dashboard.php');
 }
-if (is_student_logged_in()) redirect('/student/dashboard.php');
+if (is_student_logged_in()) redirect('/student/student-dashboard.php');
 
 // If no session exists, default to the student login page.
 redirect('/auth/login.php');

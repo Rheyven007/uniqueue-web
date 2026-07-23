@@ -106,7 +106,7 @@ function require_office_admin(): void
 
     if (!empty($_SESSION['is_super_admin'])) {
 
-        redirect('/admin/dashboard.php');
+        redirect('/admin/admin-dashboard.php');
 
     }
 }
@@ -125,7 +125,7 @@ function redirect_if_authenticated(): void
 
     if (is_student_logged_in()) {
 
-        redirect('/student/dashboard.php');
+        redirect('/student/student-dashboard.php');
 
     }
 
@@ -135,7 +135,7 @@ function redirect_if_authenticated(): void
 
         if (!empty($_SESSION['is_super_admin'])) {
 
-            redirect('/admin/dashboard.php');
+            redirect('/admin/admin-dashboard.php');
 
         }
 
