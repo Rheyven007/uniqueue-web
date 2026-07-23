@@ -50,7 +50,7 @@ if (is_post()) {
                 $_SESSION['student_name'] =
                     $student['first_name'] . ' ' . $student['last_name'];
                 $_SESSION['sr_code'] = $student['sr_code'];
-                redirect('/student/dashboard.php');
+                redirect('/student/student-dashboard.php');
             } else {
 
                 $error = 'Invalid SR-Code or password.';

@@ -1,4 +1,4 @@
-// assets/js/dashboard.js — Live updates for the student dashboard
+// assets/js/student-dashboard.js — Live updates for the student dashboard
 
 (function () {
     'use strict';
@@ -8,7 +8,6 @@
     const trackQueueBtn = document.getElementById('trackQueueBtn');
     const queueModal = document.getElementById('queueStatusModal');
     const closeQueueModal = document.getElementById('closeQueueModal');
-    const modalBackdrop = queueModal?.querySelector('.queue-modal__backdrop');
     const refreshQueueBtn = document.getElementById('refreshQueueStatus');
 
 let modalPoller = null;
@@ -111,6 +110,9 @@ let modalPoller = null;
 
     /* ─────────────────────────────────────────────────────────────
    Queue Status Modal
+   Closes only via the (X) button, Escape, or automatically when
+   the ticket reaches done/cancelled — clicking the backdrop no
+   longer closes it, since the close button already covers that.
 ───────────────────────────────────────────────────────────── */
 
 function openQueueModal(ticketId) {
@@ -228,9 +230,6 @@ function loadQueueStatus(ticketId) {
         }
         if (closeQueueModal) {
             closeQueueModal.addEventListener('click', closeQueueStatusModal);
-        }
-        if (modalBackdrop) {
-            modalBackdrop.addEventListener('click', closeQueueStatusModal);
         }
         if (refreshQueueBtn) {
             refreshQueueBtn.addEventListener('click', function () {

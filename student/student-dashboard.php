@@ -62,8 +62,8 @@ $greeting = (int)date('H') < 12 ? 'Good morning' : ((int)date('H') < 17 ? 'Good 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Uniqueue &mdash; Dashboard</title>
-    <link rel="stylesheet" href="/assets/css/dashboard.css">
-    <link rel="stylesheet" href="/assets/css/queue-status.css">
+    <link rel="stylesheet" href="/assets/css/student-dashboard.css">
+    <link rel="stylesheet" href="/assets/css/student-queue-status.css">
     <link rel="stylesheet" href="/assets/css/header.css">
     <link rel="stylesheet" href="/assets/css/footer.css">
 </head>
@@ -82,7 +82,7 @@ $greeting = (int)date('H') < 12 ? 'Good morning' : ((int)date('H') < 17 ? 'Good 
                 <?= e($greeting) ?>
             </div>
             <div class="dash-hero__name">
-                <?= e(explode(' ', $student_name)[0]) ?> 👋
+                <?= e(explode(' ', $student_name)[0]) ?>
             </div>
             <div class="dash-hero__code"><?= e($sr_code) ?></div>
         </div>
@@ -105,7 +105,7 @@ $greeting = (int)date('H') < 12 ? 'Good morning' : ((int)date('H') < 17 ? 'Good 
         <section class="panel-card">
             <div class="panel-card__header">
                 <div class="panel-card__title">Your Current Queue</div>
-                <div style="display:flex; align-items:center; gap:0.7rem;">
+                <div class="panel-card__header-actions">
                     <span class="panel-card__live">
                         <span class="panel-card__live-dot"></span>
                         Live
@@ -144,9 +144,8 @@ $greeting = (int)date('H') < 12 ? 'Good morning' : ((int)date('H') < 17 ? 'Good 
                                 data-ticket-id="<?= (int)$active_ticket['id'] ?>">
                                 Track Queue
                             </button>
-                            <a class="btn btn--outline btn--sm"
-                               href="/student/cancel-ticket.php?ticket_id=<?= (int)$active_ticket['id'] ?>"
-                               onclick="return confirm('Are you sure you want to cancel your queue?');">
+                            <a class="btn btn--outline btn--sm js-cancel-trigger"
+                               href="/student/student-cancel-ticket.php?ticket_id=<?= (int)$active_ticket['id'] ?>">
                                 Cancel
                             </a>
                         </div>
@@ -204,7 +203,7 @@ $greeting = (int)date('H') < 12 ? 'Good morning' : ((int)date('H') < 17 ? 'Good 
                                     Join Queue
                                 </button>
                             <?php else: ?>
-                                <a href="/student/queue.php?office=<?= e($office['slug']) ?>"
+                                <a href="/student/student-queue.php?office=<?= e($office['slug']) ?>"
                                    class="btn btn--outline btn--xs">
                                     Join Queue
                                 </a>
@@ -227,25 +226,35 @@ $greeting = (int)date('H') < 12 ? 'Good morning' : ((int)date('H') < 17 ? 'Good 
 
     <div class="queue-modal__dialog">
 
-        <button
-            type="button"
-            class="queue-modal__close"
-            id="closeQueueModal">
-            &times;
-        </button>
-
         <div
             class="status-card"
             id="queue-status-container">
 
             <div class="status-card__header">
-                <h1 id="office-name">Loading Office...</h1>
 
-                <div
-                    id="status-badge"
-                    class="ticket-status-badge">
-                    ...
+                <div class="status-card__header-info">
+                    <h1 id="office-name">Loading Office...</h1>
+
+                    <div
+                        id="status-badge"
+                        class="ticket-status-badge">
+                        ...
+                    </div>
                 </div>
+
+                <button
+                    type="button"
+                    class="queue-modal__close"
+                    id="closeQueueModal"
+                    aria-label="Close">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2.4"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+
             </div>
 
             <div class="status-card__main">
@@ -285,18 +294,15 @@ $greeting = (int)date('H') < 12 ? 'Good morning' : ((int)date('H') < 17 ? 'Good 
 
                     </div>
 
-                    <div
-                        class="info-item"
-                        style="margin-top:1rem;">
+                    <div class="info-item info-item--assigned">
 
                         <span class="info-label">
                             Assigned Counter
                         </span>
 
                         <span
-                            class="info-value"
-                            id="assigned-window-name"
-                            style="font-size:1.3rem;">
+                            class="info-value info-value--assigned"
+                            id="assigned-window-name">
                             ...
                         </span>
 
@@ -311,7 +317,12 @@ $greeting = (int)date('H') < 12 ? 'Good morning' : ((int)date('H') < 17 ? 'Good 
                     <div class="called-alert">
 
                         <div class="called-alert__icon">
-                            🔔
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2"
+                                 stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                            </svg>
                         </div>
 
                         <h2>Please proceed now!</h2>
@@ -361,8 +372,86 @@ $greeting = (int)date('H') < 12 ? 'Good morning' : ((int)date('H') < 17 ? 'Good 
 
 </div>
 
+<!-- Cancel Confirmation Modal -->
+<div id="cancelConfirmModal" class="confirm-modal">
+    <div class="confirm-modal__backdrop"></div>
+    <div class="confirm-modal__dialog">
+
+        <div class="confirm-modal__icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+        </div>
+
+        <h2 class="confirm-modal__title">Cancel your queue?</h2>
+        <p class="confirm-modal__text">
+            This will remove your spot in the queue. This action cannot be undone.
+        </p>
+
+        <div class="confirm-modal__actions">
+            <button type="button" class="btn btn--outline btn--sm" id="cancelModalDismiss">
+                Keep My Queue
+            </button>
+            <a href="#" class="btn btn--primary btn--sm" id="cancelModalConfirm">
+                Yes, Cancel
+            </a>
+        </div>
+
+    </div>
+</div>
+
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
 
-<script src="/assets/js/dashboard.js"></script>
+<script src="/assets/js/student-dashboard.js"></script>
+<script>
+(function () {
+    var modal      = document.getElementById('cancelConfirmModal');
+    var confirmBtn = document.getElementById('cancelModalConfirm');
+    var dismissBtn = document.getElementById('cancelModalDismiss');
+    var backdrop   = modal ? modal.querySelector('.confirm-modal__backdrop') : null;
+    var pendingHref = null;
+
+    if (!modal) return;
+
+    function openModal(href) {
+        pendingHref = href;
+        modal.classList.add('is-open');
+    }
+
+    function closeModal() {
+        modal.classList.remove('is-open');
+        pendingHref = null;
+    }
+
+    document.querySelectorAll('.js-cancel-trigger').forEach(function (link) {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            openModal(link.getAttribute('href'));
+        });
+    });
+
+    if (dismissBtn) dismissBtn.addEventListener('click', closeModal);
+    if (backdrop)   backdrop.addEventListener('click', closeModal);
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+            closeModal();
+        }
+    });
+
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (pendingHref) {
+                window.location.href = pendingHref;
+            }
+        });
+    }
+})();
+</script>
 </body>
 </html>
