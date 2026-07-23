@@ -37,8 +37,8 @@
   /* Status */
   --success:#2e7d32;
   --success-light:#dff6dd;
-  --warning:#f39c12;
-  --warning-light:#fceed8;
+  --warning:#b3791a;
+  --warning-light:#f3e3d1;
   --info:#1976d2;
   --info-light:#dcebfb;
   --purple:#7b1fa2;
@@ -79,7 +79,7 @@
   --success-border: rgba(46,125,50,0.25);
 
   --warning-bg:     var(--warning-light);
-  --warning-border: rgba(243,156,18,0.35);
+  --warning-border: rgba(179,121,26,0.35);
 
   --info-bg:        var(--info-light);
   --info-border:    rgba(25,118,210,0.3);
@@ -1344,8 +1344,8 @@ button { font-family: inherit; cursor: pointer; }
   /* Status */
   --success:#2e7d32;
   --success-light:#dff6dd;
-  --warning:#f39c12;
-  --warning-light:#fceed8;
+  --warning:#b3791a;
+  --warning-light:#f3e3d1;
   --info:#1976d2;
   --info-light:#dcebfb;
   --purple:#7b1fa2;
@@ -1386,7 +1386,7 @@ button { font-family: inherit; cursor: pointer; }
   --success-border: rgba(46,125,50,0.25);
 
   --warning-bg:     var(--warning-light);
-  --warning-border: rgba(243,156,18,0.35);
+  --warning-border: rgba(179,121,26,0.35);
 
   --info-bg:        var(--info-light);
   --info-border:    rgba(25,118,210,0.3);
@@ -2254,7 +2254,7 @@ table.ql-table tbody tr.is-priority .ql-num { color: var(--row-priority-color); 
 .badge-priority {
     background: var(--warning-light, #fceed8);
     color: var(--warning, #f39c12);
-    border-color: var(--warning-border, rgba(243,156,18,0.35));
+    border-color: var(--warning-border, rgba(179,121,26,0.35));
 }
 
 /* Type: Walk-in / Appointment */
@@ -2265,7 +2265,7 @@ table.ql-table tbody tr.is-priority .ql-num { color: var(--row-priority-color); 
 }
 
 /* Status Badges */
-.badge-status-waiting { background: var(--warning-light, #fceed8); color: var(--warning, #f39c12); border-color: var(--warning-border, rgba(243,156,18,0.35)); }
+.badge-status-waiting { background: var(--warning-light, #fceed8); color: var(--warning, #f39c12); border-color: var(--warning-border, rgba(179,121,26,0.35)); }
 .badge-status-called,
 .badge-status-in_progress { background: var(--info-light, #dcebfb); color: var(--info, #1976d2); border-color: var(--info-border, rgba(25,118,210,0.3)); }
 .badge-status-done { background: var(--success-light, #dff6dd); color: var(--success, #2e7d32); border-color: var(--success-border, rgba(46,125,50,0.25)); }
@@ -2306,6 +2306,15 @@ table.ql-table tbody tr.is-priority .ql-num { color: var(--row-priority-color); 
 .empty-state.empty-state--error p {
     color: var(--danger-dark, #d32f2f);
     font-weight: 500;
+}
+
+/* AJAX results region (document-list.php search/refresh) */
+#doc-list-results {
+    transition: opacity 0.15s ease-out;
+}
+#doc-list-results.is-loading {
+    opacity: 0.5;
+    pointer-events: none;
 }
 
 /* Focus */

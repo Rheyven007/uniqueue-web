@@ -109,68 +109,14 @@ $status_classes = [
     'cancelled'   => 'badge-status-cancelled',
 ];
 
-$pageTitle = "Queue List — " . ($office['name'] ?? 'Office');
-include __DIR__ . '/../../includes/header.php';
-?>
-
-<div class="app-shell">
-
-    <?php include __DIR__ . '/../../includes/office-sidebar.php'; ?>
-
-<div class="od-wrap">
-
-    <!-- ── Top bar ──────────────────────────────────────────────────────────── -->
-    <div class="od-topbar">
-        <div class="od-topbar__left">
-            <h1><?= htmlspecialchars($office['name'] ?? 'Queue List') ?></h1>
-            <p>View today's queue tickets for all service windows.</p>
-        </div>
-
-        <div class="od-topbar__actions">
-            <button class="btn btn-outline-light btn-sm" onclick="window.location.reload()" aria-label="Refresh list">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21.5 2v6h-6"/>
-                    <path d="M21.34 15.57a10 10 0 1 1-.4-4.57"/>
-                </svg>
-                Refresh
-            </button>
-        </div>
-    </div>
-
-
-    <div class="ql-controls-bar">
-        <div class="ql-tabs" role="tablist" aria-label="Queue type">
-            <a href="?type=all&window=<?= htmlspecialchars($window_filter) ?>" role="tab" aria-selected="<?= $tab === 'all' ? 'true' : 'false' ?>"
-               class="ql-tab <?= $tab === 'all' ? 'is-active' : '' ?>">
-                All
-                <span class="count-badge green"><?= (int)$counts['total'] ?></span>
-            </a>
-            <a href="?type=walkin&window=<?= htmlspecialchars($window_filter) ?>" role="tab" aria-selected="<?= $tab === 'walkin' ? 'true' : 'false' ?>"
-               class="ql-tab <?= $tab === 'walkin' ? 'is-active' : '' ?>">
-                Walk-in
-                <span class="count-badge amber"><?= (int)$counts['walkin_count'] ?></span>
-            </a>
-            <a href="?type=appointment&window=<?= htmlspecialchars($window_filter) ?>" role="tab" aria-selected="<?= $tab === 'appointment' ? 'true' : 'false' ?>"
-               class="ql-tab <?= $tab === 'appointment' ? 'is-active' : '' ?>">
-                Appointment
-                <span class="count-badge violet"><?= (int)$counts['appointment_count'] ?></span>
-            </a>
-        </div>
-
-        <div class="ql-filter">
-            <label for="window-select" class="ql-filter__label">Counter:</label>
-            <select name="window" id="window-select" class="form-control" onchange="window.location.href = '?type=<?= e($tab) ?>&window=' + this.value">
-                <option value="all" <?= $window_filter === 'all' ? 'selected' : '' ?>>All Counters</option>
-                <?php foreach ($windows as $w): ?>
-                    <option value="<?= (int)$w['id'] ?>" <?= (string)$window_filter === (string)$w['id'] ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($w['name']) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-    </div>
-    
-    <!-- ── Filter summary ───────────────────────────────────────────────────── -->
+// ── Shared results markup ────────────────────────────────────────────────
+// Renders the filter summary + queue tables (grouped by counter). Used by
+// BOTH the AJAX JSON response and the full page render below, so the two
+// can never drift out of sync — this is the same pattern used across
+// document-list.php / staff-list.php / counter-list.php.
+function render_queue_results_html($tickets, $grouped, $db_error, $tab, $window_filter, $windows, $status_classes): string {
+    ob_start();
+    ?>
     <div class="ql-filter-summary">
         <span class="sr-only" role="status" aria-live="polite">
             Showing <?= count($tickets) ?> ticket<?= count($tickets) === 1 ? '' : 's' ?> for the current filters.
@@ -201,14 +147,9 @@ include __DIR__ . '/../../includes/header.php';
         </div>
     </div>
 
-    <!-- ── Queue table(s), grouped by counter ──────────────────────────────── -->
-<?php if ($db_error): ?>
-    <section class="queue-section">
-        <div class="empty-state empty-state--error">
-            <p><?= e($db_error) ?></p>
-        </div>
-    </section>
-<?php elseif (empty($tickets)): ?>
+    <?php if ($db_error): ?>
+        <section class="queue-section"><div class="empty-state empty-state--error"><p><?= e($db_error) ?></p></div></section>
+    <?php elseif (empty($tickets)): ?>
         <section class="queue-section" aria-label="Queue tickets">
             <div class="empty-state">
                 <h3>No tickets found</h3>
@@ -216,7 +157,7 @@ include __DIR__ . '/../../includes/header.php';
                 <a href="?type=all&window=all" class="btn btn-sm">Reset Filters</a>
             </div>
         </section>
-    <?php elseif (isset($grouped)): ?>
+    <?php else: ?>
         <?php foreach ($grouped as $window_id => $group): ?>
         <section class="queue-section ql-counter-section" aria-labelledby="counter-heading-<?= e($window_id) ?>">
             <div class="queue-section__head">
@@ -226,37 +167,24 @@ include __DIR__ . '/../../includes/header.php';
                 </h2>
                 <div class="sr-only">List of tickets for this counter.</div>
             </div>
-            <div class="ql-table-wrap">
-                <table class="ql-table">
+            <div class="data-table-wrap">
+                <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Queue #</th>
-                            <th>Student</th>
-                            <th>SR Code</th>
-                            <th>Type</th>
-                            <th>Status</th>
-                            <th>Joined</th>
-                            <th>Called</th>
-                            <th>Done</th>
+                            <th>Queue #</th><th>Student</th><th>SR Code</th><th>Type</th><th>Status</th><th>Joined</th><th>Called</th><th>Done</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($group['tickets'] as $t): ?>
                         <tr class="<?= $t['priority'] ? 'is-priority' : '' ?>">
-                            <td class="ql-num"><?= e($t['queue_number']) ?></td>
+                            <td class="td-counter-name"><?= e($t['queue_number']) ?></td>
                             <td>
                                 <?= e(trim(($t['first_name'] ?? '') . ' ' . ($t['last_name'] ?? ''))) ?: '—' ?>
-                                <?php if ($t['priority']): ?>
-                                    <span class="badge badge-priority">Priority</span>
-                                <?php endif; ?>
+                                <?php if ($t['priority']): ?><span class="badge badge-priority">Priority</span><?php endif; ?>
                             </td>
                             <td><?= e($t['sr_code'] ?? '—') ?></td>
-                            <td><span class="badge badge-type"><?= e($t['type']) ?></span></td>
-                            <td>
-                                <span class="badge <?= $status_classes[$t['status']] ?? 'badge-window' ?>">
-                                    <?= e(str_replace('_', ' ', $t['status'])) ?>
-                                </span>
-                            </td>
+                            <td><span class="badge badge-info"><?= e(strtoupper($t['type'])) ?></span></td>
+                            <td><span class="badge <?= $status_classes[$t['status']] ?? 'badge-window' ?>"><?= e(strtoupper(str_replace('_', ' ', $t['status']))) ?></span></td>
                             <td><?= $t['joined_at'] ? date('h:i A', strtotime($t['joined_at'])) : '—' ?></td>
                             <td><?= $t['called_at'] ? date('h:i A', strtotime($t['called_at'])) : '—' ?></td>
                             <td><?= $t['done_at']   ? date('h:i A', strtotime($t['done_at']))   : '—' ?></td>
@@ -268,11 +196,104 @@ include __DIR__ . '/../../includes/header.php';
         </section>
         <?php endforeach; ?>
     <?php endif; ?>
+    <?php
+    return ob_get_clean();
+}
+
+$queue_results_html = render_queue_results_html($tickets, $grouped ?? [], $db_error, $tab, $window_filter, $windows, $status_classes);
+
+// ── AJAX Response ──────────────────────────────────────────────────────────
+// If this is an AJAX request, send the rendered markup back as JSON.
+if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+    header('Content-Type: application/json');
+
+    echo json_encode([
+        'success' => true,
+        'counts' => [
+            'total' => (int)$counts['total'],
+            'walkin' => (int)$counts['walkin_count'],
+            'appointment' => (int)$counts['appointment_count'],
+        ],
+        'contentHtml' => $queue_results_html,
+    ]);
+    exit;
+}
+
+$pageTitle = "Queue List — " . ($office['name'] ?? 'Office');
+include __DIR__ . '/../../includes/header.php';
+?>
+
+<link rel="stylesheet" href="/assets/css/queue-list.css">
+<div class="app-shell">
+
+    <?php include __DIR__ . '/../../includes/office-sidebar.php'; ?>
+
+<div class="od-wrap">
+
+    <!-- ── Top bar ──────────────────────────────────────────────────────────── -->
+    <div class="od-topbar">
+        <div class="od-topbar__left">
+            <h1><?= htmlspecialchars($office['name'] ?? 'Queue List') ?></h1>
+            <p>View today's queue tickets for all service windows.</p>
+        </div>
+
+        <div class="od-topbar__actions">
+            <button class="btn btn-outline-light btn-sm" aria-label="Refresh list">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.5 2v6h-6"/>
+                    <path d="M21.34 15.57a10 10 0 1 1-.4-4.57"/>
+                </svg>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+
+    <div class="ql-controls-bar">
+        <div class="ql-tabs" role="tablist" aria-label="Queue type">
+            <a href="?type=all&window=<?= htmlspecialchars($window_filter) ?>" role="tab" aria-selected="<?= $tab === 'all' ? 'true' : 'false' ?>"
+               class="ql-tab <?= $tab === 'all' ? 'is-active' : '' ?>">
+                All
+                <span class="count-badge green" data-count="total"><?= (int)$counts['total'] ?></span>
+            </a>
+            <a href="?type=walkin&window=<?= htmlspecialchars($window_filter) ?>" role="tab" aria-selected="<?= $tab === 'walkin' ? 'true' : 'false' ?>"
+               class="ql-tab <?= $tab === 'walkin' ? 'is-active' : '' ?>">
+                Walk-in
+                <span class="count-badge amber" data-count="walkin"><?= (int)$counts['walkin_count'] ?></span>
+            </a>
+            <a href="?type=appointment&window=<?= htmlspecialchars($window_filter) ?>" role="tab" aria-selected="<?= $tab === 'appointment' ? 'true' : 'false' ?>"
+               class="ql-tab <?= $tab === 'appointment' ? 'is-active' : '' ?>">
+                Appointment
+                <span class="count-badge violet" data-count="appointment"><?= (int)$counts['appointment_count'] ?></span>
+            </a>
+        </div>
+
+        <div class="ql-filter">
+            <label for="window-select" class="ql-filter__label">Counter:</label>
+            <select name="window" id="window-select" class="form-control">
+                <option value="all" <?= $window_filter === 'all' ? 'selected' : '' ?>>All Counters</option>
+                <?php foreach ($windows as $w): ?>
+                    <option value="<?= (int)$w['id'] ?>" <?= (string)$window_filter === (string)$w['id'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($w['name']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+    </div>
+
+    <div id="ql-content-area">
+        <?= $queue_results_html ?>
+    </div>
 
 </div><!-- /.od-wrap -->
 </div><!-- /.app-shell -->
 
 
-<link rel="stylesheet" href="/assets/css/queue-list.css">
+<!-- Loading overlay for AJAX calls -->
+<div class="loading-overlay">
+    <div class="spinner"></div>
+</div>
 
-<?php include __DIR__ . '/../../includes/footer.php'; ?>    
+<script src="/assets/js/queue-list.js"></script>
+
+<?php include __DIR__ . '/../../includes/footer.php'; ?>

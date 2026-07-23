@@ -34,8 +34,8 @@
   /* Status */
   --success:#2e7d32;
   --success-light:#dff6dd;
-  --warning:#f39c12;
-  --warning-light:#fceed8;
+  --warning:#b3791a;
+  --warning-light:#f3e3d1;
   --info:#1976d2;
   --info-light:#dcebfb;
   --purple:#7b1fa2;
@@ -430,7 +430,7 @@ button { font-family: inherit; }
 .btn-warning {
   background-color: var(--warning-light, #fceed8);
   color: var(--warning);
-  border-color: var(--warning-border, rgba(243,156,18,0.35));
+  border-color: var(--warning-border, rgba(179,121,26,0.35));
 }
 .btn-warning:hover { background-color: #fef0c7; }
 
@@ -737,7 +737,7 @@ table.ql-table tbody tr.is-priority .ql-num { color: var(--row-priority-color); 
 .badge-priority {
     background: var(--warning-light, #fceed8);
     color: var(--warning, #f39c12);
-    border-color: var(--warning-border, rgba(243,156,18,0.35));
+    border-color: var(--warning-border, rgba(179,121,26,0.35));
 }
 
 /* Type: Walk-in / Appointment */
@@ -748,7 +748,7 @@ table.ql-table tbody tr.is-priority .ql-num { color: var(--row-priority-color); 
 }
 
 /* Status Badges */
-.badge-status-waiting { background: var(--warning-light, #fceed8); color: var(--warning, #f39c12); border-color: var(--warning-border, rgba(243,156,18,0.35)); }
+.badge-status-waiting { background: var(--warning-light, #fceed8); color: var(--warning, #f39c12); border-color: var(--warning-border, rgba(179,121,26,0.35)); }
 .badge-status-called,
 .badge-status-in_progress { background: var(--info-light, #dcebfb); color: var(--info, #1976d2); border-color: var(--info-border, rgba(25,118,210,0.3)); }
 .badge-status-done { background: var(--success-light, #dff6dd); color: var(--success, #2e7d32); border-color: var(--success-border, rgba(46,125,50,0.25)); }
@@ -799,4 +799,26 @@ button:focus-visible,
 select:focus-visible {
     outline: none;
     box-shadow: 0 0 0 3px var(--primary-soft, rgba(102,8,16,0.06));
+}
+/* AJAX results region (staff-list.php search/refresh) */
+#staff-results {
+  transition: opacity 0.15s ease-out;
+}
+#staff-results.is-loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+/* ── Screen-reader-only utility ──────────────────────────────
+   Defined locally (matching counter-list.css / document-list.css)
+   so this element is guaranteed to be taken out of normal flow —
+   it must not consume flex-gap space between the search bar and
+   the table, regardless of what the global stylesheet defines. */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
 }

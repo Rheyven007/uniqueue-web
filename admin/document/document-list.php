@@ -50,6 +50,104 @@ try {
     error_log('document-list.php DB error: ' . $e->getMessage());
 }
 
+/* ── Renders just the "results" region: the alert (if any) + the
+     table / empty-state. Reused by both the full page render below
+     and the AJAX (search/refresh) response so markup can't drift. ── */
+function render_document_results_html($documents, $db_error, $search, $is_super_admin) {
+    ob_start();
+    ?>
+    <?php if (!empty($db_error)): ?>
+        <div class="req-alert req-alert--error">
+            <p><strong>Unable to load documents.</strong> <?= htmlspecialchars($db_error) ?></p>
+            <p><a href="document-list.php" class="btn btn-ghost">Try again</a></p>
+        </div>
+    <?php endif; ?>
+
+    <?php if (empty($documents)): ?>
+        <div class="req-empty">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            <?php if ($search !== ''): ?>
+                <p>No document types match "<?= htmlspecialchars($search) ?>". <a href="document-list.php" class="clear-search-link">Clear search</a></p>
+            <?php else: ?>
+                <p>No document types found. <a href="document-add.php">Add the first one.</a></p>
+            <?php endif; ?>
+        </div>
+    <?php else: ?>
+        <div class="ql-table-wrap">
+            <table class="ql-table">
+                <thead>
+                    <tr>
+                        <th>Document Name</th>
+                        <?php if ($is_super_admin): ?><th>Office</th><?php endif; ?>
+                        <th>Est. Time (mins)</th>
+                        <th>Requirements</th>
+                        <th class="th-actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($documents as $doc): ?>
+                        <tr>
+                            <td><span class="doc-name"><?= htmlspecialchars($doc['name']) ?></span></td>
+                            <?php if ($is_super_admin): ?>
+                                <td><span class="doc-office"><?= htmlspecialchars($doc['office_name']) ?></span></td>
+                            <?php endif; ?>
+                            <td><?= (int)$doc['processing_time'] ?> min</td>
+                            <td>
+                                <?php if ((int)($doc['req_count'] ?? 0) > 0): ?>
+                                    <a href="/admin/requirements/requirements-list.php?document_id=<?= $doc['id'] ?>"
+                                       class="badge badge-type" style="text-decoration:none;">
+                                        <?= (int)$doc['req_count'] ?> item<?= $doc['req_count'] != 1 ? 's' : '' ?>
+                                    </a>
+                                <?php else: ?>
+                                    <a href="/admin/requirements/requirements-add.php?document_id=<?= $doc['id'] ?>"
+                                       class="badge badge-priority" style="text-decoration:none;">
+                                        + Add
+                                    </a>
+                                <?php endif; ?>
+                            </td>
+                            <td class="td-actions">
+                                <a href="document-edit.php?id=<?= $doc['id'] ?>" class="btn btn-warning btn-sm">Edit</a>
+                                <button class="btn btn-danger btn-sm delete-document" data-id="<?= $doc['id'] ?>"
+                                        type="button"
+                                        onclick="return confirm('Delete this document type? This action cannot be undone.');">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    <?php endif; ?>
+    <?php
+    return ob_get_clean();
+}
+
+$results_html = render_document_results_html($documents, $db_error, $search, $is_super_admin);
+
+/* ── AJAX request? (search form submit or refresh button) ──────────
+   Both are triggered via fetch() with this header set, so we can
+   short-circuit here and return just the results HTML as JSON
+   instead of rendering the whole page (header/sidebar/footer). ── */
+$is_ajax = (
+    (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+    || isset($_GET['ajax'])
+);
+
+if ($is_ajax) {
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success' => $db_error === null,
+        'html'    => $results_html,
+        'count'   => count($documents),
+        'search'  => $search,
+    ]);
+    exit;
+}
+
 $pageTitle = "Document Types";
 include __DIR__ . '/../../includes/header.php';
 ?>
@@ -68,7 +166,7 @@ include __DIR__ . '/../../includes/header.php';
                 <p>Manage document types and their requirements checklist.</p>
             </div>
             <div class="od-topbar__actions">
-                <button class="btn btn-outline-light btn-sm" onclick="window.location.reload()" aria-label="Refresh list">
+                <button class="btn btn-outline-light btn-sm" id="refresh-list-btn" type="button" aria-label="Refresh list">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21.5 2v6h-6"/>
                             <path d="M21.34 15.57a10 10 0 1 1-.4-4.57"/>
@@ -91,14 +189,7 @@ include __DIR__ . '/../../includes/header.php';
                  without a visible layout jump (visibility of system status). -->
             <div class="sr-only" role="status" aria-live="polite" id="doc-status-region"></div>
 
-            <?php if (!empty($db_error)): ?>
-                <div class="req-alert req-alert--error">
-                    <p><strong>Unable to load documents.</strong> <?= htmlspecialchars($db_error) ?></p>
-                    <p><a href="document-list.php" class="btn btn-ghost">Try again</a></p>
-                </div>
-            <?php endif; ?>
-
-            <form method="GET" class="search-bar" role="search" aria-label="Search document types">
+            <form method="GET" class="search-bar" role="search" aria-label="Search document types" id="doc-search-form">
                 <div class="search-bar__field">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -111,65 +202,9 @@ include __DIR__ . '/../../includes/header.php';
                 <button type="submit" class="btn btn-primary">Search</button>
             </form>
 
-            <?php if (empty($documents)): ?>
-                <div class="req-empty">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                    </svg>
-                    <?php if ($search !== ''): ?>
-                        <p>No document types match "<?= htmlspecialchars($search) ?>". <a href="document-list.php">Clear search</a></p>
-                    <?php else: ?>
-                        <p>No document types found. <a href="document-add.php">Add the first one.</a></p>
-                    <?php endif; ?>
-                </div>
-            <?php else: ?>
-                <div class="ql-table-wrap">
-                    <table class="ql-table">
-                        <thead>
-                            <tr>
-                                <th>Document Name</th>
-                                <?php if ($is_super_admin): ?><th>Office</th><?php endif; ?>
-                                <th>Est. Time (mins)</th>
-                                <th>Requirements</th>
-                                <th class="th-actions">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($documents as $doc): ?>
-                                <tr>
-                                    <td><span class="doc-name"><?= htmlspecialchars($doc['name']) ?></span></td>
-                                    <?php if ($is_super_admin): ?>
-                                        <td><span class="doc-office"><?= htmlspecialchars($doc['office_name']) ?></span></td>
-                                    <?php endif; ?>
-                                    <td><?= (int)$doc['processing_time'] ?> min</td>
-                                    <td>
-                                        <?php if ((int)($doc['req_count'] ?? 0) > 0): ?>
-                                            <a href="/admin/requirements/requirements-list.php?document_id=<?= $doc['id'] ?>"
-                                               class="badge badge-type" style="text-decoration:none;">
-                                                <?= (int)$doc['req_count'] ?> item<?= $doc['req_count'] != 1 ? 's' : '' ?>
-                                            </a>
-                                        <?php else: ?>
-                                            <a href="/admin/requirements/requirements-add.php?document_id=<?= $doc['id'] ?>"
-                                               class="badge badge-priority" style="text-decoration:none;">
-                                                + Add
-                                            </a>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="td-actions">
-                                        <a href="document-edit.php?id=<?= $doc['id'] ?>" class="btn btn-warning btn-sm">Edit</a>
-                                        <button class="btn btn-danger btn-sm delete-document" data-id="<?= $doc['id'] ?>"
-                                                type="button"
-                                                onclick="return confirm('Delete this document type? This action cannot be undone.');">
-                                            Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            <?php endif; ?>
+            <div id="doc-list-results">
+                <?= $results_html ?>
+            </div>
 
         </div><!-- /.staff-wrap -->
 

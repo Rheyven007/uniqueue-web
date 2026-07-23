@@ -122,3 +122,116 @@
   });
 
 })();
+
+/**
+ * Live/type-ahead search for counter-list.php.
+ *
+ * Same contract used across all list pages (document-list.php,
+ * staff-list.php, counter-list.php): the PHP file responds to fetch()
+ * requests carrying X-Requested-With: XMLHttpRequest with JSON —
+ * { success, html, count, search } — instead of a full page, so we can
+ * swap the results container in place without a reload.
+ */
+(function () {
+  'use strict';
+
+  const resultsEl    = document.getElementById('counter-results');
+  const searchForm   = document.getElementById('counter-search-form');
+  const searchInput  = document.getElementById('counter-search');
+  const statusRegion = document.getElementById('counter-status-region');
+
+  if (!resultsEl || !searchInput) return; // not on counter-list.php
+
+  let debounceTimeout;
+  function debounce(func, delay) {
+    return function (...args) {
+      clearTimeout(debounceTimeout);
+      debounceTimeout = setTimeout(() => func.apply(this, args), delay);
+    };
+  }
+
+  function announce(term, count, success) {
+    if (!statusRegion) return;
+    statusRegion.textContent = !success
+      ? 'Unable to load counters.'
+      : term
+        ? `${count} counter${count === 1 ? '' : 's'} found for "${term}".`
+        : `Showing all counters.`;
+  }
+
+  function bindResultHandlers(scope) {
+    // "Clear search" link inside the empty-state fragment — route it
+    // through the same AJAX flow instead of a full reload.
+    const clearLink = scope.querySelector('.js-clear-search');
+    if (clearLink) {
+      clearLink.addEventListener('click', function (e) {
+        e.preventDefault();
+        searchInput.value = '';
+        loadCounterList(new URLSearchParams());
+        searchInput.focus();
+      });
+    }
+  }
+
+  function loadCounterList(params, opts) {
+    opts = opts || {};
+
+    resultsEl.classList.add('is-loading');
+    resultsEl.setAttribute('aria-busy', 'true');
+
+    const url = 'counter-list.php' + (params.toString() ? '?' + params.toString() : '');
+
+    return fetch(url, {
+      method:  'GET',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    })
+    .then(r => r.json())
+    .then(data => {
+      resultsEl.innerHTML = data.html;
+      bindResultHandlers(resultsEl);
+
+      if (opts.pushUrl !== false) {
+        history.pushState({ search: data.search }, '', url);
+      }
+
+      announce(data.search, data.count, data.success);
+    })
+    .catch(() => {
+      if (statusRegion) statusRegion.textContent = 'Network error while loading counters.';
+    })
+    .finally(() => {
+      resultsEl.classList.remove('is-loading');
+      resultsEl.removeAttribute('aria-busy');
+    });
+  }
+
+  const debouncedLoad = debounce(loadCounterList, 300);
+
+  searchInput.addEventListener('input', function () {
+    const params = new URLSearchParams();
+    const term = searchInput.value.trim();
+    if (term !== '') params.set('search', term);
+    debouncedLoad(params);
+  });
+
+  if (searchForm) {
+    searchForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      clearTimeout(debounceTimeout);
+      const params = new URLSearchParams();
+      const term = searchInput.value.trim();
+      if (term !== '') params.set('search', term);
+      loadCounterList(params);
+    });
+  }
+
+  // Back/forward navigation: re-sync the list with the URL's search param.
+  window.addEventListener('popstate', function () {
+    const params = new URLSearchParams(window.location.search);
+    searchInput.value = params.get('search') || '';
+    loadCounterList(params, { pushUrl: false });
+  });
+
+  bindResultHandlers(resultsEl); // in case of an empty state on initial load
+
+})();
